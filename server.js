@@ -7,6 +7,9 @@ const morgan = require('morgan');
 
 // Importar rutas de autenticación
 const authRoutes = require('./src/routes/authRoutes');
+const userRoutes = require('./src/routes/userRoutes');
+const formRoutes = require('./src/routes/formRoutes');
+const submissionRoutes = require('./src/routes/submissionRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,6 +23,9 @@ app.use(express.urlencoded({ extended: false }));
 
 // --- RUTAS ---
 app.use('/api/auth', authRoutes); // Prefijo para auth
+app.use('/api/users', userRoutes); // <--- NUEVO (Prefijo /api/users)
+app.use('/api/forms', formRoutes); // <--- NUEVO (Prefijo /api/forms)
+app.use('/api/submissions', submissionRoutes); // <--- NUEVO (Prefijo /api/submissions)
 
 // Ruta base
 app.get('/', (req, res) => {
