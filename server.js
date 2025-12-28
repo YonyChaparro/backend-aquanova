@@ -10,6 +10,8 @@ const authRoutes = require('./src/routes/authRoutes');
 const userRoutes = require('./src/routes/userRoutes');
 const formRoutes = require('./src/routes/formRoutes');
 const submissionRoutes = require('./src/routes/submissionRoutes');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpecs = require('./src/config/swagger');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,8 +20,11 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
-app.use(express.json()); 
+app.use(express.json());
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
+console.log('📄 Documentación disponible en http://localhost:3000/api-docs');
 app.use(express.urlencoded({ extended: false }));
+
 
 // --- RUTAS ---
 app.use('/api/auth', authRoutes); // Prefijo para auth
