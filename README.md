@@ -1,8 +1,20 @@
 # Backend Aquanova
 
-Este repositorio contiene el código fuente del backend para el proyecto **Aquanova**. Es una API RESTful construida con Node.js y Express, diseñada para gestionar usuarios, autenticación, formularios y envíos de datos.
+**Aquanova** es un aplicativo digital que permite la recolección y validación de información comunitaria mediante el diligenciamiento de formularios, facilitando la sistematización de datos de manera confiable y accesible.
+
+Este repositorio contiene el código fuente del **backend**, una API RESTful construida con Node.js y Express, diseñada para gestionar usuarios, autenticación, formularios dinámicos y envíos de datos.
 
 🔗 **Repositorio:** [https://github.com/YonyChaparro/backend-aquanova](https://github.com/YonyChaparro/backend-aquanova)
+
+## 📖 Sobre el Proyecto
+
+El objetivo de Aquanova es contribuir a que las comunidades puedan organizarse mejor, tomar decisiones informadas y reducir los problemas derivados de la falta de información estructurada.
+
+A diferencia de otros sistemas que requieren procesos complejos de registro o que no aseguran la calidad de los datos obtenidos, Aquanova se distingue por ofrecer un enfoque más simple, práctico y confiable. Su propuesta se fundamenta en brindar una experiencia intuitiva que elimine barreras de acceso, garantizando al mismo tiempo que la información recolectada sea clara, verificable y útil para quienes la gestionan.
+
+Este sistema ha sido diseñado para comunidades que demandan soluciones digitales fáciles de implementar, reduciendo la dependencia de procesos manuales y minimizando la desconfianza hacia las herramientas tecnológicas. Aquanova no solo ofrece una solución técnica, sino también un aporte al fortalecimiento de la confianza colectiva y la organización comunitaria.
+
+De esta manera, se sientan las bases para un Producto Mínimo Viable con potencial de escalabilidad, capaz de adaptarse a diferentes contextos y de consolidarse como una herramienta clave en la construcción de procesos sociales más participativos, confiables y sostenibles.
 
 ## 📋 Tabla de Contenidos
 
