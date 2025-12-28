@@ -18,10 +18,24 @@ const UserModel = {
     // 2. Listar TODOS los usuarios (Para el panel de Admin)
     async findAll() {
         const query = `
-            SELECT u.id, u.name, u.email, u.is_active, r.name as role, u.created_at
+            SELECT 
+                u.id, 
+                u.name, 
+                u.email, 
+                u.phone, 
+                u.is_active, 
+                u.metadata,
+                u.created_at,
+                u.updated_at,
+                r.name as role, 
+                r.description as role_description,
+                n.id as neighborhood_id,
+                n.name as neighborhood_name,
+                n.code as neighborhood_code
             FROM users u
             LEFT JOIN user_roles ur ON u.id = ur.user_id
             LEFT JOIN roles r ON ur.role_id = r.id
+            LEFT JOIN neighborhoods n ON ur.neighborhood_id = n.id
             ORDER BY u.created_at DESC
         `;
         const [rows] = await pool.query(query);
@@ -30,7 +44,7 @@ const UserModel = {
 
     // 3. Crear Usuario (¡Usa Transacción!)
     async create(userData) {
-        const { id, name, email, password_hash, role_id } = userData;
+        const { id, name, email, password_hash, role_id, neighborhood_id } = userData;
         
         const connection = await pool.getConnection(); // Obtener conexión exclusiva
         try {
@@ -43,12 +57,13 @@ const UserModel = {
             `;
             await connection.query(queryUser, [id, name, email, password_hash]);
 
-            // B. Asignar Rol
+            // B. Asignar Rol y Barrio (si aplica)
             const queryRole = `
-                INSERT INTO user_roles (user_id, role_id) 
-                VALUES (?, ?)
+                INSERT INTO user_roles (user_id, role_id, neighborhood_id) 
+                VALUES (?, ?, ?)
             `;
-            await connection.query(queryRole, [id, role_id]);
+            // Si neighborhood_id es undefined o null, se guardará como NULL en la BD
+            await connection.query(queryRole, [id, role_id, neighborhood_id || null]);
 
             await connection.commit(); // Confirmar cambios
             return true;

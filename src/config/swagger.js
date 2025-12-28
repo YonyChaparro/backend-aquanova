@@ -1,6 +1,6 @@
 // src/config/swagger.js
 const swaggerJsdoc = require('swagger-jsdoc');
-const path = require('path'); // <--- 1. IMPORTANTE: Importar 'path'
+const path = require('path');
 
 const options = {
   definition: {
@@ -8,7 +8,7 @@ const options = {
     info: {
       title: 'AquaNova API',
       version: '1.0.0',
-      description: 'API para la recolección de datos en campo (Censo de Mascotas, etc).',
+      description: 'API para la recolección de datos en campo del proyecto aquanova.',
     },
     servers: [
       {

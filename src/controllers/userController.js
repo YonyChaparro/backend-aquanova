@@ -16,7 +16,7 @@ const getUsers = async (req, res) => {
 // CREAR USUARIO
 const createUser = async (req, res) => {
     try {
-        const { name, email, password, role_id } = req.body;
+        const { name, email, password, role_id, neighborhood_id } = req.body;
 
         // 1. Validaciones básicas
         if (!name || !email || !password || !role_id) {
@@ -43,7 +43,8 @@ const createUser = async (req, res) => {
             name,
             email,
             password_hash: hash,
-            role_id
+            role_id,
+            neighborhood_id // <--- Pasamos el barrio (puede ser null)
         });
 
         res.status(201).json({ 
