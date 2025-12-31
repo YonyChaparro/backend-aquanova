@@ -43,11 +43,13 @@ router.get('/', getUsers);
  *             type: object
  *             required:
  *               - name
- *               - email
+ *               - document_number
  *               - password
  *               - role_id
  *             properties:
  *               name:
+ *                 type: string
+ *               document_number:
  *                 type: string
  *               email:
  *                 type: string

@@ -15,12 +15,12 @@
  *           schema:
  *             type: object
  *             required:
- *               - email
+ *               - document_number
  *               - password
  *             properties:
- *               email:
+ *               document_number:
  *                 type: string
- *                 example: admin@aquanova.com
+ *                 example: "1000000000"
  *               password:
  *                 type: string
  *                 example: admin123

@@ -16,20 +16,20 @@ const getUsers = async (req, res) => {
 // CREAR USUARIO
 const createUser = async (req, res) => {
     try {
-        const { name, email, password, role_id, neighborhood_id } = req.body;
+        const { name, document_number, email, password, role_id, neighborhood_id } = req.body;
 
         // 1. Validaciones básicas
-        if (!name || !email || !password || !role_id) {
+        if (!name || !document_number || !password || !role_id) {
             return res.status(400).json({ 
                 ok: false, 
-                message: 'Faltan datos (name, email, password, role_id)' 
+                message: 'Faltan datos (name, document_number, password, role_id)' 
             });
         }
 
-        // 2. Verificar si ya existe el email
-        const existingUser = await UserModel.findByEmailWithRole(email);
+        // 2. Verificar si ya existe el documento
+        const existingUser = await UserModel.findByDocumentWithRole(document_number);
         if (existingUser) {
-            return res.status(400).json({ ok: false, message: 'El email ya está registrado' });
+            return res.status(400).json({ ok: false, message: 'El número de documento ya está registrado' });
         }
 
         // 3. Preparar datos
@@ -41,6 +41,7 @@ const createUser = async (req, res) => {
         await UserModel.create({
             id: newId,
             name,
+            document_number,
             email,
             password_hash: hash,
             role_id,

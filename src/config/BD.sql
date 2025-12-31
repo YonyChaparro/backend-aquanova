@@ -21,6 +21,7 @@ USE app_aquanova_bd;
 CREATE TABLE `users` (
   `id` CHAR(36) NOT NULL,                    -- ID único universal (UUID v4)
   `name` VARCHAR(255) NOT NULL,              -- Nombre real
+  `document_number` VARCHAR(50) NULL,        -- Número de documento de identidad
   `email` VARCHAR(255) NULL,                 -- Email para login/notificaciones
   `phone` VARCHAR(50) NULL,                  -- Teléfono (útil para auth por SMS)
   `password_hash` VARCHAR(255) NULL,         -- Hash seguro (Bcrypt/Argon2)
@@ -29,7 +30,8 @@ CREATE TABLE `users` (
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `email_UNIQUE` (`email` ASC)
+  UNIQUE INDEX `email_UNIQUE` (`email` ASC),
+  UNIQUE INDEX `document_UNIQUE` (`document_number` ASC)
 ) ENGINE=InnoDB;
 
 -- TABLA: ROLES

@@ -32,6 +32,7 @@ USE ${DB_NAME};
 CREATE TABLE IF NOT EXISTS \`users\` (
   \`id\` CHAR(36) NOT NULL,
   \`name\` VARCHAR(255) NOT NULL,
+  \`document_number\` VARCHAR(50) NULL,
   \`email\` VARCHAR(255) NULL,
   \`phone\` VARCHAR(50) NULL,
   \`password_hash\` VARCHAR(255) NULL,
@@ -40,7 +41,8 @@ CREATE TABLE IF NOT EXISTS \`users\` (
   \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
   \`updated_at\` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (\`id\`),
-  UNIQUE INDEX \`email_UNIQUE\` (\`email\` ASC)
+  UNIQUE INDEX \`email_UNIQUE\` (\`email\` ASC),
+  UNIQUE INDEX \`document_UNIQUE\` (\`document_number\` ASC)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS \`roles\` (
@@ -297,45 +299,61 @@ const seedDatabase = async () => {
         console.log('\n👤 Procesando Administrador...');
         const adminData = {
             email: 'admin@aquanova.com',
+            document_number: '1000000000', // Documento por defecto para el admin
             password: 'admin123', // ¡Cámbiala por una segura!
             name: 'Super Administrador'
         };
 
         const [existingUser] = await connection.query(
-            'SELECT id FROM users WHERE email = ?', 
-            [adminData.email]
+            'SELECT id FROM users WHERE document_number = ?', 
+            [adminData.document_number]
         );
 
         if (existingUser.length > 0) {
-            console.log(`⚠️  El usuario ${adminData.email} ya existe. No se realizaron cambios.`);
+            console.log(`⚠️  El usuario con documento ${adminData.document_number} ya existe. No se realizaron cambios.`);
         } else {
-            // Iniciar transacción para el usuario
-            await connection.beginTransaction();
-            try {
-                const salt = await bcrypt.genSalt(10);
-                const passwordHash = await bcrypt.hash(adminData.password, salt);
-                const userId = uuidv4();
+            // Verificar si existe por email (caso de migración o datos antiguos)
+            const [userByEmail] = await connection.query(
+                'SELECT id FROM users WHERE email = ?', 
+                [adminData.email]
+            );
 
-                // Insertar Usuario
-                const userQuery = `
-                    INSERT INTO users (id, name, email, password_hash, is_active, created_at) 
-                    VALUES (?, ?, ?, ?, 1, NOW())
-                `;
-                await connection.query(userQuery, [userId, adminData.name, adminData.email, passwordHash]);
+            if (userByEmail.length > 0) {
+                console.log(`🔄 Usuario encontrado por email (${adminData.email}) pero sin documento. Actualizando...`);
+                await connection.query(
+                    'UPDATE users SET document_number = ? WHERE id = ?',
+                    [adminData.document_number, userByEmail[0].id]
+                );
+                console.log(`✅ Documento actualizado para el admin.`);
+            } else {
+                // Iniciar transacción para crear usuario nuevo
+                await connection.beginTransaction();
+                try {
+                    const salt = await bcrypt.genSalt(10);
+                    const passwordHash = await bcrypt.hash(adminData.password, salt);
+                    const userId = uuidv4();
 
-                // Asignar Rol de Administrador (ID 1, sin barrio específico)
-                const roleQuery = `
-                    INSERT INTO user_roles (user_id, role_id, neighborhood_id) 
-                    VALUES (?, 1, NULL)
-                `;
-                await connection.query(roleQuery, [userId]);
+                    // Insertar Usuario
+                    const userQuery = `
+                        INSERT INTO users (id, name, document_number, email, password_hash, is_active, created_at) 
+                        VALUES (?, ?, ?, ?, ?, 1, NOW())
+                    `;
+                    await connection.query(userQuery, [userId, adminData.name, adminData.document_number, adminData.email, passwordHash]);
 
-                await connection.commit();
-                console.log(`✅ Administrador creado correctamente.`);
-            } catch (err) {
-                await connection.rollback();
-                console.error('❌ Error creando admin, revirtiendo cambios...', err);
-                throw err;
+                    // Asignar Rol de Administrador (ID 1, sin barrio específico)
+                    const roleQuery = `
+                        INSERT INTO user_roles (user_id, role_id, neighborhood_id) 
+                        VALUES (?, 1, NULL)
+                    `;
+                    await connection.query(roleQuery, [userId]);
+
+                    await connection.commit();
+                    console.log(`✅ Administrador creado correctamente.`);
+                } catch (err) {
+                    await connection.rollback();
+                    console.error('❌ Error creando admin, revirtiendo cambios...', err);
+                    throw err;
+                }
             }
         }
 
@@ -393,7 +411,8 @@ const seedDatabase = async () => {
         console.log('=============================================');
         console.log(`🏙️  Barrio ID:      ${neighborhoodId}`);
         console.log(`📝  Formulario ID:  ${formId}`);
-        console.log(`👤  Usuario:        ${adminData.email} / ${adminData.password}`);
+        console.log(`👤  Usuario (Doc):  ${adminData.document_number}`);
+        console.log(`🔑  Contraseña:     ${adminData.password}`);
         console.log('=============================================\n');
 
         console.log('\n✨ Proceso de inicialización completado exitosamente.');

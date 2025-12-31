@@ -2,16 +2,16 @@
 const pool = require('../config/db');
 
 const UserModel = {
-    // 1. Buscar para Login (Ya lo tenías)
-    async findByEmailWithRole(email) {
+    // 1. Buscar para Login (Por Documento)
+    async findByDocumentWithRole(document_number) {
         const query = `
-            SELECT u.id, u.name, u.email, u.password_hash, u.is_active, ur.role_id, r.name as role_name
+            SELECT u.id, u.name, u.email, u.document_number, u.password_hash, u.is_active, ur.role_id, r.name as role_name
             FROM users u
             LEFT JOIN user_roles ur ON u.id = ur.user_id
             LEFT JOIN roles r ON ur.role_id = r.id
-            WHERE u.email = ? AND u.is_active = 1
+            WHERE u.document_number = ? AND u.is_active = 1
         `;
-        const [rows] = await pool.query(query, [email]);
+        const [rows] = await pool.query(query, [document_number]);
         return rows[0];
     },
 
@@ -21,6 +21,7 @@ const UserModel = {
             SELECT 
                 u.id, 
                 u.name, 
+                u.document_number,
                 u.email, 
                 u.phone, 
                 u.is_active, 
@@ -44,7 +45,7 @@ const UserModel = {
 
     // 3. Crear Usuario (¡Usa Transacción!)
     async create(userData) {
-        const { id, name, email, password_hash, role_id, neighborhood_id } = userData;
+        const { id, name, document_number, email, password_hash, role_id, neighborhood_id } = userData;
         
         const connection = await pool.getConnection(); // Obtener conexión exclusiva
         try {
@@ -52,10 +53,10 @@ const UserModel = {
 
             // A. Insertar Usuario
             const queryUser = `
-                INSERT INTO users (id, name, email, password_hash, is_active, created_at) 
-                VALUES (?, ?, ?, ?, 1, NOW())
+                INSERT INTO users (id, name, document_number, email, password_hash, is_active, created_at) 
+                VALUES (?, ?, ?, ?, ?, 1, NOW())
             `;
-            await connection.query(queryUser, [id, name, email, password_hash]);
+            await connection.query(queryUser, [id, name, document_number, email, password_hash]);
 
             // B. Asignar Rol y Barrio (si aplica)
             const queryRole = `

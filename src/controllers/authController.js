@@ -5,18 +5,18 @@ const jwt = require('jsonwebtoken');
 
 const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { document_number, password } = req.body;
 
         // 1. Validar que enviaron datos
-        if (!email || !password) {
+        if (!document_number || !password) {
             return res.status(400).json({ 
                 ok: false, 
-                message: 'Por favor envíe email y contraseña' 
+                message: 'Por favor envíe número de documento y contraseña' 
             });
         }
 
         // 2. Buscar usuario en BD (SQL Directo)
-        const user = await UserModel.findByEmailWithRole(email);
+        const user = await UserModel.findByDocumentWithRole(document_number);
 
         if (!user) {
             return res.status(401).json({ 
@@ -55,6 +55,7 @@ const login = async (req, res) => {
             user: {
                 id: user.id,
                 name: user.name,
+                document_number: user.document_number,
                 email: user.email,
                 role: user.role_name // 'administrador'
             }
