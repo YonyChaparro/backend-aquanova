@@ -16,14 +16,23 @@ const generateSlug = (text) => {
 // CREAR FORMULARIO (ADMIN)
 const createForm = async (req, res) => {
     try {
-        const { title, description, schema } = req.body;
+        const { title, description, schema, neighborhood_id } = req.body;
         const adminId = req.user.uid;
 
         // Validaciones
-        if (!title || !schema) {
+        if (!title || !schema || !neighborhood_id) {
             return res.status(400).json({ 
                 ok: false, 
-                message: 'Faltan datos: title y schema (array de preguntas) son obligatorios' 
+                message: 'Faltan datos: title, schema (array de preguntas) y neighborhood_id son obligatorios' 
+            });
+        }
+
+        // Verificar que el barrio existe
+        const neighborhoodExists = await FormModel.checkNeighborhoodExists(neighborhood_id);
+        if (!neighborhoodExists) {
+            return res.status(404).json({ 
+                ok: false, 
+                message: 'El barrio especificado no existe' 
             });
         }
 
@@ -39,13 +48,14 @@ const createForm = async (req, res) => {
             title,
             description,
             schema, // Aquí viene el JSON de las preguntas
-            adminId
+            adminId,
+            neighborhood_id
         });
 
         res.status(201).json({
             ok: true,
             message: 'Formulario y Versión 1 creados exitosamente',
-            data: { id: formId, key, title }
+            data: { id: formId, key, title, neighborhood_id }
         });
 
     } catch (error) {

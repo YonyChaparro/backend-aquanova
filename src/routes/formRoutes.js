@@ -16,7 +16,45 @@ router.use(verifyToken);
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de formularios disponibles
+ *         description: Lista de formularios disponibles con estado de activación y barrios relacionados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 forms:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       key:
+ *                         type: string
+ *                       title:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *                       is_active:
+ *                         type: boolean
+ *                         description: Indica si el formulario está activo o inactivo
+ *                       created_by:
+ *                         type: string
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                       neighborhoods:
+ *                         type: array
+ *                         description: Barrios donde está publicado el formulario
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             id:
+ *                               type: string
+ *                             name:
+ *                               type: string
  */
 // Listar (Todos los roles)
 router.get('/', getForms);
@@ -48,7 +86,7 @@ router.get('/:id', getFormDetail);
  * @swagger
  * /forms:
  *   post:
- *     summary: Crear un nuevo formulario
+ *     summary: Crear un nuevo formulario ligado a un barrio
  *     tags: [Forms]
  *     security:
  *       - bearerAuth: []
@@ -60,19 +98,50 @@ router.get('/:id', getFormDetail);
  *             type: object
  *             required:
  *               - title
- *               - description
  *               - schema
+ *               - neighborhood_id
  *             properties:
  *               title:
  *                 type: string
+ *                 description: Título del formulario
  *               description:
  *                 type: string
+ *                 description: Descripción del formulario (opcional)
+ *               neighborhood_id:
+ *                 type: string
+ *                 description: ID del barrio donde se publicará el formulario (requerido)
  *               schema:
- *                 type: object
- *                 description: Estructura JSON del formulario
+ *                 type: array
+ *                 description: Estructura JSON del formulario con las preguntas
+ *                 items:
+ *                   type: object
  *     responses:
  *       201:
  *         description: Formulario creado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     key:
+ *                       type: string
+ *                     title:
+ *                       type: string
+ *                     neighborhood_id:
+ *                       type: string
+ *       400:
+ *         description: Faltan datos requeridos o el barrio no existe
+ *       404:
+ *         description: El barrio especificado no existe
  */
 // Crear (Solo Admin - Rol ID 1)
 router.post('/', authorize([1]), createForm);

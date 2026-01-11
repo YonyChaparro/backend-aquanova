@@ -1,0 +1,168 @@
+// src/routes/neighborhoodRoutes.js
+const express = require('express');
+const router = express.Router();
+const verifyToken = require('../middlewares/authMiddleware');
+const authorize = require('../middlewares/roleMiddleware');
+const { createNeighborhood, getNeighborhoods, getNeighborhoodDetail } = require('../controllers/neighborhoodController');
+
+router.use(verifyToken);
+
+/**
+ * @swagger
+ * /neighborhoods:
+ *   get:
+ *     summary: Listar todos los barrios
+ *     tags: [Neighborhoods]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de barrios disponibles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 neighborhoods:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       code:
+ *                         type: string
+ *                       parent_id:
+ *                         type: string
+ *                         nullable: true
+ *                       metadata:
+ *                         type: object
+ *                         nullable: true
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+	*             examples:
+	*               default:
+	*                 value:
+	*                   ok: true
+	*                   neighborhoods:
+	*                     - id: "uuid-barrio-1"
+	*                       name: "Barrio Centro"
+	*                       code: "CENTRO-001"
+	*                       parent_id: null
+	*                       metadata: { poblacion: 12000 }
+	*                       created_at: "2026-01-10T10:00:00.000Z"
+	*                     - id: "uuid-barrio-2"
+	*                       name: "Barrio Norte"
+	*                       code: "NORTE-002"
+	*                       parent_id: "uuid-barrio-1"
+	*                       metadata: null
+	*                       created_at: "2026-01-10T11:00:00.000Z"
+	*       500:
+	*         description: Error al listar barrios
+ */
+router.get('/', getNeighborhoods);
+
+/**
+ * @swagger
+ * /neighborhoods/{id}:
+ *   get:
+ *     summary: Obtener detalle de un barrio
+ *     tags: [Neighborhoods]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del barrio
+ *     responses:
+ *       200:
+ *         description: Detalle del barrio
+ *       404:
+ *         description: Barrio no encontrado
+ */
+router.get('/:id', getNeighborhoodDetail);
+
+/**
+ * @swagger
+ * /neighborhoods:
+ *   post:
+ *     summary: Crear un nuevo barrio
+ *     tags: [Neighborhoods]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - code
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nombre del barrio (requerido)
+ *               code:
+ *                 type: string
+ *                 description: Código único del barrio, catastral o interno (requerido)
+ *               parent_id:
+ *                 type: string
+ *                 description: ID del barrio padre (opcional, para jerarquías)
+ *               metadata:
+ *                 type: object
+ *                 description: Datos adicionales como población estimada, estrato, etc. (opcional)
+ *     responses:
+ *       201:
+ *         description: Barrio creado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     code:
+ *                       type: string
+ *                     parent_id:
+ *                       type: string
+ *                     metadata:
+ *                       type: object
+	*             examples:
+	*               default:
+	*                 value:
+	*                   ok: true
+	*                   message: "Barrio creado exitosamente"
+	*                   data:
+	*                     id: "uuid-barrio-3"
+	*                     name: "Barrio Sur"
+	*                     code: "SUR-003"
+	*                     parent_id: null
+	*                     metadata: { estrato: 3 }
+ *       400:
+ *         description: Faltan datos requeridos o el código ya existe
+ *       404:
+ *         description: El barrio padre especificado no existe
+	*       500:
+	*         description: Error interno al crear barrio
+ */
+router.post('/', authorize([1]), createNeighborhood);
+
+module.exports = router;

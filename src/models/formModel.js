@@ -6,7 +6,7 @@ const FormModel = {
     // 1. Crear Formulario + Versión 1 (Transacción)
     async createWithVersion(formData) {
         const { 
-            formId, versionId, key, title, description, schema, adminId 
+            formId, versionId, key, title, description, schema, adminId, neighborhood_id
         } = formData;
 
         const connection = await pool.getConnection();
@@ -29,6 +29,14 @@ const FormModel = {
             `;
             await connection.query(queryVersion, [versionId, formId, JSON.stringify(schema), adminId]);
 
+            // C. Insertar la publicación en el barrio especificado (Tabla form_publications)
+            const publicationId = require('uuid').v4();
+            const queryPublication = `
+                INSERT INTO form_publications (id, form_version_id, neighborhood_id, start_at, is_active)
+                VALUES (?, ?, ?, NOW(), 1)
+            `;
+            await connection.query(queryPublication, [publicationId, versionId, neighborhood_id]);
+
             await connection.commit();
             return true;
 
@@ -40,14 +48,36 @@ const FormModel = {
         }
     },
 
+    // Validar que un barrio existe
+    async checkNeighborhoodExists(neighborhoodId) {
+        const query = `SELECT id FROM neighborhoods WHERE id = ?`;
+        const [rows] = await pool.query(query, [neighborhoodId]);
+        return rows.length > 0;
+    },
+
     // 2. Listar Formularios (Mostrando la última versión activa)
     async findAll() {
-        // Hacemos un JOIN para traer datos de la tabla forms
+        // Hacemos un JOIN para traer datos de la tabla forms y sus barrios publicados
         const query = `
-            SELECT f.id, f.key, f.title, f.description, f.created_at, u.name as created_by
+            SELECT 
+                f.id, 
+                f.key, 
+                f.title, 
+                f.description, 
+                f.is_active, 
+                f.created_at, 
+                u.name as created_by,
+                JSON_ARRAYAGG(
+                    JSON_OBJECT('id', n.id, 'name', n.name)
+                ) as neighborhoods
             FROM forms f
             JOIN users u ON f.created_by = u.id
+            LEFT JOIN form_publications fp ON f.id = (
+                SELECT form_id FROM form_versions WHERE id = fp.form_version_id
+            )
+            LEFT JOIN neighborhoods n ON fp.neighborhood_id = n.id
             WHERE f.is_active = 1
+            GROUP BY f.id
             ORDER BY f.created_at DESC
         `;
         const [rows] = await pool.query(query);
