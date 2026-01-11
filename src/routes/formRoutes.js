@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const verifyToken = require('../middlewares/authMiddleware');
 const authorize = require('../middlewares/roleMiddleware');
-const { createForm, getForms, getFormDetail } = require('../controllers/formController');
+const { createForm, getForms, getFormDetail, updateForm, deleteForm } = require('../controllers/formController');
 
 router.use(verifyToken);
 
@@ -55,6 +55,23 @@ router.use(verifyToken);
  *                               type: string
  *                             name:
  *                               type: string
+ *         examples:
+ *           default:
+ *             value:
+ *               ok: true
+ *               forms:
+ *                 - id: "uuid-form-1"
+ *                   key: "censo-barrial-8392"
+ *                   title: "Censo Barrial"
+ *                   description: "Encuesta de barrio"
+ *                   is_active: true
+ *                   created_by: "Admin User"
+ *                   created_at: "2026-01-10T10:00:00.000Z"
+ *                   neighborhoods:
+ *                     - id: "uuid-nei-1"
+ *                       name: "Barrio Centro"
+ *       500:
+ *         description: Error al listar formularios
  */
 // Listar (Todos los roles)
 router.get('/', getForms);
@@ -81,6 +98,123 @@ router.get('/', getForms);
  *         description: Formulario no encontrado
  */
 router.get('/:id', getFormDetail);
+
+/**
+ * @swagger
+ * /forms/{id}:
+ *   put:
+ *     summary: Actualizar un formulario (title, description, is_active)
+ *     tags: [Forms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del formulario a actualizar
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               is_active:
+ *                 type: boolean
+ *                 description: Cambia el estado activo/inactivo del formulario
+ *     responses:
+ *       200:
+ *         description: Formulario actualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     title:
+ *                       type: string
+ *                     description:
+ *                       type: string
+ *                     key:
+ *                       type: string
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *                     is_active:
+ *                       type: boolean
+ *             examples:
+ *               default:
+ *                 value:
+ *                   ok: true
+ *                   message: "Formulario actualizado exitosamente"
+ *                   data:
+ *                     id: "uuid-form-1"
+ *                     title: "Censo Barrial v2"
+ *                     description: "Encuesta de barrio actualizada"
+ *                     key: "censo-barrial-8392"
+ *                     created_at: "2026-01-10T10:00:00.000Z"
+ *                     is_active: true
+ *       400:
+ *         description: Datos inválidos o faltan campos
+ *       404:
+ *         description: Formulario no encontrado
+ *       500:
+ *         description: Error interno al actualizar formulario
+ */
+router.put('/:id', authorize([1]), updateForm);
+
+/**
+ * @swagger
+ * /forms/{id}:
+ *   delete:
+ *     summary: Desactivar (soft delete) un formulario
+ *     tags: [Forms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del formulario a desactivar
+ *     responses:
+ *       200:
+ *         description: Formulario desactivado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *             examples:
+ *               default:
+ *                 value:
+ *                   ok: true
+ *                   message: "Formulario desactivado exitosamente"
+ *       404:
+ *         description: Formulario no encontrado
+ *       500:
+ *         description: Error interno al desactivar formulario
+ */
+router.delete('/:id', authorize([1]), deleteForm);
 
 /**
  * @swagger

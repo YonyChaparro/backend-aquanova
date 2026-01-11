@@ -118,5 +118,64 @@ const getFormDetail = async (req, res) => {
     }
 };
 
+// ACTUALIZAR FORMULARIO (ADMIN)
+const updateForm = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, description, is_active } = req.body;
+
+        if (title === undefined && description === undefined && is_active === undefined) {
+            return res.status(400).json({
+                ok: false,
+                message: 'Debe enviar al menos un campo a actualizar (title, description, is_active)'
+            });
+        }
+
+        if (is_active !== undefined && typeof is_active !== 'boolean') {
+            return res.status(400).json({
+                ok: false,
+                message: 'is_active debe ser boolean'
+            });
+        }
+
+        const existing = await FormModel.findByIdAny(id);
+        if (!existing) {
+            return res.status(404).json({ ok: false, message: 'Formulario no encontrado' });
+        }
+
+        await FormModel.updateForm(id, { title, description, is_active });
+        const updated = await FormModel.findByIdAny(id);
+
+        res.json({
+            ok: true,
+            message: 'Formulario actualizado exitosamente',
+            data: updated
+        });
+
+    } catch (error) {
+        console.error('Error actualizando form:', error);
+        res.status(500).json({ ok: false, message: 'Error interno al actualizar formulario' });
+    }
+};
+
+// ELIMINAR (DESACTIVAR) FORMULARIO (ADMIN)
+const deleteForm = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const existing = await FormModel.findByIdAny(id);
+        if (!existing) {
+            return res.status(404).json({ ok: false, message: 'Formulario no encontrado' });
+        }
+
+        await FormModel.deactivateForm(id);
+        res.json({ ok: true, message: 'Formulario desactivado exitosamente' });
+
+    } catch (error) {
+        console.error('Error desactivando form:', error);
+        res.status(500).json({ ok: false, message: 'Error interno al desactivar formulario' });
+    }
+};
+
 // ¡No olvides agregarlo al exports!
-module.exports = { createForm, getForms, getFormDetail };
+module.exports = { createForm, getForms, getFormDetail, updateForm, deleteForm };

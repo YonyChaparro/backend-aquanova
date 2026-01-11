@@ -108,6 +108,76 @@ const query = `
         `;
         const [rows] = await pool.query(query, [id]);
         return rows[0];
+    },
+
+    // Buscar formulario por ID (incluye inactivos)
+    async findByIdAny(id) {
+        const query = `
+            SELECT f.id, f.title, f.description, f.key, f.created_at, f.is_active
+            FROM forms f
+            WHERE f.id = ?
+        `;
+        const [rows] = await pool.query(query, [id]);
+        return rows[0];
+    },
+
+    // Actualizar datos básicos del formulario
+    async updateForm(id, data) {
+        const fields = [];
+        const params = [];
+
+        if (data.title !== undefined) {
+            fields.push('title = ?');
+            params.push(data.title);
+        }
+        if (data.description !== undefined) {
+            fields.push('description = ?');
+            params.push(data.description);
+        }
+        if (data.is_active !== undefined) {
+            fields.push('is_active = ?');
+            params.push(data.is_active ? 1 : 0);
+        }
+
+        if (!fields.length) {
+            return false;
+        }
+
+        const query = `
+            UPDATE forms
+            SET ${fields.join(', ')}, updated_at = NOW()
+            WHERE id = ?
+        `;
+        params.push(id);
+        await pool.query(query, params);
+        return true;
+    },
+
+    // Desactivar (soft delete) formulario y sus publicaciones
+    async deactivateForm(id) {
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            await connection.query(`
+                UPDATE forms SET is_active = 0, updated_at = NOW() WHERE id = ?
+            `, [id]);
+
+            await connection.query(`
+                UPDATE form_publications fp
+                JOIN form_versions fv ON fp.form_version_id = fv.id
+                SET fp.is_active = 0
+                WHERE fv.form_id = ?
+            `, [id]);
+
+            await connection.commit();
+            return true;
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
     }
     
 };
