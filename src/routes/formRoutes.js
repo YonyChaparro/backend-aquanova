@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const verifyToken = require('../middlewares/authMiddleware');
 const authorize = require('../middlewares/roleMiddleware');
-const { createForm, getForms, getFormDetail, updateForm, deleteForm } = require('../controllers/formController');
+const { createForm, getForms, getFormDetail, updateForm, deleteForm, searchForms } = require('../controllers/formController');
 
 router.use(verifyToken);
 
@@ -75,6 +75,94 @@ router.use(verifyToken);
  */
 // Listar (Todos los roles)
 router.get('/', getForms);
+
+/**
+ * @swagger
+ * /forms/search:
+ *   get:
+ *     summary: Buscar formularios por título, descripción o barrio (query param)
+ *     tags: [Forms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Término de búsqueda (búsqueda parcial en título, descripción o nombre del barrio)
+ *     responses:
+ *       200:
+ *         description: Lista de formularios que coinciden con la búsqueda
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 forms:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       key:
+ *                         type: string
+ *                       title:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *                       is_active:
+ *                         type: boolean
+ *                       created_by:
+ *                         type: string
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                       neighborhoods:
+ *                         type: array
+ *                         description: Barrios asociados al formulario
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             id:
+ *                               type: string
+ *                             name:
+ *                               type: string
+ *             examples:
+ *               default:
+ *                 value:
+ *                   ok: true
+ *                   forms:
+ *                     - id: "uuid-form-example"
+ *                       key: "censo-2026-5555"
+ *                       title: "Censo 2026"
+ *                       description: "Formulario para recolección de datos demográficos"
+ *                       is_active: true
+ *                       created_by: "Admin User"
+ *                       created_at: "2026-01-14T12:00:00.000Z"
+ *                       neighborhoods:
+ *                         - id: "uuid-nei-1"
+ *                           name: "Barrio Los Pinos"
+ *       400:
+ *         description: No se envió el parámetro de búsqueda (query)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: 'Debe enviar un parámetro de búsqueda "query"'
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/search', searchForms);
 
 /**
  * @swagger

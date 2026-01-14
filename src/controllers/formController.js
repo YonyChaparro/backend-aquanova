@@ -177,5 +177,21 @@ const deleteForm = async (req, res) => {
     }
 };
 
+// BUSCAR FORMULARIOS
+const searchForms = async (req, res) => {
+    try {
+        const { query } = req.query; // ?query=termino
+        if (!query) {
+             return res.status(400).json({ ok: false, message: 'Debe enviar un parámetro de búsqueda "query"' });
+        }
+        
+        const forms = await FormModel.search(query);
+        res.json({ ok: true, forms });
+    } catch (error) {
+        console.error('Error en búsqueda de formularios:', error);
+        res.status(500).json({ ok: false, message: 'Error al buscar formularios' });
+    }
+};
+
 // ¡No olvides agregarlo al exports!
-module.exports = { createForm, getForms, getFormDetail, updateForm, deleteForm };
+module.exports = { createForm, getForms, getFormDetail, updateForm, deleteForm, searchForms };
