@@ -67,6 +67,25 @@ const NeighborhoodModel = {
         const query = `SELECT id FROM neighborhoods WHERE id = ?`;
         const [rows] = await pool.query(query, [parentId]);
         return rows.length > 0;
+    },
+
+    // 6. Buscar Barrios
+    async search(searchTerm) {
+        const query = `
+            SELECT 
+                id, 
+                name, 
+                code, 
+                parent_id, 
+                metadata,
+                created_at
+            FROM neighborhoods
+            WHERE name LIKE ? OR code LIKE ?
+            ORDER BY name ASC
+        `;
+        const wild = `%${searchTerm}%`;
+        const [rows] = await pool.query(query, [wild, wild]);
+        return rows;
     }
 
 };

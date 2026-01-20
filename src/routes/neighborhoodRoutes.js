@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const verifyToken = require('../middlewares/authMiddleware');
 const authorize = require('../middlewares/roleMiddleware');
-const { createNeighborhood, getNeighborhoods, getNeighborhoodDetail } = require('../controllers/neighborhoodController');
+const { createNeighborhood, getNeighborhoods, getNeighborhoodDetail, searchNeighborhoods } = require('../controllers/neighborhoodController');
 
 router.use(verifyToken);
 
@@ -66,6 +66,58 @@ router.use(verifyToken);
 	*         description: Error al listar barrios
  */
 router.get('/', getNeighborhoods);
+
+/**
+ * @swagger
+ * /neighborhoods/search:
+ *   get:
+ *     summary: Buscar barrios por nombre o código
+ *     tags: [Neighborhoods]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Término de búsqueda (nombre o código)
+ *     responses:
+ *       200:
+ *         description: Lista de barrios encontrados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 neighborhoods:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       name:
+ *                         type: string
+ *                       code:
+ *                         type: string
+ *                       parent_id:
+ *                         type: string
+ *                         nullable: true
+ *                       metadata:
+ *                         type: object
+ *                         nullable: true
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *       400:
+ *         description: Falta parámetro query
+ *       500:
+ *         description: Error en el servidor
+ */
+router.get('/search', searchNeighborhoods);
 
 /**
  * @swagger

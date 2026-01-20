@@ -117,4 +117,20 @@ const getNeighborhoodDetail = async (req, res) => {
     }
 };
 
-module.exports = { createNeighborhood, getNeighborhoods, getNeighborhoodDetail };
+// BUSCAR BARRIOS
+const searchNeighborhoods = async (req, res) => {
+    try {
+        const { query } = req.query; // ?query=termino
+        if (!query) {
+             return res.status(400).json({ ok: false, message: 'Debe enviar un parámetro de búsqueda "query"' });
+        }
+        
+        const neighborhoods = await NeighborhoodModel.search(query);
+        res.json({ ok: true, neighborhoods });
+    } catch (error) {
+        console.error('Error en búsqueda de barrios:', error);
+        res.status(500).json({ ok: false, message: 'Error al buscar barrios' });
+    }
+};
+
+module.exports = { createNeighborhood, getNeighborhoods, getNeighborhoodDetail, searchNeighborhoods };
