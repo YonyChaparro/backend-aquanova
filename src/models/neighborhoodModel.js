@@ -86,6 +86,25 @@ const NeighborhoodModel = {
         const wild = `%${searchTerm}%`;
         const [rows] = await pool.query(query, [wild, wild]);
         return rows;
+    },
+
+    // 7. Obtener jerarquía recursiva (Barrio -> Padre -> Abuelo...)
+    async findHierarchy(id) {
+        // CTE Recursiva para traer ancestros
+        const query = `
+            WITH RECURSIVE genealogy AS (
+                SELECT id, name, code, parent_id, metadata, created_at, 0 AS depth
+                FROM neighborhoods
+                WHERE id = ?
+                UNION ALL
+                SELECT n.id, n.name, n.code, n.parent_id, n.metadata, n.created_at, g.depth + 1
+                FROM neighborhoods n
+                INNER JOIN genealogy g ON n.id = g.parent_id
+            )
+            SELECT * FROM genealogy ORDER BY depth ASC;
+        `;
+        const [rows] = await pool.query(query, [id]);
+        return rows;
     }
 
 };

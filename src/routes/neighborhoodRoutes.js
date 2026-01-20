@@ -121,9 +121,36 @@ router.get('/search', searchNeighborhoods);
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     NeighborhoodNode:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *         name:
+ *           type: string
+ *         code:
+ *           type: string
+ *         type:
+ *           type: string
+ *           description: "Tipo calculado: 'Ciudad', 'Localidad', 'Barrio' u 'Otro'"
+ *         parent_id:
+ *           type: string
+ *           nullable: true
+ *         metadata:
+ *           type: object
+ *           nullable: true
+ *         parent:
+ *           $ref: '#/components/schemas/NeighborhoodNode'
+ *           description: "Objeto padre (recursivo)"
+ */
+
+/**
+ * @swagger
  * /neighborhoods/{id}:
  *   get:
- *     summary: Obtener detalle de un barrio
+ *     summary: Obtener detalle de un barrio (con jerarquía recursiva)
  *     tags: [Neighborhoods]
  *     security:
  *       - bearerAuth: []
@@ -136,7 +163,40 @@ router.get('/search', searchNeighborhoods);
  *         description: ID del barrio
  *     responses:
  *       200:
- *         description: Detalle del barrio
+ *         description: Detalle del barrio incluyendo su jerarquía completa
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/NeighborhoodNode'
+ *             examples:
+ *               JerarquiaCompleta:
+ *                 value:
+ *                   ok: true
+ *                   data:
+ *                     id: "uuid-barrio"
+ *                     name: "Barrio San Juan"
+ *                     code: "BSJ-01"
+ *                     type: "Barrio"
+ *                     parent_id: "uuid-localidad"
+ *                     metadata: null
+ *                     parent:
+ *                       id: "uuid-localidad"
+ *                       name: "Localidad Norte"
+ *                       code: "LOC-N"
+ *                       type: "Localidad"
+ *                       parent_id: "uuid-ciudad"
+ *                       parent:
+ *                         id: "uuid-ciudad"
+ *                         name: "Ciudad Capital"
+ *                         code: "CAP-01"
+ *                         type: "Ciudad"
+ *                         parent_id: null
+ *                         parent: null
  *       404:
  *         description: Barrio no encontrado
  */

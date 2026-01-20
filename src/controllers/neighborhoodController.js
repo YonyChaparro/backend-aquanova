@@ -94,14 +94,57 @@ const getNeighborhoodDetail = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const neighborhood = await NeighborhoodModel.findById(id);
+        // Recuperar jerarquía (Barrio actual -> Padre -> Abuelo ...)
+        const hierarchy = await NeighborhoodModel.findHierarchy(id);
 
-        if (!neighborhood) {
+        if (!hierarchy || hierarchy.length === 0) {
             return res.status(404).json({
                 ok: false,
                 message: 'Barrio no encontrado'
             });
         }
+
+        // El primer elemento es el barrio solicitado
+        const neighborhood = hierarchy[0];
+        
+        // Calcular el tipo basado en la profundidad de ancestros (hierarchy.length - 1)
+        // 0 padres -> Ciudad
+        // 1 padre -> Localidad
+        // 2+ padres -> Barrio
+        const parentsCount = hierarchy.length - 1;
+        let type = 'Otro';
+        if (parentsCount === 0) type = 'Ciudad';
+        else if (parentsCount === 1) type = 'Localidad';
+        else if (parentsCount >= 2) type = 'Barrio';
+
+        neighborhood.type = type;
+
+        // Construir la estructura anidada del parent
+        // hierarchy[0] -> parent = hierarchy[1] -> parent = hierarchy[2] ...
+        let currentLevel = neighborhood;
+        for (let i = 1; i < hierarchy.length; i++) {
+            const parent = hierarchy[i];
+            
+            // Calculamos también el tipo del padre (opcional, pero útil)
+            const parentDepth = (hierarchy.length - 1) - i; // Profundidad inversa relativa
+            // O simplemente usamos la regla absoluta:
+            // SI el padre es el último de la lista (índice hierarchy.length-1), es Ciudad.
+            // Pero para simplificar, solo anidamos los datos crudos o agregamos el tipo también si queremos
+            
+            let parentType = 'Otro';
+            if (i === hierarchy.length - 1) parentType = 'Ciudad'; // El más alto es Ciudad
+            else if (i === hierarchy.length - 2) parentType = 'Localidad';
+            
+            parent.type = parentType;
+
+            currentLevel.parent = parent; // Asignamos el objeto completo como "parent"
+            currentLevel = parent;        // Bajamos un nivel para la siguiente iteración
+        }
+
+        // Limpiamos el parent_id plano para evitar confusión, ya que ahora tenemos el objeto parent
+        // O lo dejamos por compatibilidad. El requerimiento dice: "el parentid debe traer un json..."
+        // Así que reemplazaremos o complementaremos. 
+        // Para ser limpios, dejaremos 'parent' como la estructura rica.
 
         res.json({
             ok: true,
