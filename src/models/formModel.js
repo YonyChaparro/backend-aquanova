@@ -67,7 +67,14 @@ const FormModel = {
                 f.created_at, 
                 u.name as created_by,
                 JSON_ARRAYAGG(
-                    JSON_OBJECT('id', n.id, 'name', n.name)
+                    JSON_OBJECT(
+                        'id', n.id, 
+                        'name', n.name,
+                        'code', n.code,
+                        'parent_id', n.parent_id,
+                        'metadata', n.metadata,
+                        'created_at', n.created_at
+                    )
                 ) as neighborhoods
             FROM forms f
             JOIN users u ON f.created_by = u.id
@@ -97,7 +104,14 @@ const FormModel = {
                 f.created_at, 
                 u.name as created_by,
                 JSON_ARRAYAGG(
-                    JSON_OBJECT('id', n.id, 'name', n.name)
+                    JSON_OBJECT(
+                        'id', n.id, 
+                        'name', n.name,
+                        'code', n.code,
+                        'parent_id', n.parent_id,
+                        'metadata', n.metadata,
+                        'created_at', n.created_at
+                    )
                 ) as neighborhoods
             FROM forms f
             JOIN users u ON f.created_by = u.id

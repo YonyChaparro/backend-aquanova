@@ -55,6 +55,17 @@ router.use(verifyToken);
  *                               type: string
  *                             name:
  *                               type: string
+ *                             code:
+ *                               type: string
+ *                             parent_id:
+ *                               type: string
+ *                               nullable: true
+ *                             metadata:
+ *                               type: object
+ *                               nullable: true
+ *                             created_at:
+ *                               type: string
+ *                               format: date-time
  *         examples:
  *           default:
  *             value:
@@ -70,6 +81,10 @@ router.use(verifyToken);
  *                   neighborhoods:
  *                     - id: "uuid-nei-1"
  *                       name: "Barrio Centro"
+ *                       code: "CEN-01"
+ *                       parent_id: null
+ *                       metadata: null
+ *                       created_at: "2026-01-10T10:00:00.000Z"
  *       500:
  *         description: Error al listar formularios
  */
@@ -131,6 +146,17 @@ router.get('/', getForms);
  *                               type: string
  *                             name:
  *                               type: string
+ *                             code:
+ *                               type: string
+ *                             parent_id:
+ *                               type: string
+ *                               nullable: true
+ *                             metadata:
+ *                               type: object
+ *                               nullable: true
+ *                             created_at:
+ *                               type: string
+ *                               format: date-time
  *             examples:
  *               default:
  *                 value:
@@ -146,6 +172,10 @@ router.get('/', getForms);
  *                       neighborhoods:
  *                         - id: "uuid-nei-1"
  *                           name: "Barrio Los Pinos"
+ *                           code: "LPN-01"
+ *                           parent_id: null
+ *                           metadata: null
+ *                           created_at: "2026-01-10T10:00:00.000Z"
  *       400:
  *         description: No se envió el parámetro de búsqueda (query)
  *         content:
