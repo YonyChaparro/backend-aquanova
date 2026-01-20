@@ -221,7 +221,7 @@ router.get('/:id', getFormDetail);
  * @swagger
  * /forms/{id}:
  *   put:
- *     summary: Actualizar un formulario (title, description, is_active)
+ *     summary: Actualizar un formulario (datos básicos o esquema de preguntas)
  *     tags: [Forms]
  *     security:
  *       - bearerAuth: []
@@ -241,14 +241,51 @@ router.get('/:id', getFormDetail);
  *             properties:
  *               title:
  *                 type: string
+ *                 description: Nuevo título del formulario
  *               description:
  *                 type: string
  *               is_active:
  *                 type: boolean
  *                 description: Cambia el estado activo/inactivo del formulario
+ *               schema:
+ *                 type: array
+ *                 description: Si se envía, crea una nueva versión con estas preguntas
+ *                 items:
+ *                   type: object
+ *           examples:
+ *             DatosBasicos:
+ *               summary: Editar Título, Descripción y Estado
+ *               value:
+ *                 title: "Censo Barrial 2026 - Corregido"
+ *                 description: "Actualización de la descripción: Encuesta enfocada en servicios públicos."
+ *                 is_active: true
+ *             SoloDescripcion:
+ *               summary: Editar solo la descripción
+ *               value:
+ *                 description: "Nueva descripción detallada para el formulario."
+ *             NuevasPreguntas:
+ *               summary: Actualizar esquema de preguntas (Genera Versión)
+ *               value:
+ *                 schema:
+ *                   - type: "text"
+ *                     label: "¿Nombre del encuestado?"
+ *                     name: "nombre_encuestado"
+ *                   - type: "number"
+ *                     label: "¿Cuántas personas viven aquí?"
+ *                     name: "num_habitantes"
+ *             TodoJunto:
+ *               summary: Actualizar Todo (Datos + Preguntas)
+ *               value:
+ *                 title: "Encuesta Completa V2"
+ *                 description: "Revisión total del formulario."
+ *                 is_active: true
+ *                 schema:
+ *                   - type: "text"
+ *                     label: "¿Observaciones?"
+ *                     name: "obs"
  *     responses:
  *       200:
- *         description: Formulario actualizado
+ *         description: Formulario actualizado (y nueva versión creada si se envió schema)
  *         content:
  *           application/json:
  *             schema:
@@ -265,33 +302,15 @@ router.get('/:id', getFormDetail);
  *                       type: string
  *                     title:
  *                       type: string
- *                     description:
- *                       type: string
- *                     key:
- *                       type: string
- *                     created_at:
- *                       type: string
- *                       format: date-time
- *                     is_active:
- *                       type: boolean
- *             examples:
- *               default:
- *                 value:
- *                   ok: true
- *                   message: "Formulario actualizado exitosamente"
- *                   data:
- *                     id: "uuid-form-1"
- *                     title: "Censo Barrial v2"
- *                     description: "Encuesta de barrio actualizada"
- *                     key: "censo-barrial-8392"
- *                     created_at: "2026-01-10T10:00:00.000Z"
- *                     is_active: true
+ *                     version:
+ *                       type: integer
+ *                       description: Número de la nueva versión (si se actualizó esquema)
  *       400:
  *         description: Datos inválidos o faltan campos
  *       404:
  *         description: Formulario no encontrado
  *       500:
- *         description: Error interno al actualizar formulario
+ *         description: Error interno
  */
 router.put('/:id', authorize([1]), updateForm);
 

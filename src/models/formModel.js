@@ -220,6 +220,53 @@ const query = `
         } finally {
             connection.release();
         }
+    },
+
+    // 7. Actualizar el esquema de preguntas (Crea una nueva versión)
+    async updateSchema(formId, schema, adminId) {
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            // 1. Obtener el número de la última versión
+            const [rows] = await connection.query(
+                `SELECT MAX(version) as max_version FROM form_versions WHERE form_id = ?`,
+                [formId]
+            );
+            const nextVersion = (rows[0].max_version || 0) + 1;
+
+            // 2. Insertar la nueva versión
+            const versionId = require('uuid').v4();
+            const queryVersion = `
+                INSERT INTO form_versions (id, form_id, version, \`schema\`, created_by, status, created_at)
+                VALUES (?, ?, ?, ?, ?, 'published', NOW())
+            `;
+            await connection.query(queryVersion, [
+                versionId, 
+                formId, 
+                nextVersion, 
+                JSON.stringify(schema), 
+                adminId
+            ]);
+
+            // 3. Actualizar TODAS las publicaciones activas de este formulario para que apunten a la nueva versión
+            const queryUpdatePubs = `
+                UPDATE form_publications fp
+                JOIN form_versions fv ON fp.form_version_id = fv.id
+                SET fp.form_version_id = ?
+                WHERE fv.form_id = ? AND fp.is_active = 1
+            `;
+            await connection.query(queryUpdatePubs, [versionId, formId]);
+
+            await connection.commit();
+            return { version: nextVersion, versionId };
+
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
     }
     
 };

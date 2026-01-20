@@ -122,19 +122,13 @@ const getFormDetail = async (req, res) => {
 const updateForm = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, is_active } = req.body;
+        const { title, description, is_active, schema } = req.body;
+        const adminId = req.user.uid;
 
-        if (title === undefined && description === undefined && is_active === undefined) {
-            return res.status(400).json({
+        if (title === undefined && description === undefined && is_active === undefined && schema === undefined) {
+             return res.status(400).json({
                 ok: false,
-                message: 'Debe enviar al menos un campo a actualizar (title, description, is_active)'
-            });
-        }
-
-        if (is_active !== undefined && typeof is_active !== 'boolean') {
-            return res.status(400).json({
-                ok: false,
-                message: 'is_active debe ser boolean'
+                message: 'Debe enviar al menos un campo a actualizar (title, description, is_active, schema)'
             });
         }
 
@@ -143,13 +137,35 @@ const updateForm = async (req, res) => {
             return res.status(404).json({ ok: false, message: 'Formulario no encontrado' });
         }
 
-        await FormModel.updateForm(id, { title, description, is_active });
-        const updated = await FormModel.findByIdAny(id);
+        let message = 'Formulario actualizado exitosamente';
+        const responseData = { id };
+
+        // 1. Actualizar datos básicos
+        if (title !== undefined || description !== undefined || is_active !== undefined) {
+            if (is_active !== undefined && typeof is_active !== 'boolean') {
+                return res.status(400).json({ ok: false, message: 'is_active debe ser boolean' });
+            }
+            await FormModel.updateForm(id, { title, description, is_active });
+            
+            const updated = await FormModel.findByIdAny(id);
+            Object.assign(responseData, updated);
+        }
+
+        // 2. Actualizar esquema (Genera nueva versión)
+        if (schema) {
+            if (!Array.isArray(schema)) {
+                return res.status(400).json({ ok: false, message: 'schema debe ser un array de preguntas' });
+            }
+            const result = await FormModel.updateSchema(id, schema, adminId);
+            responseData.version = result.version;
+            responseData.versionId = result.versionId;
+            message += ` y nueva versión ${result.version} creada`;
+        }
 
         res.json({
             ok: true,
-            message: 'Formulario actualizado exitosamente',
-            data: updated
+            message,
+            data: responseData
         });
 
     } catch (error) {
