@@ -105,6 +105,45 @@ const NeighborhoodModel = {
         `;
         const [rows] = await pool.query(query, [id]);
         return rows;
+    },
+
+    // 8. Actualizar Barrio
+    async update(id, updateData) {
+        const { name, code, parent_id, metadata } = updateData;
+        const query = `
+            UPDATE neighborhoods 
+            SET name = ?, code = ?, parent_id = ?, metadata = ?, updated_at = NOW()
+            WHERE id = ?
+        `;
+        await pool.query(query, [
+            name,
+            code,
+            parent_id || null,
+            metadata ? JSON.stringify(metadata) : null,
+            id
+        ]);
+        return true;
+    },
+
+    // 9. Eliminar Barrio
+    async delete(id) {
+        const query = `DELETE FROM neighborhoods WHERE id = ?`;
+        await pool.query(query, [id]);
+        return true;
+    },
+
+    // 10. Verificar si un barrio tiene hijos
+    async hasChildren(parentId) {
+        const query = `SELECT id FROM neighborhoods WHERE parent_id = ? LIMIT 1`;
+        const [rows] = await pool.query(query, [parentId]);
+        return rows.length > 0;
+    },
+
+    // 11. Verificar si un código existe excluyendo un ID específico
+    async findByCodeExcluding(code, excludeId) {
+        const query = `SELECT id FROM neighborhoods WHERE code = ? AND id != ?`;
+        const [rows] = await pool.query(query, [code, excludeId]);
+        return rows.length > 0;
     }
 
 };

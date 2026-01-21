@@ -176,4 +176,140 @@ const searchNeighborhoods = async (req, res) => {
     }
 };
 
-module.exports = { createNeighborhood, getNeighborhoods, getNeighborhoodDetail, searchNeighborhoods };
+// EDITAR BARRIO (ADMIN)
+const updateNeighborhood = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, code, parent_id, metadata } = req.body;
+
+        // Verificar que el barrio existe
+        const existingNeighborhood = await NeighborhoodModel.findById(id);
+        if (!existingNeighborhood) {
+            return res.status(404).json({
+                ok: false,
+                message: 'Barrio no encontrado'
+            });
+        }
+
+        // Validar que al menos un campo venga para actualizar
+        if (!name && !code && parent_id === undefined && metadata === undefined) {
+            return res.status(400).json({
+                ok: false,
+                message: 'Debe enviar al menos un campo para actualizar (name, code, parent_id o metadata)'
+            });
+        }
+
+        // Si se intenta actualizar el código, verificar que no exista otro con ese código
+        if (code && code !== existingNeighborhood.code) {
+            const codeExists = await NeighborhoodModel.findByCodeExcluding(code, id);
+            if (codeExists) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Ya existe otro barrio con ese código'
+                });
+            }
+        }
+
+        // Si hay parent_id, verificar que existe y que no sea el mismo barrio
+        if (parent_id) {
+            if (parent_id === id) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Un barrio no puede ser su propio padre'
+                });
+            }
+            const parentExists = await NeighborhoodModel.checkParentExists(parent_id);
+            if (!parentExists) {
+                return res.status(404).json({
+                    ok: false,
+                    message: 'El barrio padre especificado no existe'
+                });
+            }
+        }
+
+        // Construir objeto con datos a actualizar
+        const updateData = {
+            name: name || existingNeighborhood.name,
+            code: code || existingNeighborhood.code,
+            parent_id: parent_id !== undefined ? (parent_id || null) : existingNeighborhood.parent_id,
+            metadata: metadata !== undefined ? metadata : existingNeighborhood.metadata
+        };
+
+        await NeighborhoodModel.update(id, updateData);
+
+        res.json({
+            ok: true,
+            message: 'Barrio actualizado exitosamente',
+            data: {
+                id,
+                ...updateData
+            }
+        });
+
+    } catch (error) {
+        console.error('Error actualizando barrio:', error);
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({
+                ok: false,
+                message: 'Ya existe un barrio con ese código'
+            });
+        }
+        res.status(500).json({
+            ok: false,
+            message: 'Error interno al actualizar barrio'
+        });
+    }
+};
+
+// ELIMINAR BARRIO (ADMIN)
+const deleteNeighborhood = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Verificar que el barrio existe
+        const existingNeighborhood = await NeighborhoodModel.findById(id);
+        if (!existingNeighborhood) {
+            return res.status(404).json({
+                ok: false,
+                message: 'Barrio no encontrado'
+            });
+        }
+
+        // Verificar que el barrio no tenga hijos (sub-barrios)
+        const hasChildren = await NeighborhoodModel.hasChildren(id);
+        if (hasChildren) {
+            return res.status(400).json({
+                ok: false,
+                message: 'No se puede eliminar el barrio porque tiene sub-barrios asociados. Elimine primero los sub-barrios.'
+            });
+        }
+
+        await NeighborhoodModel.delete(id);
+
+        res.json({
+            ok: true,
+            message: 'Barrio eliminado exitosamente',
+            data: {
+                id,
+                name: existingNeighborhood.name,
+                code: existingNeighborhood.code
+            }
+        });
+
+    } catch (error) {
+        console.error('Error eliminando barrio:', error);
+        // Verificar si hay restricciones de clave foránea (barrio usado en otras tablas)
+        if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+            return res.status(400).json({
+                ok: false,
+                message: 'No se puede eliminar el barrio porque está siendo utilizado en otros registros'
+            });
+        }
+        res.status(500).json({
+            ok: false,
+            message: 'Error interno al eliminar barrio'
+        });
+    }
+};
+
+module.exports = { createNeighborhood, getNeighborhoods, getNeighborhoodDetail, searchNeighborhoods, updateNeighborhood, deleteNeighborhood };

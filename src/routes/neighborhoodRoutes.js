@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const verifyToken = require('../middlewares/authMiddleware');
 const authorize = require('../middlewares/roleMiddleware');
-const { createNeighborhood, getNeighborhoods, getNeighborhoodDetail, searchNeighborhoods } = require('../controllers/neighborhoodController');
+const { createNeighborhood, getNeighborhoods, getNeighborhoodDetail, searchNeighborhoods, updateNeighborhood, deleteNeighborhood } = require('../controllers/neighborhoodController');
 
 router.use(verifyToken);
 
@@ -276,5 +276,142 @@ router.get('/:id', getNeighborhoodDetail);
 	*         description: Error interno al crear barrio
  */
 router.post('/', authorize([1]), createNeighborhood);
+
+/**
+ * @swagger
+ * /neighborhoods/{id}:
+ *   put:
+ *     summary: Actualizar un barrio existente
+ *     tags: [Neighborhoods]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del barrio a actualizar
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nuevo nombre del barrio
+ *               code:
+ *                 type: string
+ *                 description: Nuevo código único del barrio
+ *               parent_id:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Nuevo ID del barrio padre (null para quitar padre)
+ *               metadata:
+ *                 type: object
+ *                 nullable: true
+ *                 description: Nuevos datos adicionales
+ *     responses:
+ *       200:
+ *         description: Barrio actualizado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     code:
+ *                       type: string
+ *                     parent_id:
+ *                       type: string
+ *                       nullable: true
+ *                     metadata:
+ *                       type: object
+ *                       nullable: true
+ *             examples:
+ *               default:
+ *                 value:
+ *                   ok: true
+ *                   message: "Barrio actualizado exitosamente"
+ *                   data:
+ *                     id: "uuid-barrio-1"
+ *                     name: "Barrio Centro Actualizado"
+ *                     code: "CENTRO-001"
+ *                     parent_id: null
+ *                     metadata: { poblacion: 15000 }
+ *       400:
+ *         description: Datos inválidos o código duplicado
+ *       404:
+ *         description: Barrio no encontrado o padre no existe
+ *       500:
+ *         description: Error interno al actualizar barrio
+ */
+router.put('/:id', authorize([1]), updateNeighborhood);
+
+/**
+ * @swagger
+ * /neighborhoods/{id}:
+ *   delete:
+ *     summary: Eliminar un barrio
+ *     tags: [Neighborhoods]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del barrio a eliminar
+ *     responses:
+ *       200:
+ *         description: Barrio eliminado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     code:
+ *                       type: string
+ *             examples:
+ *               default:
+ *                 value:
+ *                   ok: true
+ *                   message: "Barrio eliminado exitosamente"
+ *                   data:
+ *                     id: "uuid-barrio-1"
+ *                     name: "Barrio Centro"
+ *                     code: "CENTRO-001"
+ *       400:
+ *         description: No se puede eliminar porque tiene sub-barrios o está siendo utilizado
+ *       404:
+ *         description: Barrio no encontrado
+ *       500:
+ *         description: Error interno al eliminar barrio
+ */
+router.delete('/:id', authorize([1]), deleteNeighborhood);
 
 module.exports = router;
