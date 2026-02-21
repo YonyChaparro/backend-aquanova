@@ -11,6 +11,7 @@ const userRoutes = require('./src/routes/userRoutes');
 const formRoutes = require('./src/routes/formRoutes');
 const submissionRoutes = require('./src/routes/submissionRoutes');
 const neighborhoodRoutes = require('./src/routes/neighborhoodRoutes');
+const mapRoutes = require('./src/routes/mapRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./src/config/swagger');
 
@@ -33,6 +34,7 @@ app.use('/api/users', userRoutes); // <--- NUEVO (Prefijo /api/users)
 app.use('/api/forms', formRoutes); // <--- NUEVO (Prefijo /api/forms)
 app.use('/api/submissions', submissionRoutes); // <--- NUEVO (Prefijo /api/submissions)
 app.use('/api/neighborhoods', neighborhoodRoutes); // <--- NUEVO (Prefijo /api/neighborhoods)
+app.use('/api/map', mapRoutes); // NUEVO (Prefijo /api/map)
 
 // Ruta base
 app.get('/', (req, res) => {

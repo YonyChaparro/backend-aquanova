@@ -281,3 +281,47 @@ INSERT INTO `roles` (`id`, `name`, `description`) VALUES
 -- 5. Reactivamos las protecciones (Buenas prácticas)
 SET FOREIGN_KEY_CHECKS = 1;
 SET SQL_SAFE_UPDATES = 1;
+
+-- ==========================================================
+-- SECCIÓN 7: GEMELO DIGITAL (CATASTRO / ACUEDUCTO)
+-- ==========================================================
+
+-- TABLA: BLOCKS (Manzanas)
+CREATE TABLE `blocks` (
+  `id` CHAR(36) NOT NULL,
+  `code` VARCHAR(50) NOT NULL,
+  `neighborhood_id` CHAR(36) NOT NULL,
+  `geom_path` TEXT NOT NULL,
+  `label_position` JSON NULL,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_block_neigh`
+    FOREIGN KEY (`neighborhood_id`) REFERENCES `neighborhoods` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- TABLA: LOTS (Predios)
+CREATE TABLE `lots` (
+  `id` CHAR(36) NOT NULL,
+  `block_id` CHAR(36) NOT NULL,
+  `number` VARCHAR(20) NOT NULL,
+  
+  -- LÓGICA DE NEGOCIO (ACUEDUCTO)
+  `status` ENUM('sin_informacion', 'censado', 'registrado') DEFAULT 'sin_informacion',
+  `water_meter_code` VARCHAR(50) NULL COMMENT 'Código del medidor de agua',
+  `cadastral_id` VARCHAR(50) NULL COMMENT 'Ficha Catastral o Matrícula',
+  
+  `area_m2` DECIMAL(10, 2) NULL,
+  `owner_name` VARCHAR(255) NULL,
+  
+  -- VISUALIZACIÓN (SVG)
+  `svg_path` TEXT NOT NULL,
+  `centroid` JSON NULL,
+  `metadata` JSON NULL,
+  
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `unique_lot_block` (`block_id`, `number`),
+  CONSTRAINT `fk_lot_block`
+    FOREIGN KEY (`block_id`) REFERENCES `blocks` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
