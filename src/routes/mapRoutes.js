@@ -12,4 +12,7 @@ router.get('/digital-twin/:neighborhoodId', mapController.getDigitalTwinData);
 // Ruta para actualizar un predio (medidor, estado, etc.)
 router.patch('/predios/:lotId', mapController.updateLotStatus);
 
+// Ruta para obtener la lista de barrios
+router.get('/neighborhoods', mapController.getNeighborhoods);
+
 module.exports = router;

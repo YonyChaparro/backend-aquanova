@@ -1,3 +1,4 @@
+// src/legacy/procesar_plano.js
 const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
@@ -5,12 +6,12 @@ const mysql = require('mysql2/promise');
 const crypto = require('crypto');
 
 // Cargar variables de entorno desde el archivo .env en la raíz del proyecto
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 // ==========================================
 // 1. CONFIGURACIÓN
 // ==========================================
-const SVG_FILE_PATH = path.resolve('./Mapa.svg'); 
+const SVG_FILE_PATH = path.resolve(__dirname, './Mapa.svg');
 
 const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
@@ -53,7 +54,6 @@ function extractGeometryData(dPath) {
     // RETORNAMOS EL TRAZO ORIGINAL EXACTO (dPath) EN LUGAR DEL RECTÁNGULO
     return { originalPath: dPath, centroid, area_m2 };
 }
-
 // ==========================================
 // 3. FUNCIÓN PRINCIPAL (PROCESAMIENTO Y BD)
 // ==========================================
@@ -77,23 +77,48 @@ async function main() {
         const paths = $('path');
         console.log(`Se encontraron ${paths.length} trazos en el SVG.\n`);
 
-        const neighborhoodId = crypto.randomUUID();
-        const blockId = crypto.randomUUID();
+        // --- CAMBIO AQUÍ: Buscar o crear el barrio real ---
+        const neighborhoodName = 'San Miguel de la Cañada';
+        const neighborhoodCode = 'SMC-001';
 
-        // Crear barrio y manzana por defecto
-        await connection.execute(
-            `INSERT INTO neighborhoods (id, name, code) VALUES (?, ?, ?) 
-             ON DUPLICATE KEY UPDATE id=id`,
-            [neighborhoodId, 'Barrio Acueducto', 'B-001']
+        // 1. Verificar si el barrio ya existe
+        const [existingNeighborhoods] = await connection.execute(
+            `SELECT id FROM neighborhoods WHERE code = ?`, [neighborhoodCode]
         );
 
-        await connection.execute(
-            `INSERT INTO blocks (id, code, neighborhood_id, geom_path) VALUES (?, ?, ?, ?)
-             ON DUPLICATE KEY UPDATE id=id`,
-            [blockId, 'Manzana Única', neighborhoodId, 'M0,0 Z']
+        let neighborhoodId;
+        if (existingNeighborhoods.length > 0) {
+            neighborhoodId = existingNeighborhoods[0].id;
+            console.log(`✅ Barrio encontrado: ${neighborhoodName} (ID: ${neighborhoodId})`);
+        } else {
+            neighborhoodId = crypto.randomUUID();
+            await connection.execute(
+                `INSERT INTO neighborhoods (id, name, code) VALUES (?, ?, ?)`,
+                [neighborhoodId, neighborhoodName, neighborhoodCode]
+            );
+            console.log(`✅ Barrio creado: ${neighborhoodName}`);
+        }
+
+        // 2. Verificar si la manzana ya existe
+        const blockCode = 'M-01';
+        const [existingBlocks] = await connection.execute(
+            `SELECT id FROM blocks WHERE neighborhood_id = ? AND code = ?`, [neighborhoodId, blockCode]
         );
 
-        // Primero limpiamos los lotes existentes para no tener duplicados por pruebas anteriores
+        let blockId;
+        if (existingBlocks.length > 0) {
+            blockId = existingBlocks[0].id;
+            console.log(`✅ Manzana encontrada (ID: ${blockId})`);
+        } else {
+            blockId = crypto.randomUUID();
+            await connection.execute(
+                `INSERT INTO blocks (id, code, neighborhood_id, geom_path) VALUES (?, ?, ?, ?)`,
+                [blockId, blockCode, neighborhoodId, 'M0,0 Z']
+            );
+            console.log(`✅ Manzana creada`);
+        }
+
+        // Limpiamos los lotes existentes de ESA manzana para actualizarlos
         await connection.execute(`DELETE FROM lots WHERE block_id = ?`, [blockId]);
 
         let count = 1;
@@ -101,17 +126,13 @@ async function main() {
         for (let i = 0; i < paths.length; i++) {
             const rawPath = $(paths[i]).attr('d');
             
-            // Usamos la nueva función que respeta el trazo original
             const geometry = extractGeometryData(rawPath);
             if (!geometry) continue;
 
-            // Extraemos el originalPath en lugar del perfectPath
             const { originalPath, centroid, area_m2 } = geometry;
 
             const lotId = crypto.randomUUID();
             const lotNumber = `Lote-${count.toString().padStart(3, '0')}`;
-            
-            // ESTABLECEMOS LOS DATOS REALES POR DEFECTO
             const initialStatus = 'sin_informacion';
             const waterMeter = null;
 
@@ -121,22 +142,14 @@ async function main() {
                     area_m2, svg_path, centroid
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
-                    lotId, 
-                    blockId, 
-                    lotNumber, 
-                    initialStatus, 
-                    waterMeter, 
-                    area_m2, 
-                    originalPath, // <--- GUARDAMOS EL TRAZO DE INKSCAPE INTACTO
-                    JSON.stringify(centroid)
+                    lotId, blockId, lotNumber, initialStatus, waterMeter, 
+                    area_m2, originalPath, JSON.stringify(centroid)
                 ]
             );
-
-            console.log(`✅ ${lotNumber} insertado. Área: ${area_m2}m² - Estado: ${initialStatus}`);
             count++;
         }
 
-        console.log("\n🚀 ¡Proceso finalizado! Todos los predios han sido registrados con su trazo original.");
+        console.log(`\n🚀 ¡Proceso finalizado! Se registraron ${count - 1} predios en ${neighborhoodName}.`);
 
     } catch (error) {
         console.error("❌ Ocurrió un error:", error.message);

@@ -4,32 +4,26 @@ const MapModel = require('../models/mapModel');
 const getDigitalTwinData = async (req, res) => {
     try {
         const { neighborhoodId } = req.params;
-        
-        // 1. Obtener datos planos de la BD
         const rows = await MapModel.getBlocksAndLots(neighborhoodId);
         
-        // 2. Agrupar los lotes dentro de sus respectivas manzanas
         const blocksMap = new Map();
 
         for (const row of rows) {
-            // Si la manzana no existe en el mapa, la creamos
             if (!blocksMap.has(row.block_id)) {
                 blocksMap.set(row.block_id, {
                     id: row.block_id,
                     code: row.block_code,
                     geom_path: row.block_geom,
-                    // Parseamos el JSON si viene como string desde MySQL
                     label_position: typeof row.label_position === 'string' ? JSON.parse(row.label_position) : row.label_position,
                     lots: []
                 });
             }
 
-            // Si hay un lote asociado a esta manzana, lo insertamos en su array
             if (row.lot_id) {
                 blocksMap.get(row.block_id).lots.push({
                     id: row.lot_id,
                     number: row.number,
-                    status: row.status, // 'sin_informacion', 'censado', 'registrado'
+                    status: row.status, 
                     water_meter_code: row.water_meter_code,
                     cadastral_id: row.cadastral_id,
                     area_m2: parseFloat(row.area_m2),
@@ -39,9 +33,8 @@ const getDigitalTwinData = async (req, res) => {
             }
         }
 
-        // 3. Formatear la respuesta final esperada por el Frontend
         const response = {
-            viewBox: "0 0 1200 800", // Modifica esto si tu SVG original tiene otro viewBox
+            viewBox: "0 0 1200 800",
             blocks: Array.from(blocksMap.values())
         };
 
@@ -56,10 +49,8 @@ const getDigitalTwinData = async (req, res) => {
 const updateLotStatus = async (req, res) => {
     try {
         const { lotId } = req.params;
-        // Agregamos 'number' (que usaremos como dirección) a los campos permitidos
         const { status, water_meter_code, cadastral_id, number } = req.body;
 
-        // Limpiar keys indefinidas para actualizar solo lo que se envía
         const updateData = Object.fromEntries(
             Object.entries({ status, water_meter_code, cadastral_id, number }).filter(([_, v]) => v !== undefined)
         );
@@ -77,4 +68,15 @@ const updateLotStatus = async (req, res) => {
     }
 };
 
-module.exports = { getDigitalTwinData, updateLotStatus };
+// CORRECCIÓN: Llamamos al modelo en lugar de usar db directo
+const getNeighborhoods = async (req, res) => {
+    try {
+        const rows = await MapModel.getAllNeighborhoods();
+        res.json({ ok: true, data: rows });
+    } catch (error) {
+        console.error('Error obteniendo barrios:', error);
+        res.status(500).json({ ok: false, message: 'Error interno al obtener los sectores.' });
+    }
+};
+
+module.exports = { getDigitalTwinData, updateLotStatus, getNeighborhoods };
