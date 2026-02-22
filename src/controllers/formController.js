@@ -71,7 +71,14 @@ const createForm = async (req, res) => {
 // LISTAR FORMULARIOS
 const getForms = async (req, res) => {
     try {
-        const forms = await FormModel.findAll();
+        const rows = await FormModel.findAll();
+        const forms = rows.map(f => ({
+            ...f,
+            is_active: Boolean(f.is_active),
+            neighborhoods: typeof f.neighborhoods === 'string'
+                ? JSON.parse(f.neighborhoods)
+                : (f.neighborhoods || [])
+        }));
         res.json({ ok: true, forms });
     } catch (error) {
         console.error(error);

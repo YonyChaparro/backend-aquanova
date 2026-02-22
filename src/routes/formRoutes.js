@@ -47,7 +47,7 @@ router.use(verifyToken);
  *                         format: date-time
  *                       neighborhoods:
  *                         type: array
- *                         description: Barrios donde está publicado el formulario
+ *                         description: Barrios con publicación activa donde está publicado el formulario. Retorna [] si no tiene barrio asociado.
  *                         items:
  *                           type: object
  *                           properties:
@@ -60,14 +60,9 @@ router.use(verifyToken);
  *                             parent_id:
  *                               type: string
  *                               nullable: true
- *                             metadata:
- *                               type: object
- *                               nullable: true
- *                             created_at:
- *                               type: string
- *                               format: date-time
  *         examples:
- *           default:
+ *           ConBarrio:
+ *             summary: Formulario activo con barrio asociado
  *             value:
  *               ok: true
  *               forms:
@@ -83,8 +78,19 @@ router.use(verifyToken);
  *                       name: "Barrio Centro"
  *                       code: "CEN-01"
  *                       parent_id: null
- *                       metadata: null
- *                       created_at: "2026-01-10T10:00:00.000Z"
+ *           SinBarrio:
+ *             summary: Formulario inactivo sin barrio asociado
+ *             value:
+ *               ok: true
+ *               forms:
+ *                 - id: "uuid-form-2"
+ *                   key: "encuesta-agua-1234"
+ *                   title: "Encuesta Agua"
+ *                   description: "Sin publicaciones activas"
+ *                   is_active: false
+ *                   created_by: "Admin User"
+ *                   created_at: "2026-01-05T08:00:00.000Z"
+ *                   neighborhoods: []
  *       500:
  *         description: Error al listar formularios
  */

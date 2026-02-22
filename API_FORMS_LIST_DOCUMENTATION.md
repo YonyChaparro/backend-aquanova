@@ -1,6 +1,6 @@
 # Documentación del Endpoint de Listado de Formularios
 
-Esta documentación describe cómo consumir el endpoint para listar todos los formularios disponibles, destacando la estructura detallada de los barrios asociados (incluyendo códigos, metadatos y relaciones padre/hijo).
+Esta documentación describe cómo consumir el endpoint para listar todos los formularios disponibles.
 
 ## Endpoint
 
@@ -9,7 +9,11 @@ Esta documentación describe cómo consumir el endpoint para listar todos los fo
 **Autenticación:** Requerida (Bearer Token)
 
 ## Descripción
-Retorna una lista de todos los formularios ordenados por fecha de creación (descendente). Cada formulario incluye un array `neighborhoods` con la información completa de los barrios donde está publicado.
+Retorna una lista de todos los formularios ordenados por fecha de creación (descendente).
+
+Cada formulario incluye:
+- `is_active` — valor **boolean** (`true`/`false`) que indica si el formulario está activo.
+- `neighborhoods` — array con los barrios donde el formulario tiene una **publicación activa**. Retorna `[]` si no tiene ninguna publicación activa asociada.
 
 ## Ejemplo de Uso (Frontend - JavaScript/Fetch)
 
@@ -65,7 +69,29 @@ getForms(token).then(forms => {
 
 ## Estructura de la Respuesta (200 OK)
 
-El objeto de respuesta incluye el detalle completo del barrio en `neighborhoods`.
+### Campos del formulario
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `id` | `string` | UUID del formulario |
+| `key` | `string` | Slug único generado al crear |
+| `title` | `string` | Título del formulario |
+| `description` | `string` | Descripción del formulario |
+| `is_active` | `boolean` | `true` si activo, `false` si desactivado |
+| `created_by` | `string` | Nombre del administrador que lo creó |
+| `created_at` | `string (ISO 8601)` | Fecha de creación |
+| `neighborhoods` | `array` | Barrios con publicación activa. `[]` si ninguno |
+
+### Campos de cada objeto en `neighborhoods`
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `id` | `string` | UUID del barrio |
+| `name` | `string` | Nombre del barrio |
+| `code` | `string` | Código del barrio |
+| `parent_id` | `string \| null` | ID del barrio padre (si es sub-barrio) |
+
+### Ejemplo — formulario activo con barrio
 
 ```json
 {
@@ -76,7 +102,7 @@ El objeto de respuesta incluye el detalle completo del barrio en `neighborhoods`
       "key": "censo-2026",
       "title": "Censo General 2026",
       "description": "Encuesta demográfica",
-      "is_active": 1,
+      "is_active": true,
       "created_by": "Juan Perez",
       "created_at": "2026-01-20T10:00:00.000Z",
       "neighborhoods": [
@@ -84,22 +110,35 @@ El objeto de respuesta incluye el detalle completo del barrio en `neighborhoods`
           "id": "uuid-barrio-hijo",
           "name": "Barrio Norte - Sector A",
           "code": "NORTE-A",
-          "parent_id": "uuid-barrio-padre", 
-          "metadata": {
-            "zona": "residencial",
-            "estrato": 3
-          },
-          "created_at": "2026-01-15T09:30:00.000Z"
+          "parent_id": "uuid-barrio-padre"
         },
         {
-          "id": "uuid-barrio-independiente",
+          "id": "uuid-barrio-centro",
           "name": "Barrio Centro",
           "code": "CENTRO-01",
-          "parent_id": null,
-          "metadata": null,
-          "created_at": "2026-01-10T08:00:00.000Z"
+          "parent_id": null
         }
       ]
+    }
+  ]
+}
+```
+
+### Ejemplo — formulario inactivo sin barrio asociado
+
+```json
+{
+  "ok": true,
+  "forms": [
+    {
+      "id": "uuid-form-456",
+      "key": "encuesta-agua-5678",
+      "title": "Encuesta Agua",
+      "description": "Sin publicaciones activas",
+      "is_active": false,
+      "created_by": "Admin User",
+      "created_at": "2026-01-05T08:00:00.000Z",
+      "neighborhoods": []
     }
   ]
 }

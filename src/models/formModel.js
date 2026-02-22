@@ -91,9 +91,8 @@ const FormModel = {
         return rows;
     },
 
-    // 2. Listar Formularios (Mostrando la última versión activa)
+    // 2. Listar Formularios con barrio y estado de activación
     async findAll() {
-        // Hacemos un JOIN para traer datos de la tabla forms y sus barrios publicados
         const query = `
             SELECT 
                 f.id, 
@@ -103,23 +102,24 @@ const FormModel = {
                 f.is_active, 
                 f.created_at, 
                 u.name as created_by,
-                JSON_ARRAYAGG(
-                    JSON_OBJECT(
-                        'id', n.id, 
-                        'name', n.name,
-                        'code', n.code,
-                        'parent_id', n.parent_id,
-                        'metadata', n.metadata,
-                        'created_at', n.created_at
-                    )
-                ) as neighborhoods
+                CASE
+                    WHEN COUNT(n.id) > 0 THEN
+                        JSON_ARRAYAGG(
+                            JSON_OBJECT(
+                                'id', n.id, 
+                                'name', n.name,
+                                'code', n.code,
+                                'parent_id', n.parent_id
+                            )
+                        )
+                    ELSE JSON_ARRAY()
+                END as neighborhoods
             FROM forms f
             JOIN users u ON f.created_by = u.id
-            LEFT JOIN form_publications fp ON f.id = (
-                SELECT form_id FROM form_versions WHERE id = fp.form_version_id
-            )
+            LEFT JOIN form_versions fv ON f.id = fv.form_id
+            LEFT JOIN form_publications fp ON fv.id = fp.form_version_id AND fp.is_active = 1
             LEFT JOIN neighborhoods n ON fp.neighborhood_id = n.id
-            GROUP BY f.id
+            GROUP BY f.id, f.key, f.title, f.description, f.is_active, f.created_at, u.name
             ORDER BY f.created_at DESC
         `;
         const [rows] = await pool.query(query);

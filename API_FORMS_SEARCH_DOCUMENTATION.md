@@ -70,13 +70,15 @@ El endpoint retorna un objeto JSON con la propiedad `ok: true` y una lista `form
       "key": "censo-barrial-2026",
       "title": "Censo Barrial 2026",
       "description": "Formulario para recolección de datos...",
-      "is_active": 1,
+      "is_active": true,
       "created_at": "2026-01-14T10:00:00.000Z",
       "created_by": "Admin User",
       "neighborhoods": [
         {
           "id": "uuid-del-barrio",
-          "name": "Barrio Los Pinos"
+          "name": "Barrio Los Pinos",
+          "code": "LPN-01",
+          "parent_id": null
         }
       ]
     }
