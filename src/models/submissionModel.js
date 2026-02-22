@@ -30,11 +30,13 @@ const SubmissionModel = {
                 s.location_lat, 
                 s.location_lng,
                 s.created_at,
+                s.status,             -- ¡NUEVO! Traemos el estado
+                s.neighborhood_id,    -- ¡NUEVO! Traemos el ID por si acaso
                 u.name as collected_by,
                 n.name as neighborhood
             FROM submissions s
             JOIN form_versions fv ON s.form_version_id = fv.id
-            JOIN users u ON s.user_id = u.id
+            LEFT JOIN users u ON s.user_id = u.id -- Usamos LEFT JOIN por si el user_id es NULL (anónimo)
             JOIN neighborhoods n ON s.neighborhood_id = n.id
             WHERE fv.form_id = ?
             ORDER BY s.created_at DESC
