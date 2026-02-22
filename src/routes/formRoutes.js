@@ -305,10 +305,16 @@ router.get('/:id', getFormDetail);
  *                     version:
  *                       type: integer
  *                       description: Número de la nueva versión (si se actualizó esquema)
+ *                     neighborhood_id:
+ *                       type: string
+ *                       description: ID del nuevo barrio asignado (si se actualizó)
+ *                     publications_updated:
+ *                       type: integer
+ *                       description: Número de publicaciones actualizadas con el nuevo barrio
  *       400:
  *         description: Datos inválidos o faltan campos
  *       404:
- *         description: Formulario no encontrado
+ *         description: Formulario o barrio no encontrado
  *       500:
  *         description: Error interno
  */

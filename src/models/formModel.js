@@ -222,6 +222,18 @@ const query = `
         }
     },
 
+    // Actualizar el barrio asociado en las publicaciones activas del formulario
+    async updateNeighborhood(formId, neighborhoodId) {
+        const query = `
+            UPDATE form_publications fp
+            JOIN form_versions fv ON fp.form_version_id = fv.id
+            SET fp.neighborhood_id = ?
+            WHERE fv.form_id = ? AND fp.is_active = 1
+        `;
+        const [result] = await pool.query(query, [neighborhoodId, formId]);
+        return result.affectedRows;
+    },
+
     // 7. Actualizar el esquema de preguntas (Crea una nueva versión)
     async updateSchema(formId, schema, adminId) {
         const connection = await pool.getConnection();

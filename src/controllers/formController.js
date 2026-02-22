@@ -122,13 +122,13 @@ const getFormDetail = async (req, res) => {
 const updateForm = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, is_active, schema } = req.body;
+        const { title, description, is_active, schema, neighborhood_id } = req.body;
         const adminId = req.user.uid;
 
-        if (title === undefined && description === undefined && is_active === undefined && schema === undefined) {
+        if (title === undefined && description === undefined && is_active === undefined && schema === undefined && neighborhood_id === undefined) {
              return res.status(400).json({
                 ok: false,
-                message: 'Debe enviar al menos un campo a actualizar (title, description, is_active, schema)'
+                message: 'Debe enviar al menos un campo a actualizar (title, description, is_active, schema, neighborhood_id)'
             });
         }
 
@@ -160,6 +160,18 @@ const updateForm = async (req, res) => {
             responseData.version = result.version;
             responseData.versionId = result.versionId;
             message += ` y nueva versión ${result.version} creada`;
+        }
+
+        // 3. Actualizar barrio asociado
+        if (neighborhood_id !== undefined) {
+            const neighborhoodExists = await FormModel.checkNeighborhoodExists(neighborhood_id);
+            if (!neighborhoodExists) {
+                return res.status(404).json({ ok: false, message: 'El barrio especificado no existe' });
+            }
+            const affected = await FormModel.updateNeighborhood(id, neighborhood_id);
+            responseData.neighborhood_id = neighborhood_id;
+            responseData.publications_updated = affected;
+            message += `, barrio actualizado en ${affected} publicación(es)`;
         }
 
         res.json({
