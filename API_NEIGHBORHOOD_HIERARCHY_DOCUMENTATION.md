@@ -1,30 +1,58 @@
 # Documentación del Endpoint de Detalle de Barrio (Jerarquía)
 
-Esta documentación describe cómo consumir el endpoint para obtener el detalle de un barrio, una localidad o una ciudad. La característica principal de este endpoint es que retorna la **jerarquía completa de ancestros** (padres) de forma recursiva y calcula automáticamente el tipo de unidad territorial.
+Esta documentación describe cómo consumir el endpoint para obtener el detalle de un barrio, una localidad o una ciudad. La característica principal de este endpoint es que retorna la **jerarquía completa de ancestros** de forma recursiva y calcula automáticamente el tipo de unidad territorial.
 
 ## Endpoint
 
 **URL:** `GET /api/neighborhoods/:id`  
 **Método:** `GET`  
 **Autenticación:** Requerida (Bearer Token)  
-**Parámetros de Ruta:** `id` (UUID del barrio/localidad/ciudad)
+**Parámetros de Ruta:** `id` (UUID del barrio / localidad / ciudad)
+
+---
 
 ## Descripción
 
 Recupera la información de un nodo geográfico y **construye su árbol genealógico hacia arriba**.
 
-El sistema calcula automáticamente el campo `type` basándose en la profundidad de la jerarquía:
-*   **Ciudad:** No tiene padres (Nivel superior).
-*   **Localidad:** Tiene 1 padre (La Ciudad).
-*   **Barrio:** Tiene 2 o más ancestros (Localidad -> Ciudad).
+El campo `type` se calcula automáticamente según la profundidad de la jerarquía:
 
-## Ejemplo de Uso (Frontend - JavaScript/Fetch)
+| Nivel | Tipo | Condición |
+|-------|------|-----------|
+| Nivel 1 | `"Ciudad"` | Sin ancestros (`parent: null`) |
+| Nivel 2 | `"Localidad"` | 1 ancestro (la Ciudad) |
+| Nivel 3+ | `"Barrio"` | 2 o más ancestros |
+
+Cada nodo contiene un objeto `parent` anidado con la misma estructura, hasta llegar a la Ciudad cuyo `parent` es `null`.
+
+---
+
+## Campos de la Respuesta
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | `string (UUID)` | Identificador único del nodo |
+| `name` | `string` | Nombre del nodo geográfico |
+| `code` | `string` | Código único del nodo |
+| `parent_id` | `string \| null` | UUID del padre inmediato (`null` en ciudades) |
+| `is_active` | `boolean` | Indica si el nodo está habilitado |
+| `metadata` | `object \| null` | Información adicional del nodo |
+| `metadata.imagen` | `string` | URL de imagen representativa (disponible en barrios) |
+| `metadata.descripcion` | `string` | Descripción textual del lugar (disponible en barrios) |
+| `created_at` | `string (ISO 8601)` | Fecha de creación del registro |
+| `type` | `string` | Tipo calculado: `"Ciudad"`, `"Localidad"` o `"Barrio"` |
+| `parent` | `object \| null` | Nodo padre con la misma estructura (recursivo) |
+
+---
+
+## Ejemplo de Uso (JavaScript / Fetch)
 
 ```javascript
 /**
- * Obtiene el detalle de un barrio con su jerarquía.
- * @param {string} id - UUID del barrio.
- * @param {string} token - Token de autenticación.
+ * Obtiene el detalle de un barrio con su jerarquía completa.
+ * @param {string} id    - UUID del barrio, localidad o ciudad.
+ * @param {string} token - Bearer Token de autenticación.
+ * @returns {Promise<object|null>}
  */
 async function getNeighborhoodHierarchy(id, token) {
   try {
@@ -39,68 +67,78 @@ async function getNeighborhoodHierarchy(id, token) {
     const result = await response.json();
 
     if (!result.ok) {
-      throw new Error(result.message || 'Error obteniendo barrio');
+      throw new Error(result.message || 'Error obteniendo el barrio');
     }
 
     const barrio = result.data;
-    console.log(`Viendo información de: ${barrio.type} ${barrio.name}`);
-    
-    // Acceder al padre (si existe)
+
+    console.log(`Tipo: ${barrio.type} | Nombre: ${barrio.name}`);
+    console.log(`Activo: ${barrio.is_active}`);
+
+    // Imagen y descripción (disponibles en barrios; null en localidades/ciudades del seed)
+    if (barrio.metadata) {
+      console.log(`Imagen: ${barrio.metadata.imagen}`);
+      console.log(`Descripción: ${barrio.metadata.descripcion}`);
+    }
+
+    // Padre inmediato (Localidad)
     if (barrio.parent) {
-       console.log(`Pertenece a la ${barrio.parent.type}: ${barrio.parent.name}`);
-       
-       // Acceder al abuelo (si existe)
-       if (barrio.parent.parent) {
-          console.log(`Ubicada en la ${barrio.parent.parent.type}: ${barrio.parent.parent.name}`);
-       }
+      console.log(`→ Localidad: ${barrio.parent.name} (activo: ${barrio.parent.is_active})`);
+
+      // Abuelo (Ciudad)
+      if (barrio.parent.parent) {
+        console.log(`  → Ciudad: ${barrio.parent.parent.name}`);
+      }
     }
 
     return barrio;
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error:', error.message);
     return null;
   }
 }
 ```
 
-## Estructura de la Respuesta (200 OK)
+---
 
-La respuesta es un objeto JSON recursivo. Cada nivel tiene un objeto `parent` que contiene al ancestro inmediato.
+## Estructura de la Respuesta
 
-### Ejemplo: Consultando un Barrio (Nivel 3)
+### `200 OK` — Consultando un Barrio (Nivel 3)
 
 ```json
 {
   "ok": true,
   "data": {
-    "id": "uuid-barrio-san-juan",
-    "name": "San Juan",
-    "code": "BSJ-01",
-    "type": "Barrio",
-    "parent_id": "uuid-localidad-norte",
+    "id": "baf0c3d0-77e8-47a4-bb9e-552fe1aa058f",
+    "name": "Santa Marta Central",
+    "code": "SMC-001",
+    "parent_id": "a1b2c3d4-0000-0000-0000-100000000001",
     "is_active": true,
     "metadata": {
       "imagen": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=600&q=80",
       "descripcion": "Barrio tradicional bogotano con historia y cultura propias. Reconocido por sus festividades locales y la organización de su Junta de Acción Comunal."
     },
     "created_at": "2026-02-22T10:00:00.000Z",
+    "type": "Barrio",
     "parent": {
-      "id": "uuid-localidad-norte",
-      "name": "Localidad Norte",
-      "code": "LOC-N",
-      "type": "Localidad",
-      "parent_id": "uuid-ciudad-capital",
+      "id": "a1b2c3d4-0000-0000-0000-100000000001",
+      "name": "Usaquén",
+      "code": "BOG-LOC-01",
+      "parent_id": "a1b2c3d4-0000-0000-0000-000000000001",
       "is_active": true,
       "metadata": null,
+      "created_at": "2026-02-22T10:00:00.000Z",
+      "type": "Localidad",
       "parent": {
-        "id": "uuid-ciudad-capital",
-        "name": "Ciudad Capital",
-        "code": "CAP-01",
-        "type": "Ciudad",
+        "id": "a1b2c3d4-0000-0000-0000-000000000001",
+        "name": "Bogotá D.C.",
+        "code": "BOG-001",
         "parent_id": null,
         "is_active": true,
         "metadata": null,
+        "created_at": "2026-02-22T10:00:00.000Z",
+        "type": "Ciudad",
         "parent": null
       }
     }
@@ -108,25 +146,60 @@ La respuesta es un objeto JSON recursivo. Cada nivel tiene un objeto `parent` qu
 }
 ```
 
-### Ejemplo: Consultando una Ciudad (Nivel 1)
+### `200 OK` — Consultando una Localidad (Nivel 2)
 
 ```json
 {
   "ok": true,
   "data": {
-    "id": "uuid-ciudad-capital",
-    "name": "Ciudad Capital",
-    "type": "Ciudad",
+    "id": "a1b2c3d4-0000-0000-0000-100000000001",
+    "name": "Usaquén",
+    "code": "BOG-LOC-01",
+    "parent_id": "a1b2c3d4-0000-0000-0000-000000000001",
+    "is_active": true,
+    "metadata": null,
+    "created_at": "2026-02-22T10:00:00.000Z",
+    "type": "Localidad",
+    "parent": {
+      "id": "a1b2c3d4-0000-0000-0000-000000000001",
+      "name": "Bogotá D.C.",
+      "code": "BOG-001",
+      "parent_id": null,
+      "is_active": true,
+      "metadata": null,
+      "created_at": "2026-02-22T10:00:00.000Z",
+      "type": "Ciudad",
+      "parent": null
+    }
+  }
+}
+```
+
+### `200 OK` — Consultando una Ciudad (Nivel 1 / Raíz)
+
+```json
+{
+  "ok": true,
+  "data": {
+    "id": "a1b2c3d4-0000-0000-0000-000000000001",
+    "name": "Bogotá D.C.",
+    "code": "BOG-001",
     "parent_id": null,
+    "is_active": true,
+    "metadata": null,
+    "created_at": "2026-02-22T10:00:00.000Z",
+    "type": "Ciudad",
     "parent": null
   }
 }
 ```
 
+---
+
 ## Manejo de Errores
 
-### 404 Not Found
-Si el ID proporcionado no existe en la base de datos.
+### `404 Not Found`
+El ID proporcionado no existe en la base de datos.
 ```json
 {
   "ok": false,
@@ -134,5 +207,20 @@ Si el ID proporcionado no existe en la base de datos.
 }
 ```
 
-### 500 Internal Server Error
+### `401 Unauthorized`
+Token ausente o inválido.
+```json
+{
+  "ok": false,
+  "message": "Token no proporcionado"
+}
+```
+
+### `500 Internal Server Error`
 Error técnico al procesar la jerarquía.
+```json
+{
+  "ok": false,
+  "message": "Error al obtener barrio"
+}
+```

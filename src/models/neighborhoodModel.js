@@ -102,11 +102,11 @@ const NeighborhoodModel = {
         // CTE Recursiva para traer ancestros
         const query = `
             WITH RECURSIVE genealogy AS (
-                SELECT id, name, code, parent_id, metadata, created_at, 0 AS depth
+                SELECT id, name, code, parent_id, is_active, metadata, created_at, 0 AS depth
                 FROM neighborhoods
                 WHERE id = ?
                 UNION ALL
-                SELECT n.id, n.name, n.code, n.parent_id, n.metadata, n.created_at, g.depth + 1
+                SELECT n.id, n.name, n.code, n.parent_id, n.is_active, n.metadata, n.created_at, g.depth + 1
                 FROM neighborhoods n
                 INNER JOIN genealogy g ON n.id = g.parent_id
             )
