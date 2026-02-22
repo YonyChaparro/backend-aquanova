@@ -99,16 +99,12 @@ const getFormDetail = async (req, res) => {
         // 2. Buscamos el esquema (preguntas) de la última versión
         const versionData = await FormModel.findLatestVersionSchema(id);
 
-        if (!versionData) {
-            return res.status(404).json({ ok: false, message: 'Este formulario no tiene versiones activas' });
-        }
-
         res.json({
             ok: true,
             data: {
-                ...form,
-                version: versionData.version,
-                schema: versionData.schema // ¡Aquí están las preguntas!
+                ...form, // ¡Aquí ya viajan automáticamente is_active y neighborhood_id!
+                version: versionData ? versionData.version : 1,
+                schema: versionData ? versionData.schema : [] 
             }
         });
 

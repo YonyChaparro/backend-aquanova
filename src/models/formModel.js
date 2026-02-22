@@ -144,9 +144,20 @@ const query = `
     // Buscar formulario por ID
     async findById(id) {
         const query = `
-            SELECT f.id, f.title, f.description, f.key, f.created_at
+            SELECT 
+                f.id, 
+                f.title, 
+                f.description, 
+                f.key, 
+                f.created_at, 
+                f.is_active,
+                fp.neighborhood_id
             FROM forms f
-            WHERE f.id = ? AND f.is_active = 1
+            LEFT JOIN form_versions fv ON f.id = fv.form_id
+            LEFT JOIN form_publications fp ON fv.id = fp.form_version_id
+            WHERE f.id = ?
+            ORDER BY fv.version DESC
+            LIMIT 1
         `;
         const [rows] = await pool.query(query, [id]);
         return rows[0];
