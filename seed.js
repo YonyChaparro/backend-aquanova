@@ -1,3 +1,4 @@
+// seed.js
 require('dotenv').config();
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
@@ -12,6 +13,7 @@ const DB_CONFIG = {
 
 const DB_NAME = process.env.DB_NAME || 'app_aquanova_bd';
 
+// HEMOS ACTUALIZADO EL ESQUEMA PARA INCLUIR LAS TABLAS DE GEMELO DIGITAL
 const SCHEMA_SQL = `
 -- ==========================================================
 -- SISTEMA DE GESTIÓN DE FORMULARIOS DINÁMICOS - AQUANOVA
@@ -19,11 +21,11 @@ const SCHEMA_SQL = `
 -- ==========================================================
 
 -- 1. CREACIÓN DEL ENTORNO
-CREATE DATABASE IF NOT EXISTS ${DB_NAME}
+CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 
-USE ${DB_NAME};
+USE \`${DB_NAME}\`;
 
 -- ==========================================================
 -- SECCIÓN 1: IDENTIDAD Y GEOGRAFÍA (CORE)
@@ -245,52 +247,99 @@ CREATE TABLE IF NOT EXISTS \`audit_logs\` (
 ) ENGINE=InnoDB;
 
 -- ==========================================================
--- SECCIÓN 6: SEMILLA DE DATOS (ROLES)
+-- SECCIÓN 6: SEMILLA DE DATOS (ESTÁTICA Y SEGURA)
 -- ==========================================================
 
-INSERT IGNORE INTO \`roles\` (\`id\`, \`name\`, \`description\`) VALUES
+SET SQL_SAFE_UPDATES = 0;
+SET FOREIGN_KEY_CHECKS = 0;
+
+DELETE FROM \`roles\`; 
+ALTER TABLE \`roles\` AUTO_INCREMENT = 1;
+
+INSERT INTO \`roles\` (\`id\`, \`name\`, \`description\`) VALUES
 (1, 'administrador', 'Acceso total: Configuración del sistema y usuarios.'),
 (2, 'operador', 'Gestión operativa: Revisión de envíos y reportes.'),
 (3, 'usuario', 'Acceso básico: Llenado de formularios.');
+
+SET FOREIGN_KEY_CHECKS = 1;
+SET SQL_SAFE_UPDATES = 1;
+
+-- ==========================================================
+-- SECCIÓN 7: GEMELO DIGITAL (CATASTRO / ACUEDUCTO)
+-- ==========================================================
+
+CREATE TABLE IF NOT EXISTS \`blocks\` (
+  \`id\` CHAR(36) NOT NULL,
+  \`code\` VARCHAR(50) NOT NULL,
+  \`neighborhood_id\` CHAR(36) NOT NULL,
+  \`geom_path\` TEXT NOT NULL,
+  \`label_position\` JSON NULL,
+  \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (\`id\`),
+  CONSTRAINT \`fk_block_neigh\`
+    FOREIGN KEY (\`neighborhood_id\`) REFERENCES \`neighborhoods\` (\`id\`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS \`lots\` (
+  \`id\` CHAR(36) NOT NULL,
+  \`block_id\` CHAR(36) NOT NULL,
+  \`number\` VARCHAR(20) NOT NULL,
+  \`status\` ENUM('sin_informacion', 'censado', 'registrado') DEFAULT 'sin_informacion',
+  \`water_meter_code\` VARCHAR(50) NULL COMMENT 'Código del medidor de agua',
+  \`cadastral_id\` VARCHAR(50) NULL COMMENT 'Ficha Catastral o Matrícula',
+  \`area_m2\` DECIMAL(10, 2) NULL,
+  \`owner_name\` VARCHAR(255) NULL,
+  \`svg_path\` TEXT NOT NULL,
+  \`centroid\` JSON NULL,
+  \`metadata\` JSON NULL,
+  \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  \`updated_at\` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (\`id\`),
+  UNIQUE INDEX \`unique_lot_block\` (\`block_id\`, \`number\`),
+  CONSTRAINT \`fk_lot_block\`
+    FOREIGN KEY (\`block_id\`) REFERENCES \`blocks\` (\`id\`) ON DELETE CASCADE
+) ENGINE=InnoDB;
 `;
 
 const seedDatabase = async () => {
     let connection;
     try {
-        // 1. Conectar al servidor MySQL (sin seleccionar DB aún)
+        // 1. Conectar al servidor MySQL
         connection = await mysql.createConnection(DB_CONFIG);
         console.log('🔌 Conectado al servidor MySQL.');
 
         // 2. Ejecutar Script de Creación de Esquema
         console.log('🏗️  Verificando/Creando base de datos y tablas...');
         await connection.query(SCHEMA_SQL);
-        console.log('✅ Esquema de base de datos sincronizado.');
+        console.log('✅ Esquema de base de datos sincronizado con Gemelo Digital.');
 
-        // 3. Cambiar a la base de datos creada para las operaciones de datos
+        // 3. Cambiar a la base de datos
         await connection.changeUser({ database: DB_NAME });
 
         // ---------------------------------------------------------
-        // 4. SEED BARRIOS
+        // 4. SEED BARRIOS (Ajustado al nuevo mapa)
         // ---------------------------------------------------------
         console.log('\n🏘️  Procesando Barrios...');
         let neighborhoodId;
+        const neighborhoodCode = 'SMC-001';
+        const neighborhoodName = 'San Miguel de la Cañada';
         
         const [existingNeighborhoods] = await connection.query(
             'SELECT id FROM neighborhoods WHERE code = ?', 
-            ['B-001']
+            [neighborhoodCode]
         );
 
         if (existingNeighborhoods.length > 0) {
             neighborhoodId = existingNeighborhoods[0].id;
-            console.log(`⚠️  El barrio B-001 ya existe. ID: ${neighborhoodId}`);
+            console.log(`⚠️  El barrio ${neighborhoodCode} ya existe. ID: ${neighborhoodId}`);
         } else {
             neighborhoodId = uuidv4();
             const queryNeighborhood = `
                 INSERT INTO neighborhoods (id, name, code, created_at) 
-                VALUES (?, 'Barrio Central', 'B-001', NOW())
+                VALUES (?, ?, ?, NOW())
             `;
-            await connection.query(queryNeighborhood, [neighborhoodId]);
-            console.log(`✅ Barrio creado exitosamente. ID: ${neighborhoodId}`);
+            await connection.query(queryNeighborhood, [neighborhoodId, neighborhoodName, neighborhoodCode]);
+            console.log(`✅ Barrio creado exitosamente: ${neighborhoodName} (ID: ${neighborhoodId})`);
         }
 
         // ---------------------------------------------------------
@@ -299,8 +348,8 @@ const seedDatabase = async () => {
         console.log('\n👤 Procesando Administrador...');
         const adminData = {
             email: 'admin@aquanova.com',
-            document_number: '1000000000', // Documento por defecto para el admin
-            password: 'admin123', // ¡Cámbiala por una segura!
+            document_number: '1000000000', 
+            password: 'admin123', 
             name: 'Super Administrador'
         };
 
@@ -312,7 +361,6 @@ const seedDatabase = async () => {
         if (existingUser.length > 0) {
             console.log(`⚠️  El usuario con documento ${adminData.document_number} ya existe. No se realizaron cambios.`);
         } else {
-            // Verificar si existe por email (caso de migración o datos antiguos)
             const [userByEmail] = await connection.query(
                 'SELECT id FROM users WHERE email = ?', 
                 [adminData.email]
@@ -326,21 +374,18 @@ const seedDatabase = async () => {
                 );
                 console.log(`✅ Documento actualizado para el admin.`);
             } else {
-                // Iniciar transacción para crear usuario nuevo
                 await connection.beginTransaction();
                 try {
                     const salt = await bcrypt.genSalt(10);
                     const passwordHash = await bcrypt.hash(adminData.password, salt);
                     const userId = uuidv4();
 
-                    // Insertar Usuario
                     const userQuery = `
                         INSERT INTO users (id, name, document_number, email, password_hash, is_active, created_at) 
                         VALUES (?, ?, ?, ?, ?, 1, NOW())
                     `;
                     await connection.query(userQuery, [userId, adminData.name, adminData.document_number, adminData.email, passwordHash]);
 
-                    // Asignar Rol de Administrador (ID 1, sin barrio específico)
                     const roleQuery = `
                         INSERT INTO user_roles (user_id, role_id, neighborhood_id) 
                         VALUES (?, 1, NULL)
@@ -364,7 +409,6 @@ const seedDatabase = async () => {
         let formId;
         const formKey = 'censo-demo-v1';
         
-        // Buscar si existe
         const [existingForms] = await connection.query(
             'SELECT id FROM forms WHERE `key` = ?', 
             [formKey]
@@ -375,7 +419,6 @@ const seedDatabase = async () => {
             console.log(`⚠️  El formulario ${formKey} ya existe. ID: ${formId}`);
         } else {
             formId = uuidv4();
-            // Recuperamos ID del admin para asignarle la creación
             const [admins] = await connection.query('SELECT id FROM users WHERE email = ?', [adminData.email]);
             const adminId = admins[0].id;
 
@@ -385,9 +428,7 @@ const seedDatabase = async () => {
             `;
             await connection.query(queryForm, [formId, formKey, adminId]);
 
-            // Crear Versión 1 del formulario
             const versionId = uuidv4();
-            // Esquema simple compatible con tu JSON de ejemplo
             const schema = {
                 title: "Datos Básicos",
                 fields: [
