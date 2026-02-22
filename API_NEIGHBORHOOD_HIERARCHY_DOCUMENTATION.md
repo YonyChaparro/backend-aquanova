@@ -77,25 +77,31 @@ La respuesta es un objeto JSON recursivo. Cada nivel tiene un objeto `parent` qu
     "id": "uuid-barrio-san-juan",
     "name": "San Juan",
     "code": "BSJ-01",
-    "type": "Barrio",           // Calculado automáticamente
+    "type": "Barrio",
     "parent_id": "uuid-localidad-norte",
-    "metadata": { "estrato": 2 },
-    "created_at": "2026-01-20T10:00:00.000Z",
-    "parent": {                 // <--- PADRE (Localidad)
+    "is_active": true,
+    "metadata": {
+      "imagen": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=600&q=80",
+      "descripcion": "Barrio tradicional bogotano con historia y cultura propias. Reconocido por sus festividades locales y la organización de su Junta de Acción Comunal."
+    },
+    "created_at": "2026-02-22T10:00:00.000Z",
+    "parent": {
       "id": "uuid-localidad-norte",
       "name": "Localidad Norte",
       "code": "LOC-N",
-      "type": "Localidad",      // Calculado automáticamente
+      "type": "Localidad",
       "parent_id": "uuid-ciudad-capital",
+      "is_active": true,
       "metadata": null,
-      "parent": {               // <--- ABUELO (Ciudad)
+      "parent": {
         "id": "uuid-ciudad-capital",
         "name": "Ciudad Capital",
         "code": "CAP-01",
-        "type": "Ciudad",       // Calculado automáticamente
+        "type": "Ciudad",
         "parent_id": null,
+        "is_active": true,
         "metadata": null,
-        "parent": null          // Fin de la cadena
+        "parent": null
       }
     }
   }

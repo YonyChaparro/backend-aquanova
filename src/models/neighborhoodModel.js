@@ -25,14 +25,17 @@ const NeighborhoodModel = {
     async findAll() {
         const query = `
             SELECT 
-                id, 
-                name, 
-                code, 
-                parent_id, 
-                metadata,
-                created_at
-            FROM neighborhoods
-            ORDER BY name ASC
+                n.id, 
+                n.name, 
+                n.code, 
+                n.parent_id,
+                p.name AS parent_name,
+                n.is_active,
+                n.metadata,
+                n.created_at
+            FROM neighborhoods n
+            LEFT JOIN neighborhoods p ON n.parent_id = p.id
+            ORDER BY p.name ASC, n.name ASC
         `;
         const [rows] = await pool.query(query);
         return rows;
@@ -42,14 +45,17 @@ const NeighborhoodModel = {
     async findById(id) {
         const query = `
             SELECT 
-                id, 
-                name, 
-                code, 
-                parent_id, 
-                metadata,
-                created_at
-            FROM neighborhoods
-            WHERE id = ?
+                n.id, 
+                n.name, 
+                n.code, 
+                n.parent_id,
+                p.name AS parent_name,
+                n.is_active,
+                n.metadata,
+                n.created_at
+            FROM neighborhoods n
+            LEFT JOIN neighborhoods p ON n.parent_id = p.id
+            WHERE n.id = ?
         `;
         const [rows] = await pool.query(query, [id]);
         return rows[0];
@@ -73,15 +79,18 @@ const NeighborhoodModel = {
     async search(searchTerm) {
         const query = `
             SELECT 
-                id, 
-                name, 
-                code, 
-                parent_id, 
-                metadata,
-                created_at
-            FROM neighborhoods
-            WHERE name LIKE ? OR code LIKE ?
-            ORDER BY name ASC
+                n.id, 
+                n.name, 
+                n.code, 
+                n.parent_id,
+                p.name AS parent_name,
+                n.is_active,
+                n.metadata,
+                n.created_at
+            FROM neighborhoods n
+            LEFT JOIN neighborhoods p ON n.parent_id = p.id
+            WHERE n.name LIKE ? OR n.code LIKE ?
+            ORDER BY n.name ASC
         `;
         const wild = `%${searchTerm}%`;
         const [rows] = await pool.query(query, [wild, wild]);

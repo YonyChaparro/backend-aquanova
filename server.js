@@ -23,7 +23,7 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, { swaggerOptions: { persistAuthorization: true } }));
 console.log('📄 Documentación disponible en http://localhost:3000/api-docs');
 app.use(express.urlencoded({ extended: false }));
 

@@ -11,13 +11,14 @@ router.use(verifyToken);
  * @swagger
  * /neighborhoods:
  *   get:
- *     summary: Listar todos los barrios
+ *     summary: Listar todos los barrios y localidades
+ *     description: Retorna todos los registros de la tabla neighborhoods ordenados por localidad y luego por nombre. Incluye el nombre del padre (localidad) y el estado activo/inactivo de cada registro.
  *     tags: [Neighborhoods]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de barrios disponibles
+ *         description: Lista de barrios/localidades disponibles
  *         content:
  *           application/json:
  *             schema:
@@ -32,38 +33,63 @@ router.use(verifyToken);
  *                     properties:
  *                       id:
  *                         type: string
+ *                         format: uuid
  *                       name:
  *                         type: string
  *                       code:
  *                         type: string
  *                       parent_id:
  *                         type: string
+ *                         format: uuid
  *                         nullable: true
+ *                         description: ID de la localidad o nodo padre al que pertenece
+ *                       parent_name:
+ *                         type: string
+ *                         nullable: true
+ *                         description: Nombre del nodo padre (localidad). Null si es raíz.
+ *                       is_active:
+ *                         type: boolean
+ *                         description: Indica si el barrio/localidad está activo en el sistema
  *                       metadata:
  *                         type: object
  *                         nullable: true
+ *                         description: Datos adicionales del barrio. Los barrios incluyen imagen y descripción genérica.
+ *                         properties:
+ *                           imagen:
+ *                             type: string
+ *                             format: uri
+ *                             description: URL de imagen representativa del barrio
+ *                           descripcion:
+ *                             type: string
+ *                             description: Descripción genérica del barrio
  *                       created_at:
  *                         type: string
  *                         format: date-time
-	*             examples:
-	*               default:
-	*                 value:
-	*                   ok: true
-	*                   neighborhoods:
-	*                     - id: "uuid-barrio-1"
-	*                       name: "Barrio Centro"
-	*                       code: "CENTRO-001"
-	*                       parent_id: null
-	*                       metadata: { poblacion: 12000 }
-	*                       created_at: "2026-01-10T10:00:00.000Z"
-	*                     - id: "uuid-barrio-2"
-	*                       name: "Barrio Norte"
-	*                       code: "NORTE-002"
-	*                       parent_id: "uuid-barrio-1"
-	*                       metadata: null
-	*                       created_at: "2026-01-10T11:00:00.000Z"
-	*       500:
-	*         description: Error al listar barrios
+ *             examples:
+ *               default:
+ *                 value:
+ *                   ok: true
+ *                   neighborhoods:
+ *                     - id: "uuid-localidad-1"
+ *                       name: "Kennedy"
+ *                       code: "LOC-08"
+ *                       parent_id: null
+ *                       parent_name: null
+ *                       is_active: true
+ *                       metadata: null
+ *                       created_at: "2026-02-22T10:00:00.000Z"
+ *                     - id: "uuid-barrio-1"
+ *                       name: "Américas"
+ *                       code: "BAR-0802"
+ *                       parent_id: "uuid-localidad-1"
+ *                       parent_name: "Kennedy"
+ *                       is_active: true
+ *                       metadata:
+ *                         imagen: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=600&q=80"
+ *                         descripcion: "Barrio residencial con amplia oferta de servicios comunitarios, parques y vías pavimentadas."
+ *                       created_at: "2026-02-22T10:00:00.000Z"
+ *       500:
+ *         description: Error al listar barrios
  */
 router.get('/', getNeighborhoods);
 
@@ -72,6 +98,7 @@ router.get('/', getNeighborhoods);
  * /neighborhoods/search:
  *   get:
  *     summary: Buscar barrios por nombre o código
+ *     description: Búsqueda por coincidencia parcial en nombre o código. Los resultados incluyen el nombre del padre y el estado activo/inactivo.
  *     tags: [Neighborhoods]
  *     security:
  *       - bearerAuth: []
@@ -81,7 +108,7 @@ router.get('/', getNeighborhoods);
  *         required: true
  *         schema:
  *           type: string
- *         description: Término de búsqueda (nombre o código)
+ *         description: Término de búsqueda (nombre o código del barrio/localidad)
  *     responses:
  *       200:
  *         description: Lista de barrios encontrados
@@ -99,19 +126,52 @@ router.get('/', getNeighborhoods);
  *                     properties:
  *                       id:
  *                         type: string
+ *                         format: uuid
  *                       name:
  *                         type: string
  *                       code:
  *                         type: string
  *                       parent_id:
  *                         type: string
+ *                         format: uuid
  *                         nullable: true
+ *                       parent_name:
+ *                         type: string
+ *                         nullable: true
+ *                         description: Nombre del nodo padre. Null si es raíz.
+ *                       is_active:
+ *                         type: boolean
+ *                         description: Indica si el barrio/localidad está activo
  *                       metadata:
  *                         type: object
  *                         nullable: true
+ *                         description: Datos adicionales del barrio. Los barrios incluyen imagen y descripción genérica.
+ *                         properties:
+ *                           imagen:
+ *                             type: string
+ *                             format: uri
+ *                             description: URL de imagen representativa del barrio
+ *                           descripcion:
+ *                             type: string
+ *                             description: Descripción genérica del barrio
  *                       created_at:
  *                         type: string
  *                         format: date-time
+ *             examples:
+ *               default:
+ *                 value:
+ *                   ok: true
+ *                   neighborhoods:
+ *                     - id: "uuid-barrio-0105"
+ *                       name: "Cedritos"
+ *                       code: "BAR-0105"
+ *                       parent_id: "uuid-localidad-01"
+ *                       parent_name: "Usaquén"
+ *                       is_active: true
+ *                       metadata:
+ *                         imagen: "https://images.unsplash.com/photo-1564769662533-4f00a87b4056?auto=format&fit=crop&w=600&q=80"
+ *                         descripcion: "Zona residencial de estrato medio con calles arboladas, plazoletas y una activa vida comercial en su eje principal."
+ *                       created_at: "2026-02-22T10:00:00.000Z"
  *       400:
  *         description: Falta parámetro query
  *       500:
@@ -128,6 +188,7 @@ router.get('/search', searchNeighborhoods);
  *       properties:
  *         id:
  *           type: string
+ *           format: uuid
  *         name:
  *           type: string
  *         code:
@@ -137,10 +198,27 @@ router.get('/search', searchNeighborhoods);
  *           description: "Tipo calculado: 'Ciudad', 'Localidad', 'Barrio' u 'Otro'"
  *         parent_id:
  *           type: string
+ *           format: uuid
  *           nullable: true
+ *         parent_name:
+ *           type: string
+ *           nullable: true
+ *           description: Nombre del nodo padre. Null si es raíz.
+ *         is_active:
+ *           type: boolean
+ *           description: Indica si el barrio/localidad está activo en el sistema
  *         metadata:
  *           type: object
  *           nullable: true
+ *           description: Datos adicionales. Los barrios contienen imagen y descripción genérica.
+ *           properties:
+ *             imagen:
+ *               type: string
+ *               format: uri
+ *               description: URL de imagen representativa del barrio
+ *             descripcion:
+ *               type: string
+ *               description: Descripción genérica del barrio
  *         parent:
  *           $ref: '#/components/schemas/NeighborhoodNode'
  *           description: "Objeto padre (recursivo)"
@@ -183,13 +261,18 @@ router.get('/search', searchNeighborhoods);
  *                     code: "BSJ-01"
  *                     type: "Barrio"
  *                     parent_id: "uuid-localidad"
- *                     metadata: null
+ *                     is_active: true
+ *                     metadata:
+ *                       imagen: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=600&q=80"
+ *                       descripcion: "Barrio tradicional bogotano con historia y cultura propias."
  *                     parent:
  *                       id: "uuid-localidad"
  *                       name: "Localidad Norte"
  *                       code: "LOC-N"
  *                       type: "Localidad"
  *                       parent_id: "uuid-ciudad"
+ *                       is_active: true
+ *                       metadata: null
  *                       parent:
  *                         id: "uuid-ciudad"
  *                         name: "Ciudad Capital"

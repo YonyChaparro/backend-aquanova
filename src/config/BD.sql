@@ -51,6 +51,7 @@ CREATE TABLE `neighborhoods` (
   `name` VARCHAR(255) NOT NULL,
   `code` VARCHAR(50) NOT NULL,               -- Código catastral o interno único
   `parent_id` CHAR(36) NULL,                 -- Recursividad: Un barrio puede pertenecer a una "Comuna"
+  `is_active` BOOLEAN DEFAULT TRUE,          -- Estado activo/inactivo del barrio
   `geom` GEOMETRY NULL,                      -- Tipo espacial nativo: Puntos o Polígonos del barrio
   `metadata` JSON NULL,                      -- Datos extra: Población estimada, estrato, etc.
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,

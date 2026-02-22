@@ -15,8 +15,8 @@ const SVG_FILE_PATH = path.resolve(__dirname, './Mapa.svg');
 
 const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'aquanova',
-    password: process.env.DB_PASSWORD || '1234',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '2405102',
     database: process.env.DB_NAME || 'app_aquanova_bd'
 };
 
