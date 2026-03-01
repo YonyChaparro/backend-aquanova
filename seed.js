@@ -364,289 +364,223 @@ const seedDatabase = async () => {
 
         const BOGOTA_DATA = [
             {
-                localidad: { name: 'Usaquén', code: 'LOC-01' },
+                localidad: { name: 'Usaquén', code: 'LOC-01', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772333719/descarga_dq3qip.jpg', descripcion: 'Localidad del norte de Bogotá con ambiente histórico y colonial. Reconocida por el Mercado de las Pulgas dominical, la Hacienda Santa Bárbara y sus exclusivos restaurantes.' },
                 barrios: [
-                    { name: 'Usaquén',       code: 'BAR-0101' },
-                    { name: 'Santa Bárbara', code: 'BAR-0102' },
-                    { name: 'Country Club',  code: 'BAR-0103' },
-                    { name: 'La Calleja',    code: 'BAR-0104' },
-                    { name: 'Cedritos',      code: 'BAR-0105' },
-                    { name: 'San Patricio',  code: 'BAR-0106' },
-                    { name: 'Toberín',       code: 'BAR-0107' },
+                    { name: 'Usaquén',       code: 'BAR-0101', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772333847/images_jkdzwf.jpg', descripcion: 'Centro histórico de la localidad con calles empedradas, casas coloniales restauradas y un animado mercado de pulgas dominical. Epicentro gastronómico y cultural del norte de Bogotá.' },
+                    { name: 'Santa Bárbara', code: 'BAR-0102', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772334218/Santa_Barbara_f19kdb.jpg', descripcion: 'Sector exclusivo de estrato alto con el centro comercial Hacienda Santa Bárbara como ícono. Zona residencial con amplios bulevares, restaurantes de alta cocina y embajadas.' },
+                    { name: 'Country Club',  code: 'BAR-0103', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772334281/usaquen-bogota_j94clo.jpg', descripcion: 'Barrio residencial de estrato 6 con amplias zonas verdes y proximidad al Country Club de Bogotá. Reconocido por su tranquilidad, seguridad privada y arquitectura de casas señoriales.' },
+                    { name: 'La Calleja',    code: 'BAR-0104', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772334351/1200x630_La-Calleja_3_ginnzk.jpg', descripcion: 'Zona comercial y residencial de estrato alto con el Centro Comercial Unicentro como referente. Amplia oferta de servicios financieros, restaurantes y oficinas corporativas.' },
+                    { name: 'Cedritos',      code: 'BAR-0105', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772334412/bogota-cedritos-hero_ukrcgl.png', descripcion: 'Barrio residencial de clase media-alta con alta densidad de apartamentos modernos. Conocido por su activa vida nocturna en la zona de bares y restaurantes sobre la calle 140.' },
+                    { name: 'San Patricio',  code: 'BAR-0106', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772334499/vivir-en-san-patricio-bogota-scaled_c11b6o.jpg', descripcion: 'Sector residencial tranquilo de estrato 5, cercano al Club El Nogal. Caracterizado por sus casas amplias con antejardines y una comunidad consolidada de familias tradicionales.' },
+                    { name: 'Toberín',       code: 'BAR-0107', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772334556/presentation3_1_fpc82g.jpg', descripcion: 'Zona de desarrollo urbanístico con estación de TransMilenio. Mezcla de conjuntos residenciales nuevos y barrios tradicionales, con acceso a la Autopista Norte y comercio local activo.' },
                 ]
             },
             {
-                localidad: { name: 'Chapinero', code: 'LOC-02' },
+                localidad: { name: 'Chapinero', code: 'LOC-02', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772334751/descarga_vs41fx.avif', descripcion: 'Localidad cosmopolita y diversa en el centro-oriente de Bogotá. Centro financiero y universitario con vibrante vida cultural, gastronómica y nocturna.' },
                 barrios: [
-                    { name: 'El Lago',          code: 'BAR-0201' },
-                    { name: 'Chapinero Central', code: 'BAR-0202' },
-                    { name: 'Rosales',           code: 'BAR-0203' },
-                    { name: 'El Retiro',         code: 'BAR-0204' },
-                    { name: 'Quinta Camacho',    code: 'BAR-0205' },
-                    { name: 'Belén',             code: 'BAR-0206' },
+                    { name: 'El Lago',          code: 'BAR-0201', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772334820/KSTN2NUNEFDZZPHBCYDNVYIPTY_bjefhc.jpg', descripcion: 'Sector comercial consolidado alrededor del Parque El Lago. Concentra oficinas, bancos, clínicas y una intensa actividad diurna con acceso directo a la Carrera Séptima.' },
+                    { name: 'Chapinero Central', code: 'BAR-0202', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772334861/descarga_1_rwmvam.avif', descripcion: 'Corazón de Chapinero con la Iglesia de Lourdes como ícono. Zona de alta densidad comercial, universidades, librerías y cafés. Reconocido por su diversidad cultural y movimiento LGBTQ+.' },
+                    { name: 'Rosales',           code: 'BAR-0203', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772334921/6XCVYKUCHJHMFI7PQEUXTLK2PU_vruohk.avif', descripcion: 'Barrio de estrato 6 al pie de los cerros orientales con vista panorámica de la ciudad. Zona de embajadas, residencias de lujo y restaurantes exclusivos sobre la Carrera 5.' },
+                    { name: 'El Retiro',         code: 'BAR-0204', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772335010/entornoAID-arquitectura-diseno-inmobiliario-Edificio_Retiro_84-6_h2pvr5.jpg', descripcion: 'Sector financiero y comercial de alto nivel con el Centro Comercial Andino y El Retiro. Zona de oficinas corporativas, boutiques de lujo y gastronomía internacional.' },
+                    { name: 'Quinta Camacho',    code: 'BAR-0205', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772335063/diseno-sin-titulo-2024-10-25t151355.595_mi95yy.jpg', descripcion: 'Barrio con encanto bohemio y arquitectura inglesa de los años 40. Calles arboladas con casas de conservación convertidas en restaurantes gourmet, cafés artesanales y galerías de arte.' },
+                    { name: 'Belén',             code: 'BAR-0206', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772335119/images_1_mk91rz.jpg', descripcion: 'Sector residencial al borde de los cerros orientales con ambiente tranquilo. Comunidad consolidada con acceso a senderos ecológicos del cerro y proximidad al eje universitario de Chapinero.' },
                 ]
             },
             {
-                localidad: { name: 'Santa Fe', code: 'LOC-03' },
+                localidad: { name: 'Santa Fe', code: 'LOC-03', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772335294/unnamed_drqn6b.jpg', descripcion: 'Localidad del centro de Bogotá con gran riqueza histórica y cultural. Alberga las Torres del Parque, el Eje Ambiental y la Carrera Séptima peatonal.' },
                 barrios: [
-                    { name: 'Las Aguas',    code: 'BAR-0301' },
-                    { name: 'La Concordia', code: 'BAR-0302' },
-                    { name: 'Egipto',       code: 'BAR-0303' },
-                    { name: 'Lourdes',      code: 'BAR-0304' },
-                    { name: 'Veracruz',     code: 'BAR-0305' },
+                    { name: 'Las Aguas',    code: 'BAR-0301', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772335352/Bogot%C3%A1_barrio_Las_Aguas_carrera_2_Gonzalo_Jim%C3%A9nez_de_Quesada_agznua.jpg', descripcion: 'Barrio universitario icónico con la Universidad de los Andes y el Eje Ambiental. Zona de librerías, cafés estudiantiles y patrimonio colonial al pie del cerro de Monserrate.' },
+                    { name: 'La Concordia', code: 'BAR-0302', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772335419/Barrio_La_Concordia__Bogot%C3%A1_ece1c2.jpg', descripcion: 'Barrio tradicional en los cerros orientales con calles empinadas y casas de arquitectura popular. Comunidad arraigada con murales coloridos y una vista privilegiada del centro histórico.' },
+                    { name: 'Egipto',       code: 'BAR-0303', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772335469/Iglesia_de_Egipto1_xh6lrz.jpg', descripcion: 'Barrio popular en la ladera del cerro de Guadalupe con fuerte identidad barrial. Calles estrechas y empinadas, casas de ladrillo visto y una comunidad resiliente con proyectos de renovación urbana.' },
+                    { name: 'Lourdes',      code: 'BAR-0304', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772335530/IglesiaLourdes12_RicardoBa%CC%81ez_650_kb_pghxb2.jpg', descripcion: 'Sector con la emblemática Iglesia de Nuestra Señora de Lourdes. Zona de uso mixto con comercio tradicional, talleres artesanales y residencias antiguas en proceso de renovación.' },
+                    { name: 'Veracruz',     code: 'BAR-0305', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772335570/Avenida_Jim%C3%A9nez_Eje_Ambiental_wvbe6c.jpg', descripcion: 'Barrio céntrico cercano al Parque Santander y la Iglesia de la Veracruz. Zona de oficinas públicas, comercio popular y conexión peatonal con el centro histórico de Bogotá.' },
                 ]
             },
             {
-                localidad: { name: 'San Cristóbal', code: 'LOC-04' },
+                localidad: { name: 'San Cristóbal', code: 'LOC-04', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772335804/Parroquia_El_Divino_Ni%C3%B1o__Bogot%C3%A1_Cund_-_Colombia_oet5os.jpg', descripcion: 'Localidad del suroriente bogotano al pie de los cerros orientales. Reconocida por el Santuario del 20 de Julio y una fuerte identidad obrera y religiosa.' },
                 barrios: [
-                    { name: '20 de Julio',   code: 'BAR-0401' },
-                    { name: 'La Victoria',   code: 'BAR-0402' },
-                    { name: 'San Blas',      code: 'BAR-0403' },
-                    { name: 'Sosiego',       code: 'BAR-0404' },
-                    { name: 'Montebello',    code: 'BAR-0405' },
-                    { name: 'El Triángulo',  code: 'BAR-0406' },
+                    { name: '20 de Julio',   code: 'BAR-0401', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772335856/58c4a060a302c_jcyrld.jpg', descripcion: 'Barrio emblemático de la devoción al Divino Niño Jesús. Su santuario atrae miles de peregrinos cada semana. Zona de alta actividad comercial con el Sanandresito del Sur y mercados populares.' },
+                    { name: 'La Victoria',   code: 'BAR-0402', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772335856/58c4a060a302c_jcyrld.jpg', descripcion: 'Barrio residencial popular en los cerros orientales con fuerte tejido comunitario. Cuenta con colegios distritales, canchas deportivas y acceso a rutas alimentadoras del SITP.' },
+                    { name: 'San Blas',      code: 'BAR-0403', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772335954/7740935_3feadffd891f7ffe_awfdrw.jpg', descripcion: 'Uno de los barrios más antiguos de la localidad, ubicado en la ladera del cerro. Comunidad tradicional con vocación obrera, iglesia parroquial y activa Junta de Acción Comunal.' },
+                    { name: 'Sosiego',       code: 'BAR-0404', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772336030/35508701_3fe676af94fdc46b_fe8qxe.jpg', descripcion: 'Sector residencial consolidado de estrato 3 con buena cobertura de servicios públicos. Proximidad al Hospital San Blas y a la Avenida Primero de Mayo para conectividad vial.' },
+                    { name: 'Montebello',    code: 'BAR-0405', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772336100/eef_176314318216_plana_jcrgxs.jpg', descripcion: 'Barrio en la parte alta de los cerros con vista panorámica de la ciudad. Zona residencial con casas de ladrillo, parques vecinales y programas de mejoramiento integral de barrios.' },
+                    { name: 'El Triángulo',  code: 'BAR-0406', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772336149/Sur_de_la_Localidad_de_Usme__Bogot%C3%A1_wgatwf.jpg', descripcion: 'Sector popular con acceso a la Avenida de los Cerros. Barrio en proceso de consolidación con proyectos de vivienda de interés social y participación en programas distritales de acueducto.' },
                 ]
             },
             {
-                localidad: { name: 'Usme', code: 'LOC-05' },
+                localidad: { name: 'Usme', code: 'LOC-05', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772336442/turismo-en-bogota_-conoce-usme-pueblo-la-puerta-al-area-rural_smpzap.jpg', descripcion: 'Localidad del sur de Bogotá con extensas zonas rurales y urbanas. Puerta de entrada al páramo de Sumapaz con una comunidad campesina y urbana en constante crecimiento.' },
                 barrios: [
-                    { name: 'Usme Centro',    code: 'BAR-0501' },
-                    { name: 'Gran Yomasa',    code: 'BAR-0502' },
-                    { name: 'Alfonso López',  code: 'BAR-0503' },
-                    { name: 'La Flora',       code: 'BAR-0504' },
-                    { name: 'Ciudad de Usme', code: 'BAR-0505' },
-                    { name: 'Comuneros',      code: 'BAR-0506' },
+                    { name: 'Usme Centro',    code: 'BAR-0501', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772336589/turismo-en-bogota_-conoce-usme-pueblo-la-puerta-al-area-rural-1_vlvsrf.jpg', descripcion: 'Centro histórico del antiguo municipio de Usme con plaza principal, iglesia y alcaldía local. Punto de transición entre lo urbano y lo rural, con mercado campesino los fines de semana.' },
+                    { name: 'Gran Yomasa',    code: 'BAR-0502', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772336538/10012601_3fb8f014139c06f0_sn0plf.jpg', descripcion: 'Uno de los sectores más poblados de Usme con fuerte identidad comunitaria. Barrio popular con comercio local activo, colegios distritales y programas de legalización de predios.' },
+                    { name: 'Alfonso López',  code: 'BAR-0503', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772336637/Barrio_Alfonso_L%C3%B3pez_Bogot%C3%A1_kr_23_cl_52_enxej3.jpg', descripcion: 'Sector residencial de vivienda de interés social con conjuntos multifamiliares. Cuenta con parques vecinales, centros de salud CAMI y rutas del SITP para conectividad al centro de la ciudad.' },
+                    { name: 'La Flora',       code: 'BAR-0504', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772336697/unnamed_iyj4zf.png', descripcion: 'Barrio en la zona de transición urbano-rural de Usme. Rodeado de áreas verdes y con cercanía a quebradas naturales, combina vivienda popular con actividades agropecuarias periurbanas.' },
+                    { name: 'Ciudad de Usme', code: 'BAR-0505', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772336761/Cuatro_barrios_de_Usme_Suba_y_Kennedy_ingresaron_a_la_formalidad_dlgh4i.jpg', descripcion: 'Proyecto de expansión urbana planificada al sur de Bogotá. Zona de desarrollo con nuevos conjuntos residenciales, infraestructura educativa y vías de acceso en construcción.' },
+                    { name: 'Comuneros',      code: 'BAR-0506', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772336805/2017_Bogot%C3%A1_Comuneros__estaci%C3%B3n_de_Transmilenio_b9qm40.jpg', descripcion: 'Barrio popular con fuerte organización comunitaria y presencia activa de Juntas de Acción Comunal. Cuenta con colegio distrital, parque vecinal y programas de acueducto comunitario.' },
                 ]
             },
             {
-                localidad: { name: 'Tunjuelito', code: 'LOC-06' },
+                localidad: { name: 'Tunjuelito', code: 'LOC-06', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772337080/unnamed_1_geuwip.jpg', descripcion: 'Localidad del sur de Bogotá a orillas del río Tunjuelo. Zona industrial y residencial con el Parque El Tunal y la Biblioteca Pública El Tunal como referentes culturales.' },
                 barrios: [
-                    { name: 'Tunjuelito',      code: 'BAR-0601' },
-                    { name: 'Abraham Lincoln', code: 'BAR-0602' },
-                    { name: 'Venecia',         code: 'BAR-0603' },
-                    { name: 'San Benito',      code: 'BAR-0604' },
-                    { name: 'El Tunal',        code: 'BAR-0605' },
+                    { name: 'Tunjuelito',      code: 'BAR-0601', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772337303/137202905_1303146970050914_1187379141254261498_o_vmhyp0.jpg', descripcion: 'Barrio que da nombre a la localidad, ubicado junto al río Tunjuelo. Sector obrero tradicional con fábricas de curtiembres, viviendas de ladrillo y un fuerte sentido de identidad barrial.' },
+                    { name: 'Abraham Lincoln', code: 'BAR-0602', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772337367/Localidad_Rafael_Uribe_Uribe_xjpmdu.jpg', descripcion: 'Barrio residencial consolidado de estrato 3 con calles pavimentadas y buena cobertura de servicios. Reconocido por su cercanía a la zona industrial y su parque vecinal.' },
+                    { name: 'Venecia',         code: 'BAR-0603', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772337522/vene_nlseow.jpg', descripcion: 'Sector comercial dinámico con el Centro Comercial Ciudad Tunal y amplia oferta de servicios. Barrio de estrato medio con conjuntos residenciales y excelente acceso a TransMilenio.' },
+                    { name: 'San Benito',      code: 'BAR-0604', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772337729/donde-los-bogotanos-vamos-a-volvernos-verdes-body-image-1481321370_2_vyo25s.webp', descripcion: 'Histórico sector de curtiembres y procesamiento de cuero al sur de Bogotá. Zona industrial en transición con proyectos de renovación ambiental del río Tunjuelo.' },
+                    { name: 'El Tunal',        code: 'BAR-0605', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772337796/9512_opt_bsua58.jpg', descripcion: 'Barrio insignia del sur de Bogotá con el Parque Metropolitano El Tunal, la Biblioteca Pública y el centro comercial. Zona residencial y cultural de referencia para toda la localidad.' },
                 ]
             },
             {
-                localidad: { name: 'Bosa', code: 'LOC-07' },
+                localidad: { name: 'Bosa', code: 'LOC-07', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772337945/images_2_vfb0ih.jpg', descripcion: 'Localidad del suroccidente de Bogotá con raíces indígenas Muiscas. Zona de rápido crecimiento urbano con proyectos de vivienda y una comunidad diversa y emprendedora.' },
                 barrios: [
-                    { name: 'Bosa Centro',    code: 'BAR-0701' },
-                    { name: 'El Porvenir',    code: 'BAR-0702' },
-                    { name: 'Apogeo',         code: 'BAR-0703' },
-                    { name: 'San Bernardino', code: 'BAR-0704' },
-                    { name: 'El Recreo',      code: 'BAR-0705' },
-                    { name: 'San José',       code: 'BAR-0706' },
+                    { name: 'Bosa Centro',    code: 'BAR-0701', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772338009/obras_viales_en_bosa_1_aysfin.jpg', descripcion: 'Centro histórico de Bosa con la plaza fundacional y la iglesia colonial. Zona de comercio tradicional, mercado campesino y vestigios de la herencia indígena Muisca del territorio.' },
+                    { name: 'El Porvenir',    code: 'BAR-0702', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772338049/hq720_rnsbcd.jpg', descripcion: 'Sector de desarrollo reciente con grandes proyectos de vivienda de interés social y prioritario. Conjuntos residenciales modernos con zonas comunales, parques y colegios nuevos.' },
+                    { name: 'Apogeo',         code: 'BAR-0703', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772338110/bogota-gana-convocatoria-para-renaturalizar-la-zuma-bosa-apogeo-2-1_seyivh.jpg', descripcion: 'Barrio residencial popular con calles comerciales activas. Comunidad organizada con Junta de Acción Comunal participativa, colegio distrital y canchas deportivas de uso comunitario.' },
+                    { name: 'San Bernardino', code: 'BAR-0704', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772338212/LWIF5H4JRVF37ILFF4LELZPD6A_lmf04l.jpg', descripcion: 'Barrio con herencia del antiguo asentamiento Muisca de Bosa. Zona residencial consolidada con el humedal Tibanica cercano, ofreciendo espacios verdes para la comunidad.' },
+                    { name: 'El Recreo',      code: 'BAR-0705', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772338275/304-1815_241_x_z5vyrx.jpg', descripcion: 'Desarrollo urbanístico planificado con conjuntos cerrados de vivienda social. Cuenta con el Centro Comercial El Recreo, estación de TransMilenio y equipamiento deportivo moderno.' },
+                    { name: 'San José',       code: 'BAR-0706', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772338321/Ptm_Bog_oct_2019_dwlosr.jpg', descripcion: 'Barrio tradicional de Bosa con vocación residencial y comercio de proximidad. Tiendas de barrio, panaderías artesanales y una comunidad unida por festividades religiosas y culturales.' },
                 ]
             },
             {
-                localidad: { name: 'Kennedy', code: 'LOC-08' },
+                localidad: { name: 'Kennedy', code: 'LOC-08', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772338453/Avenida_de_Las_Am%C3%A9ricas_estaci%C3%B3n_Mundo_Aventura_de_Transmilenio_mavlpn.jpg', descripcion: 'La localidad más poblada de Bogotá, fundada con apoyo del presidente estadounidense John F. Kennedy. Hub comercial e industrial del suroccidente con una vibrante identidad popular.' },
                 barrios: [
-                    { name: 'Kennedy Central', code: 'BAR-0801' },
-                    { name: 'Américas',        code: 'BAR-0802' },
-                    { name: 'Castilla',        code: 'BAR-0803' },
-                    { name: 'Timiza',          code: 'BAR-0804' },
-                    { name: 'Britalia',        code: 'BAR-0805' },
-                    { name: 'Patio Bonito',    code: 'BAR-0806' },
-                    { name: 'Tintal',          code: 'BAR-0807' },
+                    { name: 'Kennedy Central', code: 'BAR-0801', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772338567/casas-en-kennedy_rjolft.jpg', descripcion: 'Centro neurálgico de la localidad con el monumento a Kennedy y el parque central. Zona de comercio intenso, bancos, oficinas públicas y la estación de TransMilenio de la Calle 38 Sur.' },
+                    { name: 'Américas',        code: 'BAR-0802', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772338629/av.-americas_gwrqmx.jpg', descripcion: 'Sector residencial y comercial sobre la Avenida de las Américas. Zona de centros comerciales, concesionarios y restaurantes, con acceso directo a la ciclovía más importante de Bogotá.' },
+                    { name: 'Castilla',        code: 'BAR-0803', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772338668/Aralia---DJI_0105_1_zqe89e.jpg', descripcion: 'Barrio residencial consolidado de estrato 3 con tradición obrera. Reconocido por sus parques vecinales, polideportivos y una sólida red de comercio local sobre la Avenida Primera de Mayo.' },
+                    { name: 'Timiza',          code: 'BAR-0804', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772338947/hq720_2_fbd7ty.jpg', descripcion: 'Barrio emblemático con el Parque Metropolitano Timiza, uno de los más grandes del sur. Zona residencial con lago artificial, canchas, pista de atletismo y programas deportivos distritales.' },
+                    { name: 'Britalia',        code: 'BAR-0805', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772338770/Parque_vecinal_en_Britalia_uyrzq4.jpg', descripcion: 'Sector residencial de desarrollo medio con conjuntos multifamiliares y casas de dos pisos. Comunidad activa con ferias de emprendimiento y comercio local sobre las vías principales.' },
+                    { name: 'Patio Bonito',    code: 'BAR-0806', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772339151/DJI_0972_tfsxwb.jpg', descripcion: 'Barrio popular densamente poblado con una de las plazas de mercado más grandes de Bogotá. Comunidad multicultural con fuerte presencia de población migrante y comercio informal vibrante.' },
+                    { name: 'Tintal',          code: 'BAR-0807', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772339019/maxresdefault_m0ljrz.jpg', descripcion: 'Zona de expansión urbana moderna con la Biblioteca Pública El Tintal como referente cultural. Desarrollo de conjuntos cerrados, parques lineales y nueva infraestructura educativa.' },
                 ]
             },
             {
-                localidad: { name: 'Fontibón', code: 'LOC-09' },
+                localidad: { name: 'Fontibón', code: 'LOC-09', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772339273/Fontibon_Plaza_se1spz.jpg', descripcion: 'Localidad estratégica del occidente de Bogotá con el Aeropuerto El Dorado. Centro logístico e industrial con barrios residenciales como Modelia y Ciudad Salitre.' },
                 barrios: [
-                    { name: 'Fontibón Centro',  code: 'BAR-0901' },
-                    { name: 'Modelia',          code: 'BAR-0902' },
-                    { name: 'Capellanía',       code: 'BAR-0903' },
-                    { name: 'Granjas de Techo', code: 'BAR-0904' },
-                    { name: 'Zona Franca',      code: 'BAR-0905' },
-                    { name: 'Ciudad Salitre',   code: 'BAR-0906' },
+                    { name: 'Fontibón Centro',  code: 'BAR-0901', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772339332/fontibon_recorrido_odiaz-19_g6kcbb.jpg', descripcion: 'Centro histórico de Fontibón con la plaza fundacional y la iglesia colonial de Santiago Apóstol. Zona de comercio tradicional, restaurantes típicos y antigua estación del ferrocarril.' },
+                    { name: 'Modelia',          code: 'BAR-0902', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772339377/bogota-modelia-hero_p55fx7.png', descripcion: 'Barrio residencial de estrato 4 con amplios parques y alamedas arboladas. Reconocido por su calidad urbanística, ciclorruta sobre el Canal de los Ángeles y cercanía al aeropuerto.' },
+                    { name: 'Capellanía',       code: 'BAR-0903', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772339423/RtcMxd_ACzRTeRHEyajBHmWLpbUMxazCJFIGVygogTobRd_VJPSBRqCgHLnIaFYgSZOaLmWoItRwpToGAmesPGhcAn172235478468_plana_q2lfww.jpg', descripcion: 'Sector industrial y comercial con bodegas logísticas y centros empresariales. Estratégicamente ubicado cerca del aeropuerto El Dorado y la Zona Franca de Fontibón.' },
+                    { name: 'Granjas de Techo', code: 'BAR-0904', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772339480/Bogot%C3%A1_carrera_23_calle_26_wf3fjo.jpg', descripcion: 'Zona mixta de bodegas industriales y vivienda popular. En proceso de renovación urbana con proyectos de vivienda y mejoramiento del espacio público sobre la Avenida Centenario.' },
+                    { name: 'Zona Franca',      code: 'BAR-0905', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772339564/zona-franca-de-bogota_r3cmz5.jpg', descripcion: 'Principal zona franca de Bogotá con más de 400 empresas. Hub logístico e industrial con modernas bodegas, centros de distribución y parques empresariales de alto nivel.' },
+                    { name: 'Ciudad Salitre',   code: 'BAR-0906', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772339627/ciudad-salitre-oriental_fafq4i.jpg', descripcion: 'Desarrollo urbanístico modelo de Bogotá con amplias avenidas, parques y arquitectura moderna. Alberga el Centro de Alto Rendimiento y edificios gubernamentales como el Ministerio de Defensa.' },
                 ]
             },
             {
-                localidad: { name: 'Engativá', code: 'LOC-10' },
+                localidad: { name: 'Engativá', code: 'LOC-10', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772340276/engativa_plf4yb.jpg', descripcion: 'Localidad del noroccidente de Bogotá con importantes humedales como Juan Amarillo y Jaboque. Zona residencial y comercial con el Jardín Botánico y la ciclovía de la Avenida El Dorado.' },
                 barrios: [
-                    { name: 'Engativá Centro', code: 'BAR-1001' },
-                    { name: 'Boyacá Real',     code: 'BAR-1002' },
-                    { name: 'La Española',     code: 'BAR-1003' },
-                    { name: 'Minuto de Dios',  code: 'BAR-1004' },
-                    { name: 'Santa Cecilia',   code: 'BAR-1005' },
-                    { name: 'Álamos',          code: 'BAR-1006' },
+                    { name: 'Engativá Centro', code: 'BAR-1001', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772340331/engativa_1_d0izgr.jpg', descripcion: 'Antiguo centro del municipio de Engativá con iglesia colonial y plaza fundacional. Zona de transición entre lo urbano y los humedales, con comercio local y tradiciones culturales vivas.' },
+                    { name: 'Boyacá Real',     code: 'BAR-1002', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772340380/cual-es-el-estrato-de-engativa_yyvacz.jpg', descripcion: 'Barrio residencial consolidado de estrato 3 sobre la Avenida Boyacá. Zona de conjuntos cerrados, comercio de proximidad y buena conectividad vial hacia el norte y el occidente de Bogotá.' },
+                    { name: 'La Española',     code: 'BAR-1003', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772340440/th.outside384x275.6990b4a1d0ebb_infocdn__5046-1-1761411464jpg_aiphko.jpg', descripcion: 'Sector residencial con casas tradicionales de dos pisos y antejardines. Barrio tranquilo con parques vecinales, tiendas de barrio y acceso a la ciclorruta de la Avenida 68.' },
+                    { name: 'Minuto de Dios',  code: 'BAR-1004', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772340514/Parada_2_mdD_Bt%C3%A1_may_2018_gj6u6j.jpg', descripcion: 'Barrio modelo fundado por el padre Rafael García Herreros con vocación social. Sede de la Universidad Minuto de Dios, el Museo de Arte Contemporáneo y una comunidad con fuerte tejido solidario.' },
+                    { name: 'Santa Cecilia',   code: 'BAR-1005', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772340562/Ciclorruta_calle_111_alameda_r%C3%ADo_Molinos_pyd9ed.jpg', descripcion: 'Barrio residencial de estrato 3 con calles arborizadas y pequeños parques. Zona con cobertura total de servicios públicos, colegio distrital y acceso a la Avenida Calle 68.' },
+                    { name: 'Álamos',          code: 'BAR-1006', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772340615/Bogot%C3%A1__sendero_en_el_Jard%C3%ADn_Bot%C3%A1nico_o1i5sp.jpg', descripcion: 'Zona industrial y comercial estratégica con cercanía al aeropuerto El Dorado. Bodegas logísticas conviviendo con sectores residenciales de larga data y excelente acceso a la Avenida Calle 26.' },
                 ]
             },
             {
-                localidad: { name: 'Suba', code: 'LOC-11' },
+                localidad: { name: 'Suba', code: 'LOC-11', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772340739/localidad_suba_i2uno6.jpg', descripcion: 'Localidad del noroccidente de Bogotá con gran diversidad socioeconómica. Alberga importantes humedales como Córdoba y La Conejera, y barrios que van desde estrato 1 hasta estrato 6.' },
                 barrios: [
-                    { name: 'Suba Centro',  code: 'BAR-1101' },
-                    { name: 'Niza',         code: 'BAR-1102' },
-                    { name: 'La Floresta',  code: 'BAR-1103' },
-                    { name: 'El Rincón',    code: 'BAR-1104' },
-                    { name: 'Tibabuyes',    code: 'BAR-1105' },
-                    { name: 'Lisboa',       code: 'BAR-1106' },
-                    { name: 'Casablanca',   code: 'BAR-1107' },
+                    { name: 'Suba Centro',  code: 'BAR-1101', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772340797/zonas-y-barrios-de-suba-1400x788_v8qzj8.jpg', descripcion: 'Centro histórico del antiguo municipio de Suba con plaza fundacional e iglesia colonial. Zona de comercio local, restaurantes típicos y punto de partida para recorridos por los cerros de Suba.' },
+                    { name: 'Niza',         code: 'BAR-1102', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772340855/Niza-20_gh1b2d.jpg', descripcion: 'Barrio residencial de estrato 4-5 con amplias zonas verdes y cercanía al Humedal Córdoba. Reconocido por su calidad de vida, centros comerciales cercanos y acceso a la Autopista Norte.' },
+                    { name: 'La Floresta',  code: 'BAR-1103', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772340907/puentesubir-_qlz5uz.jpg', descripcion: 'Sector residencial tranquilo de estrato 4 con casas amplias y jardines. Barrio familiar con buena arborización, panaderías artesanales y proximidad al Club Los Lagartos.' },
+                    { name: 'El Rincón',    code: 'BAR-1104', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772340957/av.-el-rincon-1_ifjdfo.jpg', descripcion: 'Uno de los sectores más poblados de Suba con vivienda de interés social y comercio popular. Comunidad diversa con colegios distritales, parques vecinales y acceso a las rutas del SITP.' },
+                    { name: 'Tibabuyes',    code: 'BAR-1105', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772341007/Gaviotas_2_imagen_icuiev.jpg', descripcion: 'Sector popular al noroccidente de Suba con cercanía al Humedal Juan Amarillo. Barrio en constante crecimiento con proyectos de mejoramiento integral y organización comunitaria activa.' },
+                    { name: 'Lisboa',       code: 'BAR-1106', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772341055/suba-lisboa_tfgrnq.jpg', descripcion: 'Barrio residencial consolidado de estrato 3 con buena infraestructura vial. Zona de conjuntos cerrados, comercio local activo y cercanía al Portal de Suba de TransMilenio.' },
+                    { name: 'Casablanca',   code: 'BAR-1107', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772341105/CasaBlanca-Render-1_spknxz.webp', descripcion: 'Sector residencial con mezcla de casas y apartamentos de estrato 3. Parques vecinales, supermercados de cadena y acceso a la ciclovía de la Avenida Suba para movilidad sostenible.' },
                 ]
             },
             {
-                localidad: { name: 'Barrios Unidos', code: 'LOC-12' },
+                localidad: { name: 'Barrios Unidos', code: 'LOC-12', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772341234/Barrios_Unidos_bcflr1.jpg', descripcion: 'Localidad del centro-norte de Bogotá con vocación comercial e industrial. Reconocida por sus ferias empresariales en Corferias y una tradición barrial de clase media trabajadora.' },
                 barrios: [
-                    { name: 'Doce de Octubre', code: 'BAR-1201' },
-                    { name: 'Los Andes',       code: 'BAR-1202' },
-                    { name: 'Alcázares',       code: 'BAR-1203' },
-                    { name: 'Polo Club',       code: 'BAR-1204' },
-                    { name: 'Siete de Agosto', code: 'BAR-1205' },
+                    { name: 'Doce de Octubre', code: 'BAR-1201', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772341290/La_Castellana_kr_49_cl_92_Bogot%C3%A1_f9wnky.jpg', descripcion: 'Barrio obrero tradicional con calles comerciales y talleres artesanales. Comunidad consolidada con iglesia parroquial, colegio distrital y activa participación en torneos deportivos de microfútbol.' },
+                    { name: 'Los Andes',       code: 'BAR-1202', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772341338/av_55083_efo8y1.webp', descripcion: 'Sector residencial de estrato 4 cercano a la Universidad Nacional. Zona de restaurantes universitarios, librerías y una vida cultural activa influenciada por la comunidad académica.' },
+                    { name: 'Alcázares',       code: 'BAR-1203', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772341412/Bogot%C3%A1_Av.Caracas_Calle_76_estaci%C3%B3n_Transmilenio_yypny2.jpg', descripcion: 'Barrio con patrimonio arquitectónico de casas de los años 50 y calles arboladas. Sector de estrato 4 con comercio de proximidad, talleres mecánicos históricos y proximidad a la Carrera 30.' },
+                    { name: 'Polo Club',       code: 'BAR-1204', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772341634/renovacion_del_polo._dc_gmnebv.jpg', descripcion: 'Sector residencial exclusivo cercano al antiguo Polo Club de Bogotá. Barrio de estrato 5 con casas amplias, restaurantes de alto nivel y acceso a la Avenida NQS y la Carrera Séptima.' },
+                    { name: 'Siete de Agosto', code: 'BAR-1205', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772341697/6219ab8d5901d_dsbqaw.jpg', descripcion: 'Histórico barrio comercial especializado en repuestos automotrices y muebles. Epicentro del comercio popular del norte con una tradición de más de 70 años de actividad mercantil ininterrumpida.' },
                 ]
             },
             {
-                localidad: { name: 'Teusaquillo', code: 'LOC-13' },
+                localidad: { name: 'Teusaquillo', code: 'LOC-13', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772341969/1_2_q8utfk.jpg', descripcion: 'Localidad del centro de Bogotá con gran valor arquitectónico y cultural. Alberga el Parque Simón Bolívar, la Universidad Nacional, Corferias y barrios de conservación histórica.' },
                 barrios: [
-                    { name: 'Teusaquillo',          code: 'BAR-1301' },
-                    { name: 'Palermo',              code: 'BAR-1302' },
-                    { name: 'Galerías',             code: 'BAR-1303' },
-                    { name: 'La Soledad',           code: 'BAR-1304' },
-                    { name: 'Nicolás de Federmann', code: 'BAR-1305' },
-                    { name: 'Armenia',              code: 'BAR-1306' },
+                    { name: 'Teusaquillo',          code: 'BAR-1301', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772342127/teusa_d10w0q.jpg', descripcion: 'Barrio de conservación arquitectónica con casas de estilo inglés y republicano de los años 30-40. Calles arboladas, plazoletas y una comunidad que preserva activamente su patrimonio urbanístico.' },
+                    { name: 'Palermo',              code: 'BAR-1302', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772342085/artworks-PEymKGfoEMrXoXEz-bsLIgw-t1080x1080_waajlk.jpg', descripcion: 'Sector bohemio y cultural con galerías de arte, talleres de artistas y cafés independientes. Barrio universitario con fuerte influencia de la Escuela de Artes de la Universidad Nacional.' },
+                    { name: 'Galerías',             code: 'BAR-1303', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772342200/Oferta-inmobiliaria-en-Galerias-Teusaquillo_ts5qpd.jpg', descripcion: 'Zona comercial y de oficinas consolidada con el Centro Comercial Galerías como referente. Sector de uso mixto con restaurantes, clínicas odontológicas y una activa vida urbana diurna.' },
+                    { name: 'La Soledad',           code: 'BAR-1304', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772342243/patrimonio-opt_v6cjch.jpg', descripcion: 'Barrio residencial exclusivo de estrato 4 con casas de arquitectura republicana bien conservadas. Zona de embajadas menores, consultorios médicos y restaurantes de cocina gourmet colombiana.' },
+                    { name: 'Nicolás de Federmann', code: 'BAR-1305', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772342331/PARQUE_NICOLAS_DE_FEDERMAN-2_jygenk.jpg', descripcion: 'Sector residencial tranquilo cercano al Parque Simón Bolívar. Barrio de estrato 4 con casas de dos pisos, antejardines y una comunidad familiar que disfruta de los espacios verdes del parque.' },
+                    { name: 'Armenia',              code: 'BAR-1306', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772342379/images_3_n3fvzc.jpg', descripcion: 'Barrio tradicional de clase media con calles residenciales y comercio local. Cercanía a Corferias y al Centro de Convenciones, lo que dinamiza la actividad económica durante ferias y eventos.' },
                 ]
             },
             {
-                localidad: { name: 'Los Mártires', code: 'LOC-14' },
+                localidad: { name: 'Los Mártires', code: 'LOC-14', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772342550/iglesia-del-voto-nacional_wtbddx.jpg', descripcion: 'Localidad del centro de Bogotá con fuerte vocación comercial. Zona de la Plaza España, el Sanandresito y el sector de San Victorino, epicentros del comercio popular bogotano.' },
                 barrios: [
-                    { name: 'Santa Isabel',  code: 'BAR-1401' },
-                    { name: 'La Favorita',   code: 'BAR-1402' },
-                    { name: 'El Listón',     code: 'BAR-1403' },
-                    { name: 'Ricaurte',      code: 'BAR-1404' },
-                    { name: 'Eduardo Santos', code: 'BAR-1405' },
+                    { name: 'Santa Isabel',  code: 'BAR-1401', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772342592/20859-M6139958_41_x_ra51bd.jpg', descripcion: 'Barrio residencial de estrato 3 con calles tranquilas y casas tradicionales. Cercanía al Hospital de la Misericordia y al Parque El Renacimiento, un oasis verde en medio del centro de la ciudad.' },
+                    { name: 'La Favorita',   code: 'BAR-1402', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772342640/2019_Bogot%C3%A1_-_Barrio_La_Favorita_-_Calle_20_hacia_la_carrera_17_uqxvqo.jpg', descripcion: 'Sector de comercio popular con talleres de confección, zapaterías y almacenes de telas. Barrio de tradición obrera con una comunidad de comerciantes arraigados al territorio.' },
+                    { name: 'El Listón',     code: 'BAR-1403', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772342640/2019_Bogot%C3%A1_-_Barrio_La_Favorita_-_Calle_20_hacia_la_carrera_17_uqxvqo.jpg', descripcion: 'Barrio céntrico con uso mixto residencial y comercial. Zona de talleres, pequeñas industrias y vivienda popular, en proceso de renovación urbana por el proyecto del Metro de Bogotá.' },
+                    { name: 'Ricaurte',      code: 'BAR-1404', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772342749/U2CC5RKWOZFCFDBKOXHYVIUUYI_yzdrxq.avif', descripcion: 'Sector comercial especializado en tecnología, electrónica y repuestos. El Sanandresito de San José es su principal atractivo, ofreciendo productos importados a precios competitivos.' },
+                    { name: 'Eduardo Santos', code: 'BAR-1405', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772342820/images_4_woerg4.jpg', descripcion: 'Barrio histórico de clase media baja con arquitectura de mediados del siglo XX. Comunidad organizada con Junta de Acción Comunal activa, colegio distrital y cercanía al Estadio El Campín.' },
                 ]
             },
             {
-                localidad: { name: 'Antonio Nariño', code: 'LOC-15' },
+                localidad: { name: 'Antonio Nariño', code: 'LOC-15', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772342925/images_5_ytqnrt.jpg', descripcion: 'Una de las localidades más pequeñas de Bogotá, en el centro-sur. Reconocida por el barrio Restrepo, epicentro de la industria del calzado y el cuero en Colombia.' },
                 barrios: [
-                    { name: 'Antonio Nariño',   code: 'BAR-1501' },
-                    { name: 'Restrepo',         code: 'BAR-1502' },
-                    { name: 'Ciudad Jardín Sur', code: 'BAR-1503' },
-                    { name: 'Muzú',             code: 'BAR-1504' },
-                    { name: 'La Fragua',        code: 'BAR-1505' },
+                    { name: 'Antonio Nariño',   code: 'BAR-1501', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772342968/Bogot%C3%A1__estaci%C3%B3n_Transmilenio_Poilicarpa_syvbjk.jpg', descripcion: 'Barrio que da nombre a la localidad con calles residenciales y comercio de proximidad. Sector de estrato 3 con colegios, parques vecinales y acceso a la Avenida Caracas y la NQS.' },
+                    { name: 'Restrepo',         code: 'BAR-1502', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772343052/restrepo_njoagi.jpg', descripcion: 'Epicentro de la industria del calzado y marroquinería en Bogotá. Barrio comercial vibrante con cientos de zapaterías, restaurantes tradicionales y la famosa Feria del Cuero que se celebra anualmente.' },
+                    { name: 'Ciudad Jardín Sur', code: 'BAR-1503', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772343094/Portada_58_vcyrdt.jpg', descripcion: 'Sector residencial que conserva su vocación de barrio jardín con casas de antejardines floridos. Zona tranquila de estrato 3 con vecinos de larga data y una atmósfera de pueblo dentro de la ciudad.' },
+                    { name: 'Muzú',             code: 'BAR-1504', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772343134/59eebc32800017.Y3JvcCwxMjI4LDk1OSwxMDksMTU2_shn5vu.png', descripcion: 'Barrio obrero planificado de los años 50 con casas uniformes de ladrillo. Comunidad unida con tradición deportiva, parque central y cercanía al Centro Comercial del Sur y la Avenida 68.' },
+                    { name: 'La Fragua',        code: 'BAR-1505', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772343177/Photo-14-02-25-10-23-54-AM_b82agz.jpg', descripcion: 'Sector residencial consolidado con casas de ladrillo y pequeños talleres artesanales. Barrio conocido por su panadería esquinera tradicional y la cercanía al Canal del Río Fucha para caminatas.' },
                 ]
             },
             {
-                localidad: { name: 'Puente Aranda', code: 'LOC-16' },
+                localidad: { name: 'Puente Aranda', code: 'LOC-16', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772343275/puente-aranda_ggha5k.jpg', descripcion: 'Principal zona industrial de Bogotá con fábricas, bodegas y centros de distribución. Localidad en transición con proyectos de renovación urbana y desarrollo de vivienda.' },
                 barrios: [
-                    { name: 'Puente Aranda',  code: 'BAR-1601' },
-                    { name: 'Cundinamarca',   code: 'BAR-1602' },
-                    { name: 'Ciudad Montes',  code: 'BAR-1603' },
-                    { name: 'Galán',          code: 'BAR-1604' },
-                    { name: 'Pradera',        code: 'BAR-1605' },
-                    { name: 'Salazar Gómez',  code: 'BAR-1606' },
+                    { name: 'Puente Aranda',  code: 'BAR-1601', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772343309/Av._30_Cl_13_Bogot%C3%A1_eosv7p.jpg', descripcion: 'Centro de la localidad con el tradicional puente sobre el río San Francisco. Zona de uso mixto industrial y residencial, con bodegas históricas y proyectos de reconversión a vivienda.' },
+                    { name: 'Cundinamarca',   code: 'BAR-1602', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772343345/Los_M%C3%A1rtires_yuxsf8.jpg', descripcion: 'Sector industrial y comercial con bodegas de distribución y talleres manufactureros. Zona en transformación con nuevos desarrollos inmobiliarios sobre la Avenida de las Américas.' },
+                    { name: 'Ciudad Montes',  code: 'BAR-1603', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772343390/Colegio_Ciudad_Montes_-_panoramio_okxdnd.jpg', descripcion: 'Barrio residencial obrero con canchas deportivas y polideportivos activos. Reconocido por sus torneos de microfútbol de fin de semana y una comunidad solidaria con fuerte sentido barrial.' },
+                    { name: 'Galán',          code: 'BAR-1604', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772343427/maxresdefault_1_m4rf9b.jpg', descripcion: 'Barrio tradicional de clase media-baja con vocación comercial sobre la Avenida 68. Tiendas de barrio, ferreterías y talleres conviviendo con viviendas familiares de dos y tres pisos.' },
+                    { name: 'Pradera',        code: 'BAR-1605', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772343466/Pradera_TM_Bogot%C3%A1_mrz_2019_-_3_uiayzr.jpg', descripcion: 'Sector residencial y comercial con cercanía a la zona industrial. Barrio consolidado de estrato 3 con parque vecinal, colegio distrital y acceso a las principales avenidas de la ciudad.' },
+                    { name: 'Salazar Gómez',  code: 'BAR-1606', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772343523/35488340_8d708cebd39dbd42_bl8ebl.jpg', descripcion: 'Zona industrial en proceso de renovación urbana con proyectos de vivienda y oficinas. Antiguas fábricas transformándose en lofts modernos y espacios de coworking para emprendedores.' },
                 ]
             },
             {
-                localidad: { name: 'La Candelaria', code: 'LOC-17' },
+                localidad: { name: 'La Candelaria', code: 'LOC-17', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772343627/la_candelaria-1_mqvasa.jpg', descripcion: 'Centro histórico de Bogotá y cuna de la independencia colombiana. Localidad con calles empedradas, museos, teatros, universidades y una rica vida cultural y bohemia.' },
                 barrios: [
-                    { name: 'La Catedral',          code: 'BAR-1701' },
-                    { name: 'La Concordia Sur',     code: 'BAR-1702' },
-                    { name: 'Centro Administrativo', code: 'BAR-1703' },
-                    { name: 'Las Aguas Sur',        code: 'BAR-1704' },
+                    { name: 'La Catedral',          code: 'BAR-1701', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772343701/2021_Bogot%C3%A1_-_Catedral_Primada_de_Colombia_m4nxrr.jpg', descripcion: 'Corazón del centro histórico con la Plaza de Bolívar, la Catedral Primada, el Capitolio Nacional y el Palacio de Justicia. Epicentro del poder político y religioso de Colombia.' },
+                    { name: 'La Concordia Sur',     code: 'BAR-1702', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772344001/Barrio_La_Concordia__calle_12_carre_1_E_Bogota_quknyg.jpg', descripcion: 'Barrio bohemio en la ladera del cerro con hostales, cafés artesanales y galerías de arte callejero. Punto de encuentro de artistas, estudiantes y viajeros que exploran el Bogotá auténtico.' },
+                    { name: 'Centro Administrativo', code: 'BAR-1703', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772343786/3695-M4617253_1_x_rlssbe.jpg', descripcion: 'Zona de edificios gubernamentales, ministerios y entidades del Estado. Alberga las icónicas Torres del Parque de Rogelio Salmona y el Centro Internacional de negocios.' },
+                    { name: 'Las Aguas Sur',        code: 'BAR-1704', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772343823/istockphoto-1399646345-612x612_ziwneh.jpg', descripcion: 'Sector universitario al pie de Monserrate con la Universidad de los Andes y la Jorge Tadeo Lozano. Eje cultural con el Teatro Colón, la Biblioteca Luis Ángel Arango y el Museo de Arte del Banco de la República.' },
                 ]
             },
             {
-                localidad: { name: 'Rafael Uribe Uribe', code: 'LOC-18' },
+                localidad: { name: 'Rafael Uribe Uribe', code: 'LOC-18', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772344069/Localidad_Rafael_Uribe_Uribe_1_a9gpxb.jpg', descripcion: 'Localidad del suroriente de Bogotá con barrios populares y una fuerte identidad comunitaria. Zona residencial obrera con activa participación en programas de mejoramiento barrial.' },
                 barrios: [
-                    { name: 'Marco Fidel Suárez', code: 'BAR-1801' },
-                    { name: 'Quiroga',            code: 'BAR-1802' },
-                    { name: 'San José Sur',       code: 'BAR-1803' },
-                    { name: 'Claret',             code: 'BAR-1804' },
-                    { name: 'Lomas',              code: 'BAR-1805' },
-                    { name: 'Diana Turbay',       code: 'BAR-1806' },
+                    { name: 'Marco Fidel Suárez', code: 'BAR-1801', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772344109/hq720_3_nd7znc.jpg', descripcion: 'Barrio residencial popular con comercio local sobre las vías principales. Sector de estrato 2-3 con colegios distritales, canchas deportivas y una comunidad que participa activamente en ferias barriales.' },
+                    { name: 'Quiroga',            code: 'BAR-1802', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772344389/Quiroga_tm_Bogot%C3%A1_kweitd.jpg', descripcion: 'Barrio tradicional de clase obrera con una de las plazas de mercado más concurridas del sur. Reconocido por sus panaderías esquineras, tiendas de barrio y el Parque Quiroga para la recreación familiar.' },
+                    { name: 'San José Sur',       code: 'BAR-1803', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772344186/images_6_s0mug3.jpg', descripcion: 'Sector residencial consolidado de estrato 2 con casas de ladrillo y pequeños negocios familiares. Comunidad unida con festividades religiosas, bazar comunitario y activa Junta de Acción Comunal.' },
+                    { name: 'Claret',             code: 'BAR-1804', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772344215/images_7_pbe2e7.jpg', descripcion: 'Barrio popular con iglesia claretiana como referente. Zona residencial de estrato 2 con colegio religioso, parque vecinal y cercanía a la Avenida Caracas para conectividad al centro de la ciudad.' },
+                    { name: 'Lomas',              code: 'BAR-1805', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772344258/images_8_g4ihhz.jpg', descripcion: 'Sector en la parte alta de la localidad con vista de la sabana de Bogotá. Barrio de ladera con calles empinadas, casas de autoconstrucción y una comunidad resiliente con proyectos de mejoramiento vial.' },
+                    { name: 'Diana Turbay',       code: 'BAR-1806', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772344291/maxresdefault_2_rjjxqo.jpg', descripcion: 'Barrio popular en los cerros del suroriente con fuerte organización comunitaria. Zona de vivienda informal legalizada con programas de acueducto, pavimentación y mejoramiento integral de barrios.' },
                 ]
             },
             {
-                localidad: { name: 'Ciudad Bolívar', code: 'LOC-19' },
+                localidad: { name: 'Ciudad Bolívar', code: 'LOC-19', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772344527/transmicable1_foto-tomada-de-banco-de-imagenes-visitbogota_crwglt.jpg', descripcion: 'Localidad del sur de Bogotá con una de las poblaciones más grandes de la ciudad. Zona de contrastes entre barrios populares y áreas rurales, con una comunidad resiliente y emprendedora.' },
                 barrios: [
-                    { name: 'El Tesoro',      code: 'BAR-1901' },
-                    { name: 'Lucero',         code: 'BAR-1902' },
-                    { name: 'El Paraíso',     code: 'BAR-1903' },
-                    { name: 'San Francisco',  code: 'BAR-1904' },
-                    { name: 'Ismael Perdomo', code: 'BAR-1905' },
-                    { name: 'Jerusalem',      code: 'BAR-1906' },
-                    { name: 'Arborizadora',   code: 'BAR-1907' },
+                    { name: 'El Tesoro',      code: 'BAR-1901', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772344599/colegio-ciudad-bolivar_hewhcd.jpg', descripcion: 'Barrio popular en la parte alta de Ciudad Bolívar con vista panorámica de toda la ciudad. Comunidad emprendedora con proyectos de arte urbano, huertas comunitarias y programas juveniles de formación.' },
+                    { name: 'Lucero',         code: 'BAR-1902', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772344634/IA7NMVBPU5DMJC66LZP4GQOG4E_cc6478.jpg', descripcion: 'Uno de los barrios más emblemáticos de Ciudad Bolívar con calles empinadas y escaleras públicas. Comunidad con fuerte identidad cultural, murales artísticos y programas de biblioteca comunitaria.' },
+                    { name: 'El Paraíso',     code: 'BAR-1903', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772344664/145_l3cvfn.jpg', descripcion: 'Sector residencial popular con desarrollo de vivienda de interés social. Barrio en consolidación con nuevos conjuntos, colegio mega y acceso al cable aéreo TransMiCable de Ciudad Bolívar.' },
+                    { name: 'San Francisco',  code: 'BAR-1904', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772344698/7OSML74UTZFNBHRP7NVPFCW4TQ_otqrcm.avif', descripcion: 'Barrio tradicional de Ciudad Bolívar con iglesia parroquial y plaza de mercado local. Zona residencial con tiendas de barrio, microempresas familiares y acceso a las rutas del SITP provisional.' },
+                    { name: 'Ismael Perdomo', code: 'BAR-1905', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772344784/4785_27_1731708313_i4zrsw.jpg', descripcion: 'Sector de rápido desarrollo con proyectos de vivienda de interés prioritario. Zona con centros comerciales populares, colegios distritales nuevos y conectividad vial hacia el centro por la Autopista Sur.' },
+                    { name: 'Jerusalem',      code: 'BAR-1906', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772344823/Portal_El_Tunal_de_Bogot%C3%A1.jpeg_ztvx2n.jpg', descripcion: 'Barrio periférico en la ladera sur con organización comunitaria destacada. Zona de vivienda popular con programas de acueducto comunitario, huertas urbanas y centros culturales juveniles.' },
+                    { name: 'Arborizadora',   code: 'BAR-1907', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772344873/images_9_qiclgw.jpg', descripcion: 'Sector residencial con proyectos de vivienda pública y zonas verdes. Alberga el Centro de Desarrollo Comunitario y programas de reforestación que le dan su nombre al barrio.' },
                 ]
             },
             {
-                localidad: { name: 'Sumapaz', code: 'LOC-20' },
+                localidad: { name: 'Sumapaz', code: 'LOC-20', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772345011/P%C3%A1ramo_de_Sumapaz_2_mw3obq.jpg', descripcion: 'La localidad más grande y rural de Bogotá, hogar del páramo más grande del mundo. Zona de conservación ecológica con comunidades campesinas dedicadas a la agricultura y ganadería de alta montaña.' },
                 barrios: [
-                    { name: 'San Juan',  code: 'BAR-2001' },
-                    { name: 'Nazareth', code: 'BAR-2002' },
-                    { name: 'Betania',  code: 'BAR-2003' },
+                    { name: 'San Juan',  code: 'BAR-2001', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772345067/hospital-sjdd_dbdjg6.jpg', descripcion: 'Corregimiento rural en el corazón del páramo de Sumapaz. Comunidad campesina dedicada a la agricultura de papa y hortalizas, con escuela rural y centro comunitario como ejes de la vida social.' },
+                    { name: 'Nazareth', code: 'BAR-2002', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772345128/20028-C0001-03_1_V2_x_uzduge.jpg', descripcion: 'Vereda del páramo de Sumapaz con paisajes de frailejones y lagunas glaciares. Zona de importancia hídrica para Bogotá con senderos ecológicos y una comunidad campesina guardiana del ecosistema.' },
+                    { name: 'Betania',  code: 'BAR-2003', imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772345224/images_10_mtanl2.jpg', descripcion: 'Pequeña vereda en las estribaciones del páramo con actividades agropecuarias. Comunidad rural con tradición de mingas campesinas, cultivo de arveja y fríjol, y cercanía a fuentes de agua cristalina.' },
                 ]
             },
         ];
 
-        // Imágenes genéricas de barrios bogotanos (Unsplash — rotación por índice)
-// Ampliado a 25 imágenes representativas de entornos urbanos, calles y arquitectura de ladrillo.
-const BARRIO_IMAGES = [
-    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1564769662533-4f00a87b4056?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1583001931096-959e9a1a6223?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1599946347371-68eb71b16afc?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1613979741226-5c4b6d7c8e6a?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1523950269098-900508a8e104?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1543857778-c4a1a3e0b2eb?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1555658636-6e4a36210b15?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1601002821102-efcf4a7b520b?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1580646152018-9c59f0f98e72?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1517009572053-93fd56623696?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1506505051061-f09c1fa41893?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1511215162718-ac4ce5686d14?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1460317442991-0ec209397118?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1584467735815-f778f274e296?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1582283084366-281ce1c518ad?auto=format&fit=crop&w=600&q=80',
-    'https://images.unsplash.com/photo-1621511674400-0585671151ba?auto=format&fit=crop&w=600&q=80'
-];
-
-// Descripciones genéricas para barrios bogotanos (rotación por índice)
-// Ampliado a 30 descripciones con contexto muy local.
-const BARRIO_DESCRIPCIONES = [
-    'Barrio residencial con amplia oferta de servicios comunitarios, parques y vías pavimentadas. Cuenta con acceso a transporte público y comercio local.',
-    'Sector urbano consolidado con presencia de vivienda de interés social y equipamientos comunitarios como colegios, centros de salud y canchas deportivas.',
-    'Zona residencial de estrato medio con calles arboladas, plazoletas y una activa vida comercial en su eje principal.',
-    'Barrio tradicional bogotano con historia y cultura propias. Reconocido por sus festividades locales y la organización de su Junta de Acción Comunal.',
-    'Sector en proceso de consolidación urbana con proyectos de mejoramiento de vivienda e infraestructura vial en desarrollo.',
-    'Barrio popular con fuerte tejido comunitario. Cuenta con mercado local, iglesia, colegio distrital y acceso a la red de ciclovías.',
-    'Zona urbana con alta densidad residencial, comercio de proximidad y conectividad al sistema de transporte masivo TransMilenio.',
-    'Barrio con características residenciales y presencia de microempresas familiares. Integrado a la malla vial local con acceso a rutas de buses zonales y paraderos del SITP.',
-    'Sector urbano con patrimonio arquitectónico de mediados del siglo XX. Reconocido por su paisaje de casas de dos pisos y antejardines.',
-    'Barrio con diversidad socioeconómica, infraestructura educativa y deportiva, y participación activa en programas distritales de agua y saneamiento.',
-    'Zona de uso mixto residencial-comercial con presencia de talleres, tiendas de barrio y servicios personales. Integrado a la red de acueducto del Distrito.',
-    'Barrio consolidado con cobertura total de servicios públicos domiciliarios. Activo programa de recolección de residuos sólidos y gestión del espacio público.',
-    'Sector ubicado al pie de los Cerros Orientales, ofreciendo una vista panorámica de la sabana y proximidad a senderos ecológicos.',
-    'Zona dinámica caracterizada por sus fachadas de ladrillo a la vista, típicas de la arquitectura bogotana, con parques de bolsillo ideales para mascotas.',
-    'Barrio de alta actividad comercial, conocido por albergar una de las plazas de mercado más tradicionales, donde se consiguen frutas y verduras frescas de la región.',
-    'Área residencial tranquila que destaca por sus panaderías de esquina, donde los vecinos se reúnen cada mañana para el tradicional tinto y pandebono.',
-    'Sector con una fuerte vocación universitaria; sus calles están llenas de estudiantes, cafés, papelerías y espacios de coworking adaptados en casas antiguas.',
-    'Barrio periférico en constante crecimiento, conectado al resto de la ciudad mediante rutas alimentadoras y con una fuerte identidad cultural de sus habitantes.',
-    'Zona de desarrollo reciente con modernos conjuntos cerrados, zonas verdes comunales y cercanía a centros comerciales de gran formato.',
-    'Sector tradicional que aún conserva sus calles adoquinadas y casas de conservación histórica, siendo un punto de interés tanto para residentes como para turistas.',
-    'Barrio obrero con gran actividad durante el día. Destaca por sus polideportivos, donde cada fin de semana se realizan torneos de microfútbol.',
-    'Zona residencial rodeada de importantes humedales de la ciudad, ofreciendo a sus habitantes espacios para la observación de aves y la conexión con la naturaleza.',
-    'Barrio de vocación industrial y comercial, con amplias bodegas conviviendo con sectores residenciales de larga data y excelente acceso a las principales avenidas.',
-    'Sector de estrato alto con amplios bulevares, restaurantes de gastronomía internacional y estricta seguridad privada en sus inmediaciones.',
-    'Barrio emblemático por sus murales y arte urbano, que refleja las expresiones de los jóvenes de la localidad en cada una de sus cuadras.',
-    'Zona residencial que se beneficia enormemente de la red de ciclorrutas de Bogotá, fomentando la movilidad sostenible entre sus habitantes.',
-    'Barrio con una vida nocturna vibrante, zonas de restaurantes y bares que atraen a un público joven y diverso durante los fines de semana.',
-    'Sector conocido por sus amplias zonas verdes y parques metropolitanos cercanos, ideales para el tradicional "picnic" bogotano de los domingos.',
-    'Barrio que ha sido objeto de renovación urbana, donde antiguas fábricas se han convertido en modernos lofts y centros culturales.',
-    'Comunidad unida que destaca por sus bazares comunitarios, ferias de emprendimiento local y un fuerte sentido de pertenencia barrial.'
-];
-
         let locInserted = 0;
         let barInserted = 0;
-        let barMetaIndex = 0;
 
         for (const entry of BOGOTA_DATA) {
             const { localidad, barrios } = entry;
@@ -658,24 +592,26 @@ const BARRIO_DESCRIPCIONES = [
             );
 
             let localidadId;
+            const localidadMetadata = JSON.stringify({ imagen: localidad.imagen, descripcion: localidad.descripcion });
             if (existingLoc.length > 0) {
                 localidadId = existingLoc[0].id;
+                // Actualizar metadata de la localidad con su imagen y descripción asignadas
+                await connection.query(
+                    'UPDATE neighborhoods SET metadata = ? WHERE code = ?',
+                    [localidadMetadata, localidad.code]
+                );
             } else {
                 localidadId = uuidv4();
                 await connection.query(
-                    'INSERT INTO neighborhoods (id, name, code, created_at) VALUES (?, ?, ?, NOW())',
-                    [localidadId, localidad.name, localidad.code]
+                    'INSERT INTO neighborhoods (id, name, code, metadata, created_at) VALUES (?, ?, ?, ?, NOW())',
+                    [localidadId, localidad.name, localidad.code, localidadMetadata]
                 );
                 locInserted++;
             }
 
             // Insertar barrios de esta localidad
             for (const barrio of barrios) {
-                const imagen      = BARRIO_IMAGES[barMetaIndex % BARRIO_IMAGES.length];
-                const descripcion = BARRIO_DESCRIPCIONES[barMetaIndex % BARRIO_DESCRIPCIONES.length];
-                barMetaIndex++;
-
-                const barrioMetadata = JSON.stringify({ imagen, descripcion });
+                const barrioMetadata = JSON.stringify({ imagen: barrio.imagen, descripcion: barrio.descripcion });
 
                 const [existingBarrio] = await connection.query(
                     'SELECT id FROM neighborhoods WHERE code = ?',
@@ -688,7 +624,7 @@ const BARRIO_DESCRIPCIONES = [
                     );
                     barInserted++;
                 } else {
-                    // Actualizar siempre la metadata con imagen y descripción
+                    // Actualizar siempre la metadata con imagen y descripción asignadas
                     await connection.query(
                         'UPDATE neighborhoods SET metadata = ? WHERE code = ?',
                         [barrioMetadata, barrio.code]
