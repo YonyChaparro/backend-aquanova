@@ -1,6 +1,6 @@
 # Documentación del Endpoint de Listado de Barrios y Localidades
 
-Esta documentación describe cómo consumir el endpoint para obtener todos los barrios y localidades del sistema desde el frontend.
+Esta documentación describe cómo consumir el endpoint para obtener todos los barrios y localidades del sistema desde el frontend. Las imágenes de cada registro son almacenadas y servidas desde **Cloudinary** (ver [API_NEIGHBORHOOD_MANAGEMENT_DOCUMENTATION.md](./API_NEIGHBORHOOD_MANAGEMENT_DOCUMENTATION.md) para la gestión de imágenes).
 
 ## Endpoint
 
@@ -25,9 +25,10 @@ Retorna todos los registros de la tabla `neighborhoods` (localidades y barrios),
 | `parent_id` | `string \| null` | UUID de la localidad padre. `null` si es una localidad raíz |
 | `parent_name` | `string \| null` | Nombre de la localidad padre. `null` si es una localidad raíz |
 | `is_active` | `boolean` | `true` si el registro está activo, `false` si está desactivado |
-| `metadata` | `object \| null` | Datos adicionales. Los barrios incluyen `imagen` y `descripcion`. Las localidades tienen `null`. |
-| `metadata.imagen` | `string (URL)` | URL de imagen representativa del barrio (Unsplash) |
-| `metadata.descripcion` | `string` | Descripción genérica del barrio |
+| `metadata` | `object \| null` | Datos adicionales. Tanto localidades como barrios incluyen `imagen` (Cloudinary) y `descripcion` específica del lugar. |
+| `metadata.imagen` | `string (URL)` | URL de imagen almacenada en Cloudinary (`res.cloudinary.com`). Lista para usar en `<img src="...">` |
+| `metadata.imagen_public_id` | `string` | ID público de la imagen en Cloudinary. Uso interno para gestión (actualización/eliminación) |
+| `metadata.descripcion` | `string` | Descripción específica y contextualizada del barrio o localidad |
 | `created_at` | `string (ISO 8601)` | Fecha de creación |
 
 ---
@@ -151,7 +152,10 @@ llenarSelectBarrios(select, userToken);
       "parent_id": null,
       "parent_name": null,
       "is_active": true,
-      "metadata": null,
+      "metadata": {
+        "imagen": "https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772333719/descarga_dq3qip.jpg",
+        "descripcion": "Localidad del norte de Bogotá con ambiente histórico y colonial. Reconocida por el Mercado de las Pulgas dominical, la Hacienda Santa Bárbara y sus exclusivos restaurantes."
+      },
       "created_at": "2026-02-22T10:00:00.000Z"
     },
     {
@@ -162,8 +166,8 @@ llenarSelectBarrios(select, userToken);
       "parent_name": "Usaquén",
       "is_active": true,
       "metadata": {
-        "imagen": "https://images.unsplash.com/photo-1564769662533-4f00a87b4056?auto=format&fit=crop&w=600&q=80",
-        "descripcion": "Zona residencial de estrato medio con calles arboladas, plazoletas y una activa vida comercial en su eje principal."
+        "imagen": "https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772334412/bogota-cedritos-hero_ukrcgl.png",
+        "descripcion": "Barrio residencial de clase media-alta con alta densidad de apartamentos modernos. Conocido por su activa vida nocturna en la zona de bares y restaurantes sobre la calle 140."
       },
       "created_at": "2026-02-22T10:00:00.000Z"
     }

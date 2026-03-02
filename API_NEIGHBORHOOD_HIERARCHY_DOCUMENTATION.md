@@ -1,6 +1,6 @@
 # Documentación del Endpoint de Detalle de Barrio (Jerarquía)
 
-Esta documentación describe cómo consumir el endpoint para obtener el detalle de un barrio, una localidad o una ciudad. La característica principal de este endpoint es que retorna la **jerarquía completa de ancestros** de forma recursiva y calcula automáticamente el tipo de unidad territorial.
+Esta documentación describe cómo consumir el endpoint para obtener el detalle de un barrio, una localidad o una ciudad. La característica principal de este endpoint es que retorna la **jerarquía completa de ancestros** de forma recursiva y calcula automáticamente el tipo de unidad territorial. Las imágenes de cada registro son almacenadas y servidas desde **Cloudinary** (ver [API_NEIGHBORHOOD_MANAGEMENT_DOCUMENTATION.md](./API_NEIGHBORHOOD_MANAGEMENT_DOCUMENTATION.md) para la gestión de imágenes).
 
 ## Endpoint
 
@@ -37,8 +37,9 @@ Cada nodo contiene un objeto `parent` anidado con la misma estructura, hasta lle
 | `parent_id` | `string \| null` | UUID del padre inmediato (`null` en ciudades) |
 | `is_active` | `boolean` | Indica si el nodo está habilitado |
 | `metadata` | `object \| null` | Información adicional del nodo |
-| `metadata.imagen` | `string` | URL de imagen representativa (disponible en barrios) |
-| `metadata.descripcion` | `string` | Descripción textual del lugar (disponible en barrios) |
+| `metadata.imagen` | `string` | URL de imagen almacenada en Cloudinary (`res.cloudinary.com`). Disponible en barrios y localidades. Lista para usar en `<img src="...">` |
+| `metadata.imagen_public_id` | `string` | ID público de la imagen en Cloudinary. Uso interno para gestión (actualización/eliminación). Disponible en barrios y localidades |
+| `metadata.descripcion` | `string` | Descripción específica y contextualizada del lugar. Disponible en barrios y localidades |
 | `created_at` | `string (ISO 8601)` | Fecha de creación del registro |
 | `type` | `string` | Tipo calculado: `"Ciudad"`, `"Localidad"` o `"Barrio"` |
 | `parent` | `object \| null` | Nodo padre con la misma estructura (recursivo) |
@@ -75,9 +76,9 @@ async function getNeighborhoodHierarchy(id, token) {
     console.log(`Tipo: ${barrio.type} | Nombre: ${barrio.name}`);
     console.log(`Activo: ${barrio.is_active}`);
 
-    // Imagen y descripción (disponibles en barrios; null en localidades/ciudades del seed)
+    // Imagen y descripción (disponibles tanto en barrios como en localidades)
     if (barrio.metadata) {
-      console.log(`Imagen: ${barrio.metadata.imagen}`);
+      console.log(`Imagen (Cloudinary): ${barrio.metadata.imagen}`);
       console.log(`Descripción: ${barrio.metadata.descripcion}`);
     }
 
@@ -116,8 +117,8 @@ async function getNeighborhoodHierarchy(id, token) {
     "parent_id": "a1b2c3d4-0000-0000-0000-100000000001",
     "is_active": true,
     "metadata": {
-      "imagen": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=600&q=80",
-      "descripcion": "Barrio tradicional bogotano con historia y cultura propias. Reconocido por sus festividades locales y la organización de su Junta de Acción Comunal."
+      "imagen": "https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772333847/images_jkdzwf.jpg",
+      "descripcion": "Centro histórico de la localidad con calles empedradas, casas coloniales restauradas y un animado mercado de pulgas dominical."
     },
     "created_at": "2026-02-22T10:00:00.000Z",
     "type": "Barrio",
@@ -127,7 +128,10 @@ async function getNeighborhoodHierarchy(id, token) {
       "code": "BOG-LOC-01",
       "parent_id": "a1b2c3d4-0000-0000-0000-000000000001",
       "is_active": true,
-      "metadata": null,
+      "metadata": {
+        "imagen": "https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772333719/descarga_dq3qip.jpg",
+        "descripcion": "Localidad del norte de Bogotá con ambiente histórico y colonial. Reconocida por el Mercado de las Pulgas dominical."
+      },
       "created_at": "2026-02-22T10:00:00.000Z",
       "type": "Localidad",
       "parent": {
@@ -157,7 +161,10 @@ async function getNeighborhoodHierarchy(id, token) {
     "code": "BOG-LOC-01",
     "parent_id": "a1b2c3d4-0000-0000-0000-000000000001",
     "is_active": true,
-    "metadata": null,
+    "metadata": {
+      "imagen": "https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772333719/descarga_dq3qip.jpg",
+      "descripcion": "Localidad del norte de Bogotá con ambiente histórico y colonial. Reconocida por el Mercado de las Pulgas dominical."
+    },
     "created_at": "2026-02-22T10:00:00.000Z",
     "type": "Localidad",
     "parent": {

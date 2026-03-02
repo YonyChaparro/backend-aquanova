@@ -22,10 +22,10 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, { swaggerOptions: { persistAuthorization: true } }));
 console.log('📄 Documentación disponible en http://localhost:3000/api-docs');
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 
 // --- RUTAS ---

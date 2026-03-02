@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const verifyToken = require('../middlewares/authMiddleware');
 const authorize = require('../middlewares/roleMiddleware');
+const upload = require('../middlewares/uploadMiddleware');
 const { createNeighborhood, getNeighborhoods, getNeighborhoodDetail, searchNeighborhoods, updateNeighborhood, deleteNeighborhood } = require('../controllers/neighborhoodController');
 
 router.use(verifyToken);
@@ -53,15 +54,15 @@ router.use(verifyToken);
  *                       metadata:
  *                         type: object
  *                         nullable: true
- *                         description: Datos adicionales del barrio. Los barrios incluyen imagen y descripción genérica.
+ *                         description: Datos adicionales. Tanto localidades como barrios incluyen imagen (Cloudinary) y descripción específica del lugar.
  *                         properties:
  *                           imagen:
  *                             type: string
  *                             format: uri
- *                             description: URL de imagen representativa del barrio
+ *                             description: URL de imagen almacenada en Cloudinary (res.cloudinary.com)
  *                           descripcion:
  *                             type: string
- *                             description: Descripción genérica del barrio
+ *                             description: Descripción específica y contextualizada del barrio o localidad
  *                       created_at:
  *                         type: string
  *                         format: date-time
@@ -76,7 +77,9 @@ router.use(verifyToken);
  *                       parent_id: null
  *                       parent_name: null
  *                       is_active: true
- *                       metadata: null
+ *                       metadata:
+ *                         imagen: "https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772338453/Avenida_de_Las_Americas_mavlpn.jpg"
+ *                         descripcion: "La localidad más poblada de Bogotá, fundada con apoyo del presidente estadounidense John F. Kennedy."
  *                       created_at: "2026-02-22T10:00:00.000Z"
  *                     - id: "uuid-barrio-1"
  *                       name: "Américas"
@@ -85,8 +88,8 @@ router.use(verifyToken);
  *                       parent_name: "Kennedy"
  *                       is_active: true
  *                       metadata:
- *                         imagen: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=600&q=80"
- *                         descripcion: "Barrio residencial con amplia oferta de servicios comunitarios, parques y vías pavimentadas."
+ *                         imagen: "https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772338587/Americas_bogota_qwi3ts.jpg"
+ *                         descripcion: "Sector residencial y comercial sobre la Avenida de las Américas. Zona de centros comerciales y restaurantes."
  *                       created_at: "2026-02-22T10:00:00.000Z"
  *       500:
  *         description: Error al listar barrios
@@ -145,15 +148,15 @@ router.get('/', getNeighborhoods);
  *                       metadata:
  *                         type: object
  *                         nullable: true
- *                         description: Datos adicionales del barrio. Los barrios incluyen imagen y descripción genérica.
+ *                         description: Datos adicionales. Tanto localidades como barrios incluyen imagen (Cloudinary) y descripción específica del lugar.
  *                         properties:
  *                           imagen:
  *                             type: string
  *                             format: uri
- *                             description: URL de imagen representativa del barrio
+ *                             description: URL de imagen almacenada en Cloudinary (res.cloudinary.com)
  *                           descripcion:
  *                             type: string
- *                             description: Descripción genérica del barrio
+ *                             description: Descripción específica y contextualizada del barrio o localidad
  *                       created_at:
  *                         type: string
  *                         format: date-time
@@ -169,8 +172,8 @@ router.get('/', getNeighborhoods);
  *                       parent_name: "Usaquén"
  *                       is_active: true
  *                       metadata:
- *                         imagen: "https://images.unsplash.com/photo-1564769662533-4f00a87b4056?auto=format&fit=crop&w=600&q=80"
- *                         descripcion: "Zona residencial de estrato medio con calles arboladas, plazoletas y una activa vida comercial en su eje principal."
+ *                         imagen: "https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772334412/bogota-cedritos-hero_ukrcgl.png"
+ *                         descripcion: "Barrio residencial de clase media-alta con alta densidad de apartamentos modernos. Conocido por su activa vida nocturna en la zona de bares y restaurantes sobre la calle 140."
  *                       created_at: "2026-02-22T10:00:00.000Z"
  *       400:
  *         description: Falta parámetro query
@@ -210,15 +213,15 @@ router.get('/search', searchNeighborhoods);
  *         metadata:
  *           type: object
  *           nullable: true
- *           description: Datos adicionales. Los barrios contienen imagen y descripción genérica.
+ *           description: Datos adicionales. Tanto localidades como barrios contienen imagen (Cloudinary) y descripción específica del lugar.
  *           properties:
  *             imagen:
  *               type: string
  *               format: uri
- *               description: URL de imagen representativa del barrio
+ *               description: URL de imagen almacenada en Cloudinary (res.cloudinary.com)
  *             descripcion:
  *               type: string
- *               description: Descripción genérica del barrio
+ *               description: Descripción específica y contextualizada del barrio o localidad
  *         parent:
  *           $ref: '#/components/schemas/NeighborhoodNode'
  *           description: "Objeto padre (recursivo)"
@@ -263,16 +266,18 @@ router.get('/search', searchNeighborhoods);
  *                     parent_id: "uuid-localidad"
  *                     is_active: true
  *                     metadata:
- *                       imagen: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=600&q=80"
- *                       descripcion: "Barrio tradicional bogotano con historia y cultura propias."
+ *                       imagen: "https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772345067/hospital-sjdd_dbdjg6.jpg"
+ *                       descripcion: "Corregimiento rural en el corazón del páramo de Sumapaz. Comunidad campesina dedicada a la agricultura."
  *                     parent:
  *                       id: "uuid-localidad"
- *                       name: "Localidad Norte"
- *                       code: "LOC-N"
+ *                       name: "Usaquén"
+ *                       code: "LOC-01"
  *                       type: "Localidad"
  *                       parent_id: "uuid-ciudad"
  *                       is_active: true
- *                       metadata: null
+ *                       metadata:
+ *                         imagen: "https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772333719/descarga_dq3qip.jpg"
+ *                         descripcion: "Localidad del norte de Bogotá con ambiente histórico y colonial."
  *                       parent:
  *                         id: "uuid-ciudad"
  *                         name: "Ciudad Capital"
@@ -289,13 +294,53 @@ router.get('/:id', getNeighborhoodDetail);
  * @swagger
  * /neighborhoods:
  *   post:
- *     summary: Crear un nuevo barrio
+ *     summary: Crear un nuevo barrio (con imagen opcional via Cloudinary)
+ *     description: |
+ *       Crea un nuevo barrio/localidad/ciudad. Acepta `multipart/form-data` para subir imagen
+ *       directamente a Cloudinary, o `application/json` para enviar solo datos de texto.
+ *
+ *       **Con imagen**: Enviar como `multipart/form-data`:
+ *       - `name` (text) — Nombre del barrio (requerido)
+ *       - `code` (text) — Código único (requerido)
+ *       - `parent_id` (text) — ID del padre (opcional)
+ *       - `metadata` (text) — JSON string con datos adicionales (opcional, ej: `{"descripcion": "..."}`)
+ *       - `imagen` (file) — Archivo de imagen (JPEG, PNG, WebP, AVIF, GIF, SVG; máx. 10MB)
+ *
+ *       **Sin imagen**: Enviar como `application/json` con los campos name, code, parent_id y metadata.
+ *       En este caso, metadata.imagen puede contener una URL directa.
  *     tags: [Neighborhoods]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - code
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nombre del barrio (requerido)
+ *                 example: "Cedritos"
+ *               code:
+ *                 type: string
+ *                 description: Código único del barrio, catastral o interno (requerido)
+ *                 example: "BAR-0105"
+ *               parent_id:
+ *                 type: string
+ *                 description: ID del barrio padre (opcional, para jerarquías)
+ *                 example: "uuid-localidad-01"
+ *               metadata:
+ *                 type: string
+ *                 description: JSON string con datos adicionales como descripción, estrato, etc.
+ *                 example: '{"descripcion": "Barrio residencial de clase media-alta"}'
+ *               imagen:
+ *                 type: string
+ *                 format: binary
+ *                 description: Archivo de imagen para el barrio (JPEG, PNG, WebP, AVIF, GIF, SVG - máx. 10MB). Se sube automáticamente a Cloudinary.
  *         application/json:
  *           schema:
  *             type: object
@@ -308,13 +353,13 @@ router.get('/:id', getNeighborhoodDetail);
  *                 description: Nombre del barrio (requerido)
  *               code:
  *                 type: string
- *                 description: Código único del barrio, catastral o interno (requerido)
+ *                 description: Código único del barrio (requerido)
  *               parent_id:
  *                 type: string
- *                 description: ID del barrio padre (opcional, para jerarquías)
+ *                 description: ID del barrio padre (opcional)
  *               metadata:
  *                 type: object
- *                 description: Datos adicionales como población estimada, estrato, etc. (opcional)
+ *                 description: Datos adicionales como población estimada, estrato, imagen URL, etc.
  *     responses:
  *       201:
  *         description: Barrio creado exitosamente
@@ -340,31 +385,61 @@ router.get('/:id', getNeighborhoodDetail);
  *                       type: string
  *                     metadata:
  *                       type: object
-	*             examples:
-	*               default:
-	*                 value:
-	*                   ok: true
-	*                   message: "Barrio creado exitosamente"
-	*                   data:
-	*                     id: "uuid-barrio-3"
-	*                     name: "Barrio Sur"
-	*                     code: "SUR-003"
-	*                     parent_id: null
-	*                     metadata: { estrato: 3 }
+ *                       properties:
+ *                         imagen:
+ *                           type: string
+ *                           format: uri
+ *                           description: URL de la imagen en Cloudinary
+ *                         imagen_public_id:
+ *                           type: string
+ *                           description: Public ID de la imagen en Cloudinary (para gestión interna)
+ *                         descripcion:
+ *                           type: string
+ *             examples:
+ *               conImagen:
+ *                 summary: Barrio creado con imagen subida a Cloudinary
+ *                 value:
+ *                   ok: true
+ *                   message: "Barrio creado exitosamente"
+ *                   data:
+ *                     id: "uuid-barrio-nuevo"
+ *                     name: "Cedritos"
+ *                     code: "BAR-0105"
+ *                     parent_id: "uuid-localidad-01"
+ *                     metadata:
+ *                       descripcion: "Barrio residencial de clase media-alta"
+ *                       imagen: "https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772334412/aquanova/neighborhoods/cedritos_abc123.png"
+ *                       imagen_public_id: "aquanova/neighborhoods/cedritos_abc123"
+ *               sinImagen:
+ *                 summary: Barrio creado sin imagen
+ *                 value:
+ *                   ok: true
+ *                   message: "Barrio creado exitosamente"
+ *                   data:
+ *                     id: "uuid-barrio-3"
+ *                     name: "Barrio Sur"
+ *                     code: "SUR-003"
+ *                     parent_id: null
+ *                     metadata: { estrato: 3 }
  *       400:
  *         description: Faltan datos requeridos o el código ya existe
  *       404:
  *         description: El barrio padre especificado no existe
-	*       500:
-	*         description: Error interno al crear barrio
+ *       500:
+ *         description: Error interno al crear barrio
  */
-router.post('/', authorize([1]), createNeighborhood);
+router.post('/', authorize([1]), upload.single('imagen'), createNeighborhood);
 
 /**
  * @swagger
  * /neighborhoods/{id}:
  *   put:
- *     summary: Actualizar un barrio existente
+ *     summary: Actualizar un barrio existente (con imagen opcional via Cloudinary)
+ *     description: |
+ *       Actualiza un barrio existente. Acepta `multipart/form-data` para subir/reemplazar imagen
+ *       en Cloudinary, o `application/json` para actualizar solo datos de texto.
+ *
+ *       Si se sube una nueva imagen, la imagen anterior se elimina automáticamente de Cloudinary.
  *     tags: [Neighborhoods]
  *     security:
  *       - bearerAuth: []
@@ -378,6 +453,27 @@ router.post('/', authorize([1]), createNeighborhood);
  *     requestBody:
  *       required: true
  *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nuevo nombre del barrio
+ *               code:
+ *                 type: string
+ *                 description: Nuevo código único del barrio
+ *               parent_id:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Nuevo ID del barrio padre (null para quitar padre)
+ *               metadata:
+ *                 type: string
+ *                 description: JSON string con nuevos datos adicionales
+ *               imagen:
+ *                 type: string
+ *                 format: binary
+ *                 description: Nueva imagen para el barrio. La anterior se elimina de Cloudinary automáticamente.
  *         application/json:
  *           schema:
  *             type: object
@@ -423,6 +519,14 @@ router.post('/', authorize([1]), createNeighborhood);
  *                     metadata:
  *                       type: object
  *                       nullable: true
+ *                       properties:
+ *                         imagen:
+ *                           type: string
+ *                           format: uri
+ *                         imagen_public_id:
+ *                           type: string
+ *                         descripcion:
+ *                           type: string
  *             examples:
  *               default:
  *                 value:
@@ -433,7 +537,10 @@ router.post('/', authorize([1]), createNeighborhood);
  *                     name: "Barrio Centro Actualizado"
  *                     code: "CENTRO-001"
  *                     parent_id: null
- *                     metadata: { poblacion: 15000 }
+ *                     metadata:
+ *                       imagen: "https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772334412/aquanova/neighborhoods/centro_xyz789.jpg"
+ *                       imagen_public_id: "aquanova/neighborhoods/centro_xyz789"
+ *                       descripcion: "Barrio céntrico renovado"
  *       400:
  *         description: Datos inválidos o código duplicado
  *       404:
@@ -441,13 +548,16 @@ router.post('/', authorize([1]), createNeighborhood);
  *       500:
  *         description: Error interno al actualizar barrio
  */
-router.put('/:id', authorize([1]), updateNeighborhood);
+router.put('/:id', authorize([1]), upload.single('imagen'), updateNeighborhood);
 
 /**
  * @swagger
  * /neighborhoods/{id}:
  *   delete:
- *     summary: Eliminar un barrio
+ *     summary: Eliminar un barrio (elimina imagen de Cloudinary)
+ *     description: |
+ *       Elimina un barrio y su imagen asociada de Cloudinary. No se puede eliminar un barrio
+ *       que tenga sub-barrios asociados.
  *     tags: [Neighborhoods]
  *     security:
  *       - bearerAuth: []

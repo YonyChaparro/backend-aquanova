@@ -1,11 +1,30 @@
 // src/controllers/neighborhoodController.js
 const NeighborhoodModel = require('../models/neighborhoodModel');
 const { v4: uuidv4 } = require('uuid');
+const { uploadImage, deleteImage, extractPublicId } = require('../helpers/cloudinaryHelper');
 
-// CREAR BARRIO (ADMIN)
+/**
+ * Parsea el campo metadata del body.
+ * En multipart/form-data, metadata llega como string JSON.
+ * En application/json, llega como objeto.
+ */
+const parseMetadata = (metadata) => {
+    if (!metadata) return null;
+    if (typeof metadata === 'string') {
+        try {
+            return JSON.parse(metadata);
+        } catch (e) {
+            return null;
+        }
+    }
+    return metadata;
+};
+
+// CREAR BARRIO (ADMIN) — Con soporte para imagen (Cloudinary)
 const createNeighborhood = async (req, res) => {
     try {
-        const { name, code, parent_id, metadata } = req.body;
+        const { name, code, parent_id } = req.body;
+        let metadata = parseMetadata(req.body.metadata);
 
         // Validaciones
         if (!name || !code) {
@@ -33,6 +52,19 @@ const createNeighborhood = async (req, res) => {
                     message: 'El barrio padre especificado no existe'
                 });
             }
+        }
+
+        // --- SUBIDA DE IMAGEN A CLOUDINARY ---
+        if (req.file) {
+            const result = await uploadImage(
+                req.file.buffer,
+                'aquanova/neighborhoods'
+            );
+            // Inyectar la URL de Cloudinary en metadata
+            metadata = metadata || {};
+            metadata.imagen = result.url;
+            metadata.imagen_public_id = result.public_id;
+            console.log(`☁️  Imagen subida a Cloudinary: ${result.url}`);
         }
 
         // Crear barrio
@@ -120,31 +152,19 @@ const getNeighborhoodDetail = async (req, res) => {
         neighborhood.type = type;
 
         // Construir la estructura anidada del parent
-        // hierarchy[0] -> parent = hierarchy[1] -> parent = hierarchy[2] ...
         let currentLevel = neighborhood;
         for (let i = 1; i < hierarchy.length; i++) {
             const parent = hierarchy[i];
             
-            // Calculamos también el tipo del padre (opcional, pero útil)
-            const parentDepth = (hierarchy.length - 1) - i; // Profundidad inversa relativa
-            // O simplemente usamos la regla absoluta:
-            // SI el padre es el último de la lista (índice hierarchy.length-1), es Ciudad.
-            // Pero para simplificar, solo anidamos los datos crudos o agregamos el tipo también si queremos
-            
             let parentType = 'Otro';
-            if (i === hierarchy.length - 1) parentType = 'Ciudad'; // El más alto es Ciudad
+            if (i === hierarchy.length - 1) parentType = 'Ciudad';
             else if (i === hierarchy.length - 2) parentType = 'Localidad';
             
             parent.type = parentType;
 
-            currentLevel.parent = parent; // Asignamos el objeto completo como "parent"
-            currentLevel = parent;        // Bajamos un nivel para la siguiente iteración
+            currentLevel.parent = parent;
+            currentLevel = parent;
         }
-
-        // Limpiamos el parent_id plano para evitar confusión, ya que ahora tenemos el objeto parent
-        // O lo dejamos por compatibilidad. El requerimiento dice: "el parentid debe traer un json..."
-        // Así que reemplazaremos o complementaremos. 
-        // Para ser limpios, dejaremos 'parent' como la estructura rica.
 
         res.json({
             ok: true,
@@ -176,11 +196,12 @@ const searchNeighborhoods = async (req, res) => {
     }
 };
 
-// EDITAR BARRIO (ADMIN)
+// EDITAR BARRIO (ADMIN) — Con soporte para imagen (Cloudinary)
 const updateNeighborhood = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, code, parent_id, metadata } = req.body;
+        const { name, code, parent_id } = req.body;
+        let metadata = parseMetadata(req.body.metadata);
 
         // Verificar que el barrio existe
         const existingNeighborhood = await NeighborhoodModel.findById(id);
@@ -191,11 +212,17 @@ const updateNeighborhood = async (req, res) => {
             });
         }
 
-        // Validar que al menos un campo venga para actualizar
-        if (!name && !code && parent_id === undefined && metadata === undefined) {
+        // Parsear metadata existente (puede venir como string de la DB)
+        let existingMetadata = existingNeighborhood.metadata;
+        if (typeof existingMetadata === 'string') {
+            try { existingMetadata = JSON.parse(existingMetadata); } catch (e) { existingMetadata = null; }
+        }
+
+        // Validar que al menos un campo venga para actualizar (incluyendo archivo)
+        if (!name && !code && parent_id === undefined && metadata === undefined && !req.file) {
             return res.status(400).json({
                 ok: false,
-                message: 'Debe enviar al menos un campo para actualizar (name, code, parent_id o metadata)'
+                message: 'Debe enviar al menos un campo para actualizar (name, code, parent_id, metadata o imagen)'
             });
         }
 
@@ -227,12 +254,48 @@ const updateNeighborhood = async (req, res) => {
             }
         }
 
+        // --- SUBIDA DE NUEVA IMAGEN A CLOUDINARY ---
+        if (req.file) {
+            // Eliminar imagen anterior de Cloudinary si existe
+            if (existingMetadata && existingMetadata.imagen_public_id) {
+                try {
+                    await deleteImage(existingMetadata.imagen_public_id);
+                    console.log(`🗑️  Imagen anterior eliminada de Cloudinary: ${existingMetadata.imagen_public_id}`);
+                } catch (e) {
+                    console.warn('⚠️  No se pudo eliminar la imagen anterior de Cloudinary:', e.message);
+                }
+            } else if (existingMetadata && existingMetadata.imagen) {
+                // Intentar extraer public_id de la URL
+                const publicId = extractPublicId(existingMetadata.imagen);
+                if (publicId) {
+                    try {
+                        await deleteImage(publicId);
+                        console.log(`🗑️  Imagen anterior eliminada de Cloudinary: ${publicId}`);
+                    } catch (e) {
+                        console.warn('⚠️  No se pudo eliminar la imagen anterior de Cloudinary:', e.message);
+                    }
+                }
+            }
+
+            // Subir nueva imagen
+            const result = await uploadImage(
+                req.file.buffer,
+                'aquanova/neighborhoods'
+            );
+
+            // Actualizar metadata con la nueva imagen
+            metadata = metadata || existingMetadata || {};
+            metadata.imagen = result.url;
+            metadata.imagen_public_id = result.public_id;
+            console.log(`☁️  Nueva imagen subida a Cloudinary: ${result.url}`);
+        }
+
         // Construir objeto con datos a actualizar
         const updateData = {
             name: name || existingNeighborhood.name,
             code: code || existingNeighborhood.code,
             parent_id: parent_id !== undefined ? (parent_id || null) : existingNeighborhood.parent_id,
-            metadata: metadata !== undefined ? metadata : existingNeighborhood.metadata
+            metadata: metadata !== undefined ? metadata : existingMetadata
         };
 
         await NeighborhoodModel.update(id, updateData);
@@ -261,7 +324,7 @@ const updateNeighborhood = async (req, res) => {
     }
 };
 
-// ELIMINAR BARRIO (ADMIN)
+// ELIMINAR BARRIO (ADMIN) — Con limpieza de imagen en Cloudinary
 const deleteNeighborhood = async (req, res) => {
     try {
         const { id } = req.params;
@@ -282,6 +345,24 @@ const deleteNeighborhood = async (req, res) => {
                 ok: false,
                 message: 'No se puede eliminar el barrio porque tiene sub-barrios asociados. Elimine primero los sub-barrios.'
             });
+        }
+
+        // --- ELIMINAR IMAGEN DE CLOUDINARY ---
+        let neighborhoodMetadata = existingNeighborhood.metadata;
+        if (typeof neighborhoodMetadata === 'string') {
+            try { neighborhoodMetadata = JSON.parse(neighborhoodMetadata); } catch (e) { neighborhoodMetadata = null; }
+        }
+
+        if (neighborhoodMetadata) {
+            const publicId = neighborhoodMetadata.imagen_public_id || extractPublicId(neighborhoodMetadata.imagen);
+            if (publicId) {
+                try {
+                    await deleteImage(publicId);
+                    console.log(`🗑️  Imagen eliminada de Cloudinary: ${publicId}`);
+                } catch (e) {
+                    console.warn('⚠️  No se pudo eliminar la imagen de Cloudinary:', e.message);
+                }
+            }
         }
 
         await NeighborhoodModel.delete(id);

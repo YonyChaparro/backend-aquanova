@@ -23,19 +23,32 @@ const NeighborhoodModel = {
 
     // 2. Listar Barrios
     async findAll() {
+        // Subquery para ordenar por columnas livianas primero,
+        // evitando ER_OUT_OF_SORTMEMORY al no incluir metadata (TEXT/JSON) en el sort buffer.
         const query = `
             SELECT 
-                n.id, 
-                n.name, 
-                n.code, 
-                n.parent_id,
-                p.name AS parent_name,
-                n.is_active,
-                n.metadata,
-                n.created_at
-            FROM neighborhoods n
-            LEFT JOIN neighborhoods p ON n.parent_id = p.id
-            ORDER BY p.name ASC, n.name ASC
+                sorted.id, 
+                sorted.name, 
+                sorted.code, 
+                sorted.parent_id,
+                sorted.parent_name,
+                sorted.is_active,
+                n2.metadata,
+                sorted.created_at
+            FROM (
+                SELECT 
+                    n.id, 
+                    n.name, 
+                    n.code, 
+                    n.parent_id,
+                    p.name AS parent_name,
+                    n.is_active,
+                    n.created_at
+                FROM neighborhoods n
+                LEFT JOIN neighborhoods p ON n.parent_id = p.id
+                ORDER BY p.name ASC, n.name ASC
+            ) AS sorted
+            INNER JOIN neighborhoods n2 ON sorted.id = n2.id
         `;
         const [rows] = await pool.query(query);
         return rows;
@@ -77,20 +90,32 @@ const NeighborhoodModel = {
 
     // 6. Buscar Barrios
     async search(searchTerm) {
+        // Subquery para filtrar y ordenar sin metadata en el sort buffer
         const query = `
             SELECT 
-                n.id, 
-                n.name, 
-                n.code, 
-                n.parent_id,
-                p.name AS parent_name,
-                n.is_active,
-                n.metadata,
-                n.created_at
-            FROM neighborhoods n
-            LEFT JOIN neighborhoods p ON n.parent_id = p.id
-            WHERE n.name LIKE ? OR n.code LIKE ?
-            ORDER BY n.name ASC
+                sorted.id, 
+                sorted.name, 
+                sorted.code, 
+                sorted.parent_id,
+                sorted.parent_name,
+                sorted.is_active,
+                n2.metadata,
+                sorted.created_at
+            FROM (
+                SELECT 
+                    n.id, 
+                    n.name, 
+                    n.code, 
+                    n.parent_id,
+                    p.name AS parent_name,
+                    n.is_active,
+                    n.created_at
+                FROM neighborhoods n
+                LEFT JOIN neighborhoods p ON n.parent_id = p.id
+                WHERE n.name LIKE ? OR n.code LIKE ?
+                ORDER BY n.name ASC
+            ) AS sorted
+            INNER JOIN neighborhoods n2 ON sorted.id = n2.id
         `;
         const wild = `%${searchTerm}%`;
         const [rows] = await pool.query(query, [wild, wild]);
@@ -121,7 +146,7 @@ const NeighborhoodModel = {
         const { name, code, parent_id, metadata } = updateData;
         const query = `
             UPDATE neighborhoods 
-            SET name = ?, code = ?, parent_id = ?, metadata = ?, updated_at = NOW()
+            SET name = ?, code = ?, parent_id = ?, metadata = ?
             WHERE id = ?
         `;
         await pool.query(query, [
