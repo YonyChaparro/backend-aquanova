@@ -1,6 +1,16 @@
 // src/controllers/formController.js
 const FormModel = require('../models/formModel');
 const { v4: uuidv4 } = require('uuid');
+const { uploadImage, deleteImage, extractPublicId } = require('../helpers/cloudinaryHelper');
+
+// Helper para parsear metadata (llega como string en multipart/form-data)
+const parseMetadata = (metadata) => {
+    if (!metadata) return null;
+    if (typeof metadata === 'string') {
+        try { return JSON.parse(metadata); } catch (e) { return null; }
+    }
+    return metadata;
+};
 
 // Helper para convertir "Hola Mundo" -> "hola-mundo"
 const generateSlug = (text) => {
@@ -16,7 +26,11 @@ const generateSlug = (text) => {
 // CREAR FORMULARIO (ADMIN)
 const createForm = async (req, res) => {
     try {
-        const { title, description, schema, neighborhood_id } = req.body;
+        const { title, description, neighborhood_id } = req.body;
+        // schema puede llegar como string JSON (multipart) u objeto (application/json)
+        const rawSchema = req.body.schema;
+        const schema = typeof rawSchema === 'string' ? JSON.parse(rawSchema) : rawSchema;
+        let metadata = parseMetadata(req.body.metadata);
         const adminId = req.user.uid;
 
         // Validaciones
@@ -36,10 +50,19 @@ const createForm = async (req, res) => {
             });
         }
 
+        // --- SUBIDA DE IMAGEN A CLOUDINARY (opcional) ---
+        if (req.file) {
+            const result = await uploadImage(req.file.buffer, 'aquanova/forms');
+            metadata = metadata || {};
+            metadata.imagen = result.url;
+            metadata.imagen_public_id = result.public_id;
+            console.log(`☁️  Imagen subida a Cloudinary: ${result.url}`);
+        }
+
         // Preparamos los datos para el Modelo
         const formId = uuidv4();
         const versionId = uuidv4();
-        const key = generateSlug(title); // Ej: censo-barrial-8392
+        const key = generateSlug(title);
 
         await FormModel.createWithVersion({
             formId,
@@ -47,20 +70,20 @@ const createForm = async (req, res) => {
             key,
             title,
             description,
-            schema, // Aquí viene el JSON de las preguntas
+            schema,
             adminId,
-            neighborhood_id
+            neighborhood_id,
+            metadata
         });
 
         res.status(201).json({
             ok: true,
             message: 'Formulario y Versión 1 creados exitosamente',
-            data: { id: formId, key, title, neighborhood_id }
+            data: { id: formId, key, title, neighborhood_id, metadata }
         });
 
     } catch (error) {
         console.error('Error creando form:', error);
-        // Manejo del error de llave duplicada
         if (error.code === 'ER_DUP_ENTRY') {
              return res.status(400).json({ ok: false, message: 'Ya existe un formulario con ese título/clave.' });
         }
@@ -75,6 +98,7 @@ const getForms = async (req, res) => {
         const forms = rows.map(f => ({
             ...f,
             is_active: Boolean(f.is_active),
+            metadata: typeof f.metadata === 'string' ? JSON.parse(f.metadata) : (f.metadata || null),
             neighborhoods: typeof f.neighborhoods === 'string'
                 ? JSON.parse(f.neighborhoods)
                 : (f.neighborhoods || [])
@@ -109,7 +133,9 @@ const getFormDetail = async (req, res) => {
         res.json({
             ok: true,
             data: {
-                ...form, // ¡Aquí ya viajan automáticamente is_active y neighborhood_id!
+                ...form,
+                metadata: typeof form.metadata === 'string' ? JSON.parse(form.metadata) : (form.metadata || null),
+                is_active: Boolean(form.is_active),
                 version: versionData ? versionData.version : 1,
                 schema: versionData ? versionData.schema : [] 
             }
@@ -126,12 +152,13 @@ const updateForm = async (req, res) => {
     try {
         const { id } = req.params;
         const { title, description, is_active, schema, neighborhood_id } = req.body;
+        let metadata = parseMetadata(req.body.metadata);
         const adminId = req.user.uid;
 
-        if (title === undefined && description === undefined && is_active === undefined && schema === undefined && neighborhood_id === undefined) {
+        if (title === undefined && description === undefined && is_active === undefined && schema === undefined && neighborhood_id === undefined && metadata === undefined && !req.file) {
              return res.status(400).json({
                 ok: false,
-                message: 'Debe enviar al menos un campo a actualizar (title, description, is_active, schema, neighborhood_id)'
+                message: 'Debe enviar al menos un campo a actualizar (title, description, is_active, schema, neighborhood_id, metadata o imagen)'
             });
         }
 
@@ -143,23 +170,64 @@ const updateForm = async (req, res) => {
         let message = 'Formulario actualizado exitosamente';
         const responseData = { id };
 
-        // 1. Actualizar datos básicos
-        if (title !== undefined || description !== undefined || is_active !== undefined) {
-            if (is_active !== undefined && typeof is_active !== 'boolean') {
+        // 1. Actualizar datos básicos (incluye imagen/metadata)
+        if (title !== undefined || description !== undefined || is_active !== undefined || metadata !== undefined || req.file) {
+            // is_active puede llegar como string "true"/"false" desde multipart
+            let isActiveParsed = is_active;
+            if (typeof is_active === 'string') {
+                isActiveParsed = is_active === 'true';
+            }
+            if (is_active !== undefined && typeof isActiveParsed !== 'boolean') {
                 return res.status(400).json({ ok: false, message: 'is_active debe ser boolean' });
             }
-            await FormModel.updateForm(id, { title, description, is_active });
+
+            // --- SUBIDA DE NUEVA IMAGEN A CLOUDINARY ---
+            if (req.file) {
+                const existingMetadata = parseMetadata(existing.metadata);
+                if (existingMetadata && existingMetadata.imagen_public_id) {
+                    try {
+                        await deleteImage(existingMetadata.imagen_public_id);
+                        console.log(`🗑️  Imagen anterior eliminada de Cloudinary: ${existingMetadata.imagen_public_id}`);
+                    } catch (e) {
+                        console.warn('⚠️  No se pudo eliminar la imagen anterior de Cloudinary:', e.message);
+                    }
+                } else if (existingMetadata && existingMetadata.imagen) {
+                    const publicId = extractPublicId(existingMetadata.imagen);
+                    if (publicId) {
+                        try {
+                            await deleteImage(publicId);
+                            console.log(`🗑️  Imagen anterior eliminada de Cloudinary: ${publicId}`);
+                        } catch (e) {
+                            console.warn('⚠️  No se pudo eliminar la imagen anterior de Cloudinary:', e.message);
+                        }
+                    }
+                }
+
+                const result = await uploadImage(req.file.buffer, 'aquanova/forms');
+                metadata = metadata || parseMetadata(existing.metadata) || {};
+                metadata.imagen = result.url;
+                metadata.imagen_public_id = result.public_id;
+                console.log(`☁️  Nueva imagen subida a Cloudinary: ${result.url}`);
+            }
+
+            await FormModel.updateForm(id, { title, description, is_active: isActiveParsed, metadata });
             
             const updated = await FormModel.findByIdAny(id);
-            Object.assign(responseData, updated);
+            Object.assign(responseData, {
+                ...updated,
+                metadata: typeof updated.metadata === 'string' ? JSON.parse(updated.metadata) : (updated.metadata || null),
+                is_active: Boolean(updated.is_active)
+            });
         }
 
         // 2. Actualizar esquema (Genera nueva versión)
-        if (schema) {
-            if (!Array.isArray(schema)) {
+        if (schema !== undefined) {
+            // schema puede llegar como string JSON desde multipart
+            const schemaParsed = typeof schema === 'string' ? JSON.parse(schema) : schema;
+            if (!Array.isArray(schemaParsed)) {
                 return res.status(400).json({ ok: false, message: 'schema debe ser un array de preguntas' });
             }
-            const result = await FormModel.updateSchema(id, schema, adminId);
+            const result = await FormModel.updateSchema(id, schemaParsed, adminId);
             responseData.version = result.version;
             responseData.versionId = result.versionId;
             message += ` y nueva versión ${result.version} creada`;
@@ -217,7 +285,13 @@ const searchForms = async (req, res) => {
         }
         
         const forms = await FormModel.search(query);
-        res.json({ ok: true, forms });
+        const parsed = forms.map(f => ({
+            ...f,
+            is_active: Boolean(f.is_active),
+            metadata: typeof f.metadata === 'string' ? JSON.parse(f.metadata) : (f.metadata || null),
+            neighborhoods: typeof f.neighborhoods === 'string' ? JSON.parse(f.neighborhoods) : (f.neighborhoods || [])
+        }));
+        res.json({ ok: true, forms: parsed });
     } catch (error) {
         console.error('Error en búsqueda de formularios:', error);
         res.status(500).json({ ok: false, message: 'Error al buscar formularios' });

@@ -100,6 +100,7 @@ CREATE TABLE IF NOT EXISTS \`forms\` (
   \`key\` VARCHAR(100) NOT NULL,
   \`title\` VARCHAR(255) NOT NULL,
   \`description\` TEXT NULL,
+  \`metadata\` JSON NULL,
   \`created_by\` CHAR(36) NOT NULL,
   \`is_active\` BOOLEAN DEFAULT TRUE,
   \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -326,6 +327,20 @@ const seedDatabase = async () => {
         } catch (e) {
             if (e.errno === 1060) {
                 console.log('⚠️  Columna is_active ya existe en neighborhoods. Continuando...');
+            } else {
+                throw e;
+            }
+        }
+
+        // 3c. Migración segura: agregar metadata a forms si no existía
+        try {
+            await connection.query(
+                'ALTER TABLE `forms` ADD COLUMN `metadata` JSON NULL'
+            );
+            console.log('✅ Columna metadata agregada a forms.');
+        } catch (e) {
+            if (e.errno === 1060) {
+                console.log('⚠️  Columna metadata ya existe en forms. Continuando...');
             } else {
                 throw e;
             }
@@ -707,6 +722,7 @@ const seedDatabase = async () => {
                 key: 'censo-demografico-2026',
                 title: 'Censo Demográfico 2026',
                 description: 'Recolección de datos poblacionales de los hogares del barrio.',
+                metadata: { imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772497665/aquanova/forms/h8g43jmkpwo7g3nx7s4a.jpg', imagen_public_id: 'aquanova/forms/h8g43jmkpwo7g3nx7s4a' },
                 schema: [
                     { key: 'nombre_jefe',    type: 'text',     label: 'Nombre del jefe de hogar',             required: true,  placeholder: 'Ej: María López' },
                     { key: 'documento',      type: 'text',     label: 'Número de documento de identidad',     required: true,  placeholder: 'Cédula o NIT' },
@@ -727,6 +743,7 @@ const seedDatabase = async () => {
                 key: 'encuesta-servicios-publicos-2026',
                 title: 'Encuesta de Servicios Públicos Domiciliarios',
                 description: 'Verificación de cobertura y calidad de servicios públicos en el hogar.',
+                metadata: { imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772497699/aquanova/forms/hqsuw4mqn9nvrd4s64oy.png', imagen_public_id: 'aquanova/forms/hqsuw4mqn9nvrd4s64oy' },
                 schema: [
                     { key: 'direccion',       type: 'text',     label: 'Dirección del predio',                         required: true,  placeholder: 'Ej: Calle 12 # 5-34' },
                     { key: 'tiene_agua',      type: 'radio',    label: '¿Cuenta con servicio de agua potable?',         required: true,  options: ['Sí', 'No'] },
@@ -748,6 +765,7 @@ const seedDatabase = async () => {
                 key: 'registro-predios-vivienda-2026',
                 title: 'Registro de Predios y Condiciones de Vivienda',
                 description: 'Levantamiento catastral y condiciones estructurales de la vivienda.',
+                metadata: { imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772497639/aquanova/forms/ffoxdlqxa0bdzahqnhaw.jpg', imagen_public_id: 'aquanova/forms/ffoxdlqxa0bdzahqnhaw' },
                 schema: [
                     { key: 'matricula',       type: 'text',     label: 'Matrícula inmobiliaria / Ficha catastral', required: false, placeholder: 'Ej: 50C-12345' },
                     { key: 'tipo_predio',     type: 'radio',    label: 'Tipo de predio',                           required: true,  options: ['Residencial', 'Comercial', 'Mixto', 'Lote'] },
@@ -770,6 +788,7 @@ const seedDatabase = async () => {
                 key: 'encuesta-seguridad-ciudadana-2026',
                 title: 'Encuesta de Percepción de Seguridad Ciudadana',
                 description: 'Medición de la percepción de seguridad y convivencia en el sector.',
+                metadata: { imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772497488/aquanova/forms/zhnvyyggqosmmabpecwb.jpg', imagen_public_id: 'aquanova/forms/zhnvyyggqosmmabpecwb' },
                 schema: [
                     { key: 'edad',              type: 'number',   label: 'Edad del encuestado',                                required: true,  min: 18, max: 100 },
                     { key: 'genero',            type: 'radio',    label: 'Género',                                             required: true,  options: ['Masculino', 'Femenino', 'Otro'] },
@@ -790,6 +809,7 @@ const seedDatabase = async () => {
                 key: 'censo-mascotas-2026',
                 title: 'Censo de Tenencia de Mascotas',
                 description: 'Registro de animales de compañía y condiciones de tenencia responsable.',
+                metadata: { imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772497424/aquanova/forms/vb4fbkav8mlsrftdmyv1.jpg', imagen_public_id: 'aquanova/forms/vb4fbkav8mlsrftdmyv1' },
                 schema: [
                     { key: 'tiene_mascotas',   type: 'radio',    label: '¿Tiene mascotas en el hogar?',                     required: true,  options: ['Sí', 'No'] },
                     { key: 'tipo_mascota',     type: 'checkbox', label: 'Tipo de mascota(s)',                               required: false, options: ['Perro', 'Gato', 'Ave', 'Reptil', 'Roedor', 'Pez', 'Otro'] },
@@ -810,6 +830,7 @@ const seedDatabase = async () => {
                 key: 'encuesta-movilidad-2026',
                 title: 'Encuesta de Movilidad y Transporte',
                 description: 'Caracterización de hábitos de movilidad y uso de transporte de los habitantes.',
+                metadata: { imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772497338/aquanova/forms/joqklotkky62bxdynemu.jpg', imagen_public_id: 'aquanova/forms/joqklotkky62bxdynemu' },
                 schema: [
                     { key: 'trabaja_estudia',   type: 'radio',    label: '¿Trabaja o estudia fuera del barrio?',                  required: true,  options: ['Trabaja', 'Estudia', 'Ambos', 'Ninguno'] },
                     { key: 'destino_principal', type: 'text',     label: 'Destino principal de desplazamiento',                   required: false, placeholder: 'Ej: Centro, Chapinero, Suba...' },
@@ -829,6 +850,7 @@ const seedDatabase = async () => {
                 key: 'registro-establecimientos-2026',
                 title: 'Registro de Establecimientos Comerciales',
                 description: 'Inventario de comercios y actividades económicas en el barrio.',
+                metadata: { imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772497530/aquanova/forms/ikj4p2nnr7x9gpqeuwj6.png', imagen_public_id: 'aquanova/forms/ikj4p2nnr7x9gpqeuwj6' },
                 schema: [
                     { key: 'nombre_establec',   type: 'text',     label: 'Nombre o razón social del establecimiento',   required: true,  placeholder: 'Ej: Tienda El Sol' },
                     { key: 'nombre_propietario',type: 'text',     label: 'Nombre del propietario o representante',      required: true },
@@ -851,6 +873,7 @@ const seedDatabase = async () => {
                 key: 'encuesta-salud-comunitaria-2026',
                 title: 'Encuesta de Salud Comunitaria',
                 description: 'Diagnóstico del estado de salud y acceso a servicios médicos de la comunidad.',
+                metadata: { imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772497388/aquanova/forms/kkduefitqfpgnklxm4i4.jpg', imagen_public_id: 'aquanova/forms/kkduefitqfpgnklxm4i4' },
                 schema: [
                     { key: 'regimen_salud',     type: 'radio',    label: 'Régimen de salud al que pertenece',                   required: true,  options: ['Contributivo', 'Subsidiado (Sisbén)', 'Especial', 'No tiene'] },
                     { key: 'eps',               type: 'text',     label: 'Nombre de la EPS o aseguradora',                      required: false, placeholder: 'Ej: Sura, Compensar, Nueva EPS...' },
@@ -871,6 +894,7 @@ const seedDatabase = async () => {
                 key: 'inventario-espacio-publico-2026',
                 title: 'Inventario de Parques y Espacio Público',
                 description: 'Levantamiento del estado y uso de parques, zonas verdes y espacio público del barrio.',
+                metadata: { imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772497250/aquanova/forms/kitrvcanb50wdvvsgyne.jpg', imagen_public_id: 'aquanova/forms/kitrvcanb50wdvvsgyne' },
                 schema: [
                     { key: 'nombre_parque',      type: 'text',     label: 'Nombre o identificación del parque/espacio',       required: true,  placeholder: 'Ej: Parque Central, Cancha La Esperanza' },
                     { key: 'tipo_espacio',        type: 'radio',    label: 'Tipo de espacio público',                          required: true,  options: ['Parque zonal', 'Parque de bolsillo', 'Cancha deportiva', 'Zona verde', 'Plazoleta', 'Separador vial'] },
@@ -891,6 +915,7 @@ const seedDatabase = async () => {
                 key: 'encuesta-conectividad-digital-2026',
                 title: 'Encuesta de Conectividad y Acceso Digital',
                 description: 'Medición del acceso a tecnologías digitales y brecha tecnológica en el hogar.',
+                metadata: { imagen: 'https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772497570/aquanova/forms/ewvzpr0vu6atylclvxbo.jpg', imagen_public_id: 'aquanova/forms/ewvzpr0vu6atylclvxbo' },
                 schema: [
                     { key: 'tiene_computador',   type: 'radio',    label: '¿El hogar cuenta con computador o portátil?',          required: true,  options: ['Sí, propio', 'Sí, compartido', 'No'] },
                     { key: 'num_smartphones',    type: 'number',   label: 'Número de smartphones en el hogar',                    required: true,  min: 0 },
@@ -925,8 +950,8 @@ const seedDatabase = async () => {
             if (!firstFormId) firstFormId = fId;
 
             await connection.query(
-                'INSERT INTO forms (id, `key`, title, description, created_by, is_active, created_at) VALUES (?, ?, ?, ?, ?, 1, NOW())',
-                [fId, formDef.key, formDef.title, formDef.description, adminId]
+                'INSERT INTO forms (id, `key`, title, description, created_by, is_active, metadata, created_at) VALUES (?, ?, ?, ?, ?, 1, ?, NOW())',
+                [fId, formDef.key, formDef.title, formDef.description, adminId, formDef.metadata ? JSON.stringify(formDef.metadata) : null]
             );
             const vId = uuidv4();
             await connection.query(

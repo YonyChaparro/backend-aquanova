@@ -6,7 +6,7 @@ const FormModel = {
     // 1. Crear Formulario + Versión 1 (Transacción)
     async createWithVersion(formData) {
         const { 
-            formId, versionId, key, title, description, schema, adminId, neighborhood_id
+            formId, versionId, key, title, description, schema, adminId, neighborhood_id, metadata
         } = formData;
 
         const connection = await pool.getConnection();
@@ -16,10 +16,10 @@ const FormModel = {
 
             // A. Insertar la cabecera (Tabla forms)
             const queryForm = `
-                INSERT INTO forms (id, \`key\`, title, description, created_by, is_active, created_at)
-                VALUES (?, ?, ?, ?, ?, 1, NOW())
+                INSERT INTO forms (id, \`key\`, title, description, created_by, is_active, metadata, created_at)
+                VALUES (?, ?, ?, ?, ?, 1, ?, NOW())
             `;
-            await connection.query(queryForm, [formId, key, title, description, adminId]);
+            await connection.query(queryForm, [formId, key, title, description, adminId, metadata ? JSON.stringify(metadata) : null]);
 
             // B. Insertar la primera versión (Tabla form_versions)
             // Nota: JSON.stringify(schema) convierte el array de preguntas a texto para MySQL
@@ -99,6 +99,7 @@ const FormModel = {
                 f.key, 
                 f.title, 
                 f.description, 
+                f.metadata,
                 f.is_active, 
                 f.created_at, 
                 u.name as created_by,
@@ -129,15 +130,18 @@ const FormModel = {
     // 3. Obtener el esquema (preguntas) de la última versión de un formulario
     // Esto servirá para que la App sepa qué preguntas pintar
     async findLatestVersionSchema(formId) {
-        // En src/models/formModel.js -> findLatestVersionSchema
-const query = `
+        const query = `
     SELECT fv.id, fv.schema, fv.version
     FROM form_versions fv
     WHERE fv.form_id = ?
-    ORDER BY fv.version DESC
+      AND fv.version = (
+          SELECT MAX(fv2.version)
+          FROM form_versions fv2
+          WHERE fv2.form_id = ?
+      )
     LIMIT 1
 `;
-        const [rows] = await pool.query(query, [formId]);
+        const [rows] = await pool.query(query, [formId, formId]);
         return rows[0];
     },
 
@@ -148,15 +152,18 @@ const query = `
                 f.id, 
                 f.title, 
                 f.description, 
+                f.metadata,
                 f.key, 
                 f.created_at, 
                 f.is_active,
                 fp.neighborhood_id
             FROM forms f
             LEFT JOIN form_versions fv ON f.id = fv.form_id
+              AND fv.version = (
+                  SELECT MAX(fv2.version) FROM form_versions fv2 WHERE fv2.form_id = f.id
+              )
             LEFT JOIN form_publications fp ON fv.id = fp.form_version_id
             WHERE f.id = ?
-            ORDER BY fv.version DESC
             LIMIT 1
         `;
         const [rows] = await pool.query(query, [id]);
@@ -166,7 +173,7 @@ const query = `
     // Buscar formulario por ID (incluye inactivos)
     async findByIdAny(id) {
         const query = `
-            SELECT f.id, f.title, f.description, f.key, f.created_at, f.is_active
+            SELECT f.id, f.title, f.description, f.metadata, f.key, f.created_at, f.is_active
             FROM forms f
             WHERE f.id = ?
         `;
@@ -190,6 +197,10 @@ const query = `
         if (data.is_active !== undefined) {
             fields.push('is_active = ?');
             params.push(data.is_active ? 1 : 0);
+        }
+        if (data.metadata !== undefined) {
+            fields.push('metadata = ?');
+            params.push(data.metadata ? JSON.stringify(data.metadata) : null);
         }
 
         if (!fields.length) {

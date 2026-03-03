@@ -95,6 +95,7 @@ CREATE TABLE `forms` (
   `key` VARCHAR(100) NOT NULL,               -- Slug legible para URLs (ej: censo-mascotas-2024)
   `title` VARCHAR(255) NOT NULL,
   `description` TEXT NULL,
+  `metadata` JSON NULL,                      -- Datos extra: imagen portada (Cloudinary), etc.
   `created_by` CHAR(36) NOT NULL,
   `is_active` BOOLEAN DEFAULT TRUE,
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,

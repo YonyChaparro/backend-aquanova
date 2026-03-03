@@ -372,25 +372,28 @@ const FormsList = () => {
 
 ## 🔄 Alternativa: Actualizar Estado con PUT
 
-También puedes desactivar un formulario usando el endpoint de actualización:
+También puedes desactivar un formulario usando el endpoint de actualización.
+
+> ⚠️ El endpoint PUT ahora usa `multipart/form-data`. El campo `is_active` se envía como string `"false"`.
 
 ```javascript
 // PUT http://localhost:3000/api/forms/:id
 const deactivateFormWithPut = async (formId) => {
   const token = localStorage.getItem('token');
   
-  const response = await axios.put(
+  const formData = new FormData();
+  formData.append('is_active', 'false');
+
+  const response = await fetch(
     `http://localhost:3000/api/forms/${formId}`,
-    { is_active: false },
     {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData
     }
   );
   
-  return response.data;
+  return await response.json();
 };
 ```
 
@@ -445,22 +448,37 @@ export const formService = {
     return response.data;
   },
 
-  // Actualizar formulario
-  async updateForm(formId, data) {
+  // Actualizar formulario (multipart/form-data)
+  async updateForm(formId, fields, imageFile = null) {
+    const formData = new FormData();
+    if (imageFile) formData.append('imagen', imageFile);
+    if (fields.title !== undefined) formData.append('title', fields.title);
+    if (fields.description !== undefined) formData.append('description', fields.description);
+    if (fields.is_active !== undefined) formData.append('is_active', String(fields.is_active));
+    if (fields.schema !== undefined) formData.append('schema', JSON.stringify(fields.schema));
+    if (fields.neighborhood_id !== undefined) formData.append('neighborhood_id', fields.neighborhood_id);
+
     const response = await axios.put(
       `${API_URL}/forms/${formId}`,
-      data,
-      { headers: getAuthHeaders() }
+      formData,
+      { headers: { 'Authorization': `Bearer ${token}` } }
     );
     return response.data;
   },
 
-  // Crear formulario
-  async createForm(formData) {
+  // Crear formulario (multipart/form-data)
+  async createForm(fields, imageFile = null) {
+    const formData = new FormData();
+    if (imageFile) formData.append('imagen', imageFile);
+    formData.append('title', fields.title);
+    formData.append('neighborhood_id', fields.neighborhood_id);
+    formData.append('schema', JSON.stringify(fields.schema));
+    if (fields.description) formData.append('description', fields.description);
+
     const response = await axios.post(
       `${API_URL}/forms`,
       formData,
-      { headers: getAuthHeaders() }
+      { headers: { 'Authorization': `Bearer ${token}` } }
     );
     return response.data;
   }
@@ -492,7 +510,8 @@ try {
 1. **Campo `is_active` del formulario:** Se cambia de `1` a `0`
 2. **Publicaciones asociadas:** Todas las publicaciones del formulario en los barrios se desactivan (`is_active = 0`)
 3. **Datos preservados:** Los datos del formulario NO se eliminan, solo se marcan como inactivos
-4. **Respuestas existentes:** Las respuestas anteriores al formulario se mantienen intactas
+4. **Imagen de portada (Cloudinary):** La imagen alojada en Cloudinary **NO se elimina** al desactivar. El formulario puede ser reactivado conservando su imagen.
+5. **Respuestas existentes:** Las respuestas anteriores al formulario se mantienen intactas
 
 ### ¿Cómo aparece en el listado?
 
@@ -527,15 +546,17 @@ await axios.put(
 
 2. **Soft Delete:** No es una eliminación permanente. Los datos se preservan en la base de datos.
 
-3. **Transacción:** La desactivación es una transacción que afecta:
+3. **Imagen Cloudinary preservada:** La imagen de portada alojada en Cloudinary **no se elimina** al desactivar el formulario. Solo se desactiva el registro en base de datos.
+
+4. **Transacción:** La desactivación es una transacción que afecta:
    - Tabla `forms` (campo `is_active`)
    - Tabla `form_publications` (campo `is_active`)
 
-4. **Respuestas existentes:** Las respuestas de usuarios al formulario se mantienen intactas.
+5. **Respuestas existentes:** Las respuestas de usuarios al formulario se mantienen intactas.
 
-5. **Sin cuerpo en la petición:** El método DELETE no requiere body, solo el ID en la URL.
+6. **Sin cuerpo en la petición:** El método DELETE no requiere body, solo el ID en la URL.
 
-6. **Confirmación recomendada:** Implementa siempre confirmación en el frontend antes de desactivar.
+7. **Confirmación recomendada:** Implementa siempre confirmación en el frontend antes de desactivar.
 
 ---
 
@@ -566,4 +587,4 @@ await axios.put(
 
 ---
 
-**Última actualización:** 10 de enero de 2026
+**Última actualización:** 2 de marzo de 2026
