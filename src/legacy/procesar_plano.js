@@ -11,7 +11,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 // ==========================================
 // 1. CONFIGURACIÓN
 // ==========================================
-const SVG_FILE_PATH = path.resolve(__dirname, './Mapa.svg');
+const SVG_FILE_PATH = path.resolve(__dirname, './Mapa Barrio San Miguel de la Cañana.svg');
 
 const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
@@ -74,14 +74,45 @@ async function main() {
         const svgData = fs.readFileSync(SVG_FILE_PATH, 'utf-8');
         const $ = cheerio.load(svgData, { xmlMode: true });
 
+        // Extraer viewBox real del SVG para guardarlo en la BD
+        const svgEl = $('svg').first();
+        const svgViewBox = svgEl.attr('viewBox') ||
+            `0 0 ${svgEl.attr('width') || 1103} ${svgEl.attr('height') || 667}`;
+        console.log(`📐 viewBox detectado: ${svgViewBox}`);
+
         const paths = $('path');
         console.log(`Se encontraron ${paths.length} trazos en el SVG.\n`);
 
-        // --- CAMBIO AQUÍ: Buscar o crear el barrio real ---
-        const neighborhoodName = 'San Miguel de la Cañada';
-        const neighborhoodCode = 'SMC-001';
+        // -------------------------------------------------------
+        // PASO A: Buscar o crear el SECTOR padre
+        // -------------------------------------------------------
+        const sectorName = 'San Miguel de la Cañada';
+        const sectorCode = 'SMC-001';
 
-        // 1. Verificar si el barrio ya existe
+        const [existingSectors] = await connection.execute(
+            `SELECT id FROM neighborhoods WHERE code = ?`, [sectorCode]
+        );
+
+        let sectorId;
+        if (existingSectors.length > 0) {
+            sectorId = existingSectors[0].id;
+            console.log(`✅ Sector encontrado: ${sectorName} (ID: ${sectorId})`);
+        } else {
+            sectorId = crypto.randomUUID();
+            await connection.execute(
+                `INSERT INTO neighborhoods (id, name, code) VALUES (?, ?, ?)`,
+                [sectorId, sectorName, sectorCode]
+            );
+            console.log(`✅ Sector creado: ${sectorName} (ID: ${sectorId})`);
+        }
+
+        // -------------------------------------------------------
+        // PASO B: Buscar o crear el BARRIO hijo (el que tiene el plano)
+        // -------------------------------------------------------
+        const neighborhoodName = 'San Miguel de la Cañana';
+        const neighborhoodCode = 'SMCN-001';
+        const neighborhoodMetadata = JSON.stringify({ viewBox: svgViewBox });
+
         const [existingNeighborhoods] = await connection.execute(
             `SELECT id FROM neighborhoods WHERE code = ?`, [neighborhoodCode]
         );
@@ -89,14 +120,19 @@ async function main() {
         let neighborhoodId;
         if (existingNeighborhoods.length > 0) {
             neighborhoodId = existingNeighborhoods[0].id;
-            console.log(`✅ Barrio encontrado: ${neighborhoodName} (ID: ${neighborhoodId})`);
+            // Actualizar nombre, parent_id y metadata con los valores actuales
+            await connection.execute(
+                `UPDATE neighborhoods SET name = ?, parent_id = ?, metadata = ? WHERE id = ?`,
+                [neighborhoodName, sectorId, neighborhoodMetadata, neighborhoodId]
+            );
+            console.log(`✅ Barrio encontrado y actualizado: ${neighborhoodName} (ID: ${neighborhoodId})`);
         } else {
             neighborhoodId = crypto.randomUUID();
             await connection.execute(
-                `INSERT INTO neighborhoods (id, name, code) VALUES (?, ?, ?)`,
-                [neighborhoodId, neighborhoodName, neighborhoodCode]
+                `INSERT INTO neighborhoods (id, name, code, parent_id, metadata) VALUES (?, ?, ?, ?, ?)`,
+                [neighborhoodId, neighborhoodName, neighborhoodCode, sectorId, neighborhoodMetadata]
             );
-            console.log(`✅ Barrio creado: ${neighborhoodName}`);
+            console.log(`✅ Barrio creado: ${neighborhoodName} → hijo de: ${sectorName}`);
         }
 
         // 2. Verificar si la manzana ya existe

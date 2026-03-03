@@ -152,7 +152,10 @@ const updateForm = async (req, res) => {
     try {
         const { id } = req.params;
         const { title, description, is_active, schema, neighborhood_id } = req.body;
-        let metadata = parseMetadata(req.body.metadata);
+        // Solo parseamos metadata si fue enviado explícitamente; de lo contrario queda undefined
+        // para evitar que sobreescriba (y borre) la imagen existente en la BD
+        const metadataExplicit = req.body.metadata !== undefined;
+        let metadata = metadataExplicit ? parseMetadata(req.body.metadata) : undefined;
         const adminId = req.user.uid;
 
         if (title === undefined && description === undefined && is_active === undefined && schema === undefined && neighborhood_id === undefined && metadata === undefined && !req.file) {

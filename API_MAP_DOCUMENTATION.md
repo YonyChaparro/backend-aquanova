@@ -1,27 +1,57 @@
-# Documentación del módulo Map (Gemelo Digital)
+# Documentación API — Módulo Map (Gemelo Digital)
 
-Esta documentación describe los endpoints del módulo Map, que gestiona la visualización del gemelo digital con bloques y predios del proyecto AquaNova.
+Gestión y consulta del gemelo digital: bloques, predios y barrios del proyecto AquaNova.
+
+---
+
+## Tabla de Contenidos
+
+1. [Descripción General](#descripción-general)
+2. [Endpoints](#endpoints)
+   - [GET /api/map/digital-twin](#1-obtener-gemelo-digital-completo)
+   - [GET /api/map/digital-twin/:neighborhoodId](#2-obtener-gemelo-digital-por-barrio)
+   - [PATCH /api/map/predios/:lotId](#3-actualizar-predio)
+   - [GET /api/map/neighborhoods](#4-listar-barrios-disponibles)
+3. [Estructuras de Datos](#estructuras-de-datos)
+4. [Casos de Uso](#casos-de-uso)
+5. [Notas Técnicas](#notas-técnicas)
+
+---
 
 ## Descripción General
 
-El módulo Map proporciona acceso a la información geoespacial del proyecto, permitiendo:
-- Obtener la estructura completa del mapa (bloques y predios)
-- Filtrar datos por barrio específico
-- Actualizar información de predios individuales
-- Listar barrios disponibles
+| Campo | Valor |
+|-------|-------|
+| Prefijo base | `/api/map` |
+| Autenticación | **No requerida** en ningún endpoint de este módulo |
+| Formato | JSON |
+
+> **Importante:** Todos los endpoints del módulo Map **filtran automáticamente** por barrios activos (`neighborhoods.is_active = 1`). Los bloques, predios y barrios inactivos **no se exponen** en ningún endpoint.
+
+El módulo Map expone los datos geoespaciales del proyecto mediante caminos SVG pre-calculados en la base de datos, los cuales pueden renderizarse directamente en un elemento `<svg>`.
+
+Los estados posibles de un predio (`lots.status`) son:
+
+| Valor | Descripción |
+|-------|-------------|
+| `sin_informacion` | Predio sin datos registrados |
+| `censado` | Predio con censo completado |
+| `registrado` | Predio formalmente registrado en el sistema |
+
+---
 
 ## Endpoints
 
 ### 1. Obtener Gemelo Digital Completo
 
-**URL:** `GET /api/map/digital-twin`  
-**Método:** `GET`  
+```
+GET /api/map/digital-twin
+```
+
 **Autenticación:** No requerida  
+**Descripción:** Retorna todos los bloques y predios del proyecto que pertenezcan a barrios **activos**.
 
-#### Descripción
-Retorna la información completa del gemelo digital con todos los bloques y predios del proyecto.
-
-#### Respuesta (200 OK)
+#### Respuesta exitosa `200 OK`
 
 ```json
 {
@@ -41,9 +71,9 @@ Retorna la información completa del gemelo digital con todos los bloques y pred
           {
             "id": "uuid-lot-1",
             "number": "1",
-            "status": "disponible",
-            "water_meter_code": "MED-2026-001",
-            "cadastral_id": "CAD-001-A",
+            "status": "sin_informacion",
+            "water_meter_code": null,
+            "cadastral_id": null,
             "area_m2": 150.50,
             "path": "M 100 100 L 150 100 L 150 150 L 100 150 Z",
             "centroid": {
@@ -54,9 +84,9 @@ Retorna la información completa del gemelo digital con todos los bloques y pred
           {
             "id": "uuid-lot-2",
             "number": "2",
-            "status": "ocupado",
-            "water_meter_code": "MED-2026-002",
-            "cadastral_id": "CAD-001-B",
+            "status": "censado",
+            "water_meter_code": "MED-2026-001",
+            "cadastral_id": "CAD-001-A",
             "area_m2": 160.75,
             "path": "M 150 100 L 200 100 L 200 150 L 150 150 Z",
             "centroid": {
@@ -73,164 +103,95 @@ Retorna la información completa del gemelo digital con todos los bloques y pred
 
 #### Errores
 
-**500 Internal Server Error**
-```json
-{
-  "ok": false,
-  "message": "Error obteniendo los datos del mapa."
-}
-```
+| Código | Mensaje | Causa |
+|--------|---------|-------|
+| `500` | `"Error obteniendo los datos del mapa."` | Error interno del servidor |
 
 ---
 
 ### 2. Obtener Gemelo Digital por Barrio
 
-**URL:** `GET /api/map/digital-twin/:neighborhoodId`  
-**Método:** `GET`  
-**Autenticación:** No requerida  
+```
+GET /api/map/digital-twin/:neighborhoodId
+```
 
-#### Parámetros
+**Autenticación:** No requerida  
+**Descripción:** Igual que el endpoint anterior, pero filtra por un barrio específico. El barrio debe estar **activo** para obtener resultados; si está inactivo, se retorna `blocks: []`.
+
+#### Parámetros de ruta
 
 | Parámetro | Tipo | Requerido | Descripción |
 |-----------|------|-----------|-------------|
-| `neighborhoodId` | string | Sí | ID único del barrio |
+| `neighborhoodId` | `string (UUID)` | Sí | ID del barrio activo por el que filtrar |
 
-#### Descripción
-Retorna la información del gemelo digital filtrada para un barrio específico.
+#### Respuesta exitosa `200 OK`
 
-#### Ejemplo de Uso
-
-```javascript
-// JavaScript/Fetch
-async function getMapByNeighborhood(neighborhoodId) {
-  try {
-    const response = await fetch(
-      `http://localhost:3000/api/map/digital-twin/${neighborhoodId}`,
+```json
+{
+  "ok": true,
+  "data": {
+    "viewBox": "0 0 1200 800",
+    "blocks": [
       {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        "id": "uuid-block-1",
+        "code": "BLQ-001",
+        "geom_path": "M 100 100 L 200 100 L 200 200 L 100 200 Z",
+        "label_position": { "x": 150, "y": 150 },
+        "lots": [ "..." ]
       }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Error al obtener datos del mapa');
-    }
-
-    return data.data; // Retorna el objeto con viewBox y blocks
-  } catch (error) {
-    console.error('Error:', error);
-    return null;
+    ]
   }
 }
-
-// Uso
-getMapByNeighborhood('uuid-neighborhood-1').then(mapData => {
-  console.log('Bloques del barrio:', mapData.blocks);
-});
 ```
 
-#### Respuesta (200 OK)
-La respuesta tiene la misma estructura que el endpoint completo, pero solo incluye bloques y predios del barrio especificado.
+> Si el `neighborhoodId` está inactivo, no existe, o no tiene bloques, se retorna `blocks: []` con `200 OK`.
 
 #### Errores
 
-**500 Internal Server Error**
-```json
-{
-  "ok": false,
-  "message": "Error obteniendo los datos del mapa."
-}
-```
+| Código | Mensaje | Causa |
+|--------|---------|-------|
+| `500` | `"Error obteniendo los datos del mapa."` | Error interno del servidor |
 
 ---
 
-### 3. Actualizar Información de un Predio
+### 3. Actualizar Predio
 
-**URL:** `PATCH /api/map/predios/:lotId`  
-**Método:** `PATCH`  
+```
+PATCH /api/map/predios/:lotId
+```
+
 **Autenticación:** No requerida  
+**Descripción:** Actualiza uno o más campos de un predio. Solo se modifican los campos incluidos en el body; los omitidos quedan intactos.
 
-#### Parámetros
+#### Parámetros de ruta
 
 | Parámetro | Tipo | Requerido | Descripción |
 |-----------|------|-----------|-------------|
-| `lotId` | string | Sí | ID único del predio |
+| `lotId` | `string (UUID)` | Sí | ID del predio a actualizar |
 
-#### Body (application/json)
+#### Body `application/json`
 
 ```json
 {
-  "status": "ocupado",
+  "status": "censado",
   "water_meter_code": "MED-2026-001",
   "cadastral_id": "CAD-001-A",
   "number": "1A"
 }
 ```
 
-**Nota:** Todos los campos son opcionales. Solo se actualizarán los campos proporcionados.
-
-#### Campos Actualizables
+#### Campos actualizables
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `status` | string | Estado del predio (disponible, ocupado, etc.) |
-| `water_meter_code` | string | Código del medidor de agua |
-| `cadastral_id` | string | ID catastral del predio |
-| `number` | string | Número del predio |
+| `status` | `string` | Estado del predio: `sin_informacion`, `censado` o `registrado` |
+| `water_meter_code` | `string` | Código del medidor de agua asignado |
+| `cadastral_id` | `string` | Identificador catastral del predio |
+| `number` | `string` | Número o etiqueta del predio |
 
-#### Descripción
-Actualiza la información de un predio específico. Permite actualizar el estado, código de medidor, ID catastral o número del predio.
+> Al menos uno de los campos anteriores debe estar presente. El resto es opcional.
 
-#### Ejemplo de Uso
-
-```javascript
-// JavaScript/Fetch
-async function updateLotInfo(lotId, updateData) {
-  try {
-    const response = await fetch(
-      `http://localhost:3000/api/map/predios/${lotId}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updateData)
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Error al actualizar predio');
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Error:', error);
-    return null;
-  }
-}
-
-// Uso - actualizar solo el estado
-updateLotInfo('uuid-lot-1', { status: 'ocupado' }).then(result => {
-  console.log(result.message); // "Predio actualizado exitosamente."
-});
-
-// Uso - actualizar múltiples campos
-updateLotInfo('uuid-lot-1', {
-  status: 'ocupado',
-  water_meter_code: 'MED-2026-NEW',
-  number: '1B'
-}).then(result => {
-  console.log(result.message);
-});
-```
-
-#### Respuesta (200 OK)
+#### Respuesta exitosa `200 OK`
 
 ```json
 {
@@ -241,34 +202,23 @@ updateLotInfo('uuid-lot-1', {
 
 #### Errores
 
-**400 Bad Request** (No hay datos para actualizar)
-```json
-{
-  "ok": false,
-  "message": "No hay datos para actualizar."
-}
-```
-
-**500 Internal Server Error**
-```json
-{
-  "ok": false,
-  "message": "Error interno al actualizar predio."
-}
-```
+| Código | Mensaje | Causa |
+|--------|---------|-------|
+| `400` | `"No hay datos para actualizar."` | Body vacío o sin ningún campo válido |
+| `500` | `"Error interno al actualizar predio."` | Error interno del servidor |
 
 ---
 
-### 4. Obtener Lista de Barrios
+### 4. Listar Barrios Disponibles
 
-**URL:** `GET /api/map/neighborhoods`  
-**Método:** `GET`  
+```
+GET /api/map/neighborhoods
+```
+
 **Autenticación:** No requerida  
+**Descripción:** Retorna únicamente los barrios con `is_active = 1`, ordenados alfabéticamente. Útil para poblar selectores o filtros de la interfaz antes de cargar el mapa.
 
-#### Descripción
-Retorna una lista completa de barrios ordenados alfabéticamente. Útil para poblar selectores o filtros en la interfaz.
-
-#### Respuesta (200 OK)
+#### Respuesta exitosa `200 OK`
 
 ```json
 {
@@ -283,163 +233,114 @@ Retorna una lista completa de barrios ordenados alfabéticamente. Útil para pob
       "id": "uuid-nei-2",
       "name": "Barrio Norte",
       "code": "NOR-01"
-    },
-    {
-      "id": "uuid-nei-3",
-      "name": "Barrio Sur",
-      "code": "SUR-01"
     }
   ]
 }
 ```
 
-#### Ejemplo de Uso
-
-```javascript
-// JavaScript/Fetch
-async function getNeighborhoods() {
-  try {
-    const response = await fetch(
-      'http://localhost:3000/api/map/neighborhoods',
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Error al obtener barrios');
-    }
-
-    return data.data;
-  } catch (error) {
-    console.error('Error:', error);
-    return [];
-  }
-}
-
-// Uso - poblar un select
-getNeighborhoods().then(neighborhoods => {
-  neighborhoods.forEach(neighborhood => {
-    console.log(`${neighborhood.name} (${neighborhood.code})`);
-  });
-});
-```
+> Los barrios con `is_active = 0` no se incluyen en esta lista.
 
 #### Errores
 
-**500 Internal Server Error**
-```json
-{
-  "ok": false,
-  "message": "Error interno al obtener los sectores."
-}
-```
+| Código | Mensaje | Causa |
+|--------|---------|-------|
+| `500` | `"Error interno al obtener los sectores."` | Error interno del servidor |
 
 ---
 
-## Estructura de Datos
+## Estructuras de Datos
 
-### Block Object
-
-| Campo | Tipo | Descripción |
-|-------|------|-------------|
-| `id` | string | ID único del bloque |
-| `code` | string | Código identificador del bloque |
-| `geom_path` | string | SVG path que define la geometría del bloque |
-| `label_position` | object | Posición {x, y} para el label del bloque |
-| `lots` | array | Array de predios contenidos en el bloque |
-
-### Lot Object
+### Block
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | string | ID único del predio |
-| `number` | string | Número del predio |
-| `status` | string | Estado actual del predio |
-| `water_meter_code` | string | Código del medidor de agua asignado |
-| `cadastral_id` | string | ID catastral del predio |
-| `area_m2` | number | Área del predio en metros cuadrados |
-| `path` | string | SVG path que define la geometría del predio |
-| `centroid` | object | Posición {x, y} del centroide del predio |
+| `id` | `string` | UUID único del bloque |
+| `code` | `string` | Código identificador del bloque (ej. `"BLQ-001"`) |
+| `geom_path` | `string` | Camino SVG que define el contorno del bloque |
+| `label_position` | `{ x: number, y: number }` | Coordenadas donde se debe colocar el label del bloque |
+| `lots` | `Lot[]` | Predios contenidos en el bloque |
 
-### Neighborhood Object
+### Lot
 
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
-| `id` | string | ID único del barrio |
-| `name` | string | Nombre del barrio |
-| `code` | string | Código identificador del barrio |
+| `id` | `string` | UUID único del predio |
+| `number` | `string` | Número o etiqueta del predio |
+| `status` | `"sin_informacion" \| "censado" \| "registrado"` | Estado actual del predio |
+| `water_meter_code` | `string \| null` | Código del medidor de agua asignado |
+| `cadastral_id` | `string \| null` | Identificador catastral |
+| `area_m2` | `number` | Área en metros cuadrados |
+| `path` | `string` | Camino SVG que define el contorno del predio |
+| `centroid` | `{ x: number, y: number }` | Coordenadas del centroide del predio |
+
+### Neighborhood (en `/map/neighborhoods`)
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `id` | `string` | UUID único del barrio |
+| `name` | `string` | Nombre del barrio |
+| `code` | `string` | Código identificador del barrio |
 
 ---
 
-## Casos de Uso Comunes
+## Casos de Uso
 
-### Caso 1: Mostrar mapa interactivo de un barrio
+### Mostrar mapa interactivo de un barrio
+
 ```javascript
-// 1. Obtener lista de barrios para el selector
-const neighborhoods = await getNeighborhoods();
-populateSelect(neighborhoods);
+// 1. Cargar solo barrios activos para el selector
+const res = await fetch('/api/map/neighborhoods');
+const { data: neighborhoods } = await res.json();
+// → populateSelect(neighborhoods)
 
-// 2. Cuando el usuario selecciona un barrio
-const selectedNeighborhoodId = document.getElementById('neighborhoodSelect').value;
-const mapData = await getMapByNeighborhood(selectedNeighborhoodId);
-
-// 3. Renderizar SVG con bloques y predios
-renderMapFromData(mapData);
+// 2. Al seleccionar un barrio, cargar su mapa
+const neighborhoodId = selectEl.value;
+const mapRes = await fetch(`/api/map/digital-twin/${neighborhoodId}`);
+const { data: mapData } = await mapRes.json();
+// → renderMap(mapData.viewBox, mapData.blocks)
 ```
 
-### Caso 2: Actualizar estado de un predio
-```javascript
-// Cuando el usuario interactúa con un predio en el mapa
-const lotId = clickedLot.id;
-const updatedStatus = 'ocupado';
+### Actualizar estado de un predio tras censo
 
-const result = await updateLotInfo(lotId, { 
-  status: updatedStatus,
-  water_meter_code: 'MED-2026-NEW' 
+```javascript
+const result = await fetch(`/api/map/predios/${lotId}`, {
+  method: 'PATCH',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    status: 'censado',
+    water_meter_code: 'MED-2026-099',
+    cadastral_id: 'CAD-ABC-123'
+  })
 });
 
-if (result.ok) {
-  showNotification('Predio actualizado exitosamente');
-  refreshMap();
+const data = await result.json();
+if (data.ok) {
+  console.log(data.message); // "Predio actualizado exitosamente."
 }
 ```
 
-### Caso 3: Obtener información completa del proyecto
+### Cargar mapa completo y estadísticas
+
 ```javascript
-// Para dashboards o reportes que necesiten toda la información
-const completeMapData = await getCompleteMap();
+const res = await fetch('/api/map/digital-twin');
+const { data } = await res.json();
 
-// Contar total de predios
-const totalLots = completeMapData.blocks.reduce(
-  (sum, block) => sum + block.lots.length, 
-  0
-);
+const todos = data.blocks.flatMap(b => b.lots);
+const sinInfo  = todos.filter(l => l.status === 'sin_informacion').length;
+const censados = todos.filter(l => l.status === 'censado').length;
+const registrados = todos.filter(l => l.status === 'registrado').length;
 
-// Obtener predios por estado
-const occupiedLots = [];
-completeMapData.blocks.forEach(block => {
-  occupiedLots.push(...block.lots.filter(lot => lot.status === 'ocupado'));
-});
+console.log(`Total: ${todos.length} | Sin info: ${sinInfo} | Censados: ${censados} | Registrados: ${registrados}`);
 ```
 
 ---
 
 ## Notas Técnicas
 
-- **SVG Paths**: Los datos `geom_path` y `path` en los objetos Block y Lot contienen comandos SVG estándar que pueden renderizarse directamente en un elemento `<svg>`.
-- **Centroide de Predios**: La propiedad `centroid` indica el punto central del predio, útil para posicionar labels o íconos.
-- **Label Position**: En bloques, la propiedad `label_position` define dónde se debe mostrar el código del bloque.
-- **Ordenamiento**: Los barrios se retornan ordenados alfabéticamente por nombre.
-
----
-
-## Consideraciones de Performance
-
-- El endpoint `/digital-twin` sin filtros puede retornar grandes cantidades de datos si hay muchos bloques y predios. Considere usar el endpoint filtrado por barrio cuando sea posible.
-- Los datos geométricos (SVG paths) son pre-computados en la base de datos para optimizar la respuesta.
+- **Filtro de barrios activos:** Tanto `getBlocksAndLots` como `getAllNeighborhoods` en el modelo aplican `n.is_active = 1` vía `INNER JOIN` y `WHERE` respectivamente. Los barrios inactivos no se exponen en ningún endpoint.
+- **Sin autenticación:** Ningún endpoint de este módulo usa el middleware `verifyToken`. Si en el futuro se protegen, se debe añadir `Authorization: Bearer <token>`.
+- **SVG paths:** Los campos `geom_path` (bloque) y `path` (predio) contienen comandos SVG estándar y pueden usarse directamente como atributo `d` de un elemento `<path>`.
+- **Centroide y label_position:** Almacenados como JSON en la BD y parseados automáticamente en el controlador. Útiles para posicionar etiquetas sobre el mapa SVG.
+- **viewBox fijo:** El valor `"0 0 1200 800"` está definido en `mapController.js`, no en la base de datos.
+- **Bloque sin predios:** Un bloque puede existir sin predios asociados; en ese caso su array `lots` será vacío (`[]`).
+- **Actualización parcial:** `PATCH /predios/:lotId` construye la sentencia `UPDATE` dinámicamente con solo los campos recibidos en el body.

@@ -6,6 +6,16 @@ const getDigitalTwinData = async (req, res) => {
         const { neighborhoodId } = req.params;
         const rows = await MapModel.getBlocksAndLots(neighborhoodId);
         
+        // Extraer viewBox desde metadata del barrio (guardado por procesar_plano.js)
+        // Fallback al viewBox real del Mapa.svg de San Miguel de la Cañada
+        let viewBox = '0 0 1103 667';
+        if (rows.length > 0 && rows[0].neighborhood_metadata) {
+            const meta = typeof rows[0].neighborhood_metadata === 'string'
+                ? JSON.parse(rows[0].neighborhood_metadata)
+                : rows[0].neighborhood_metadata;
+            if (meta && meta.viewBox) viewBox = meta.viewBox;
+        }
+
         const blocksMap = new Map();
 
         for (const row of rows) {
@@ -34,7 +44,7 @@ const getDigitalTwinData = async (req, res) => {
         }
 
         const response = {
-            viewBox: "0 0 1200 800",
+            viewBox,
             blocks: Array.from(blocksMap.values())
         };
 

@@ -6,8 +6,10 @@ const getBlocksAndLots = async (neighborhoodId) => {
         SELECT 
             b.id AS block_id, b.code AS block_code, b.geom_path AS block_geom, b.label_position,
             l.id AS lot_id, l.number, l.status, l.water_meter_code, l.cadastral_id,
-            l.area_m2, l.svg_path, l.centroid
+            l.area_m2, l.svg_path, l.centroid,
+            n.metadata AS neighborhood_metadata
         FROM blocks b
+        INNER JOIN neighborhoods n ON b.neighborhood_id = n.id AND n.is_active = 1
         LEFT JOIN lots l ON b.id = l.block_id
     `;
     const params = [];
@@ -39,9 +41,9 @@ const updateLot = async (lotId, updateData) => {
     return result;
 };
 
-// NUEVA FUNCIÓN: Traer todos los barrios
+// Traer solo los barrios activos
 const getAllNeighborhoods = async () => {
-    const [rows] = await db.execute('SELECT id, name, code FROM neighborhoods ORDER BY name ASC');
+    const [rows] = await db.execute('SELECT id, name, code FROM neighborhoods WHERE is_active = 1 ORDER BY name ASC');
     return rows;
 };
 
