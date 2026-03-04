@@ -1,7 +1,14 @@
 // src/controllers/formController.js
 const FormModel = require('../models/formModel');
+const GiveawayModel = require('../models/giveawayModel');
 const { v4: uuidv4 } = require('uuid');
 const { uploadImage, deleteImage, extractPublicId } = require('../helpers/cloudinaryHelper');
+
+// Construye el link de invitación para compartir un formulario
+const buildShareLink = (formKey, referralCode) => {
+    const base = (process.env.FRONTEND_URL || 'https://tuapp.com/formulario').replace(/\/$/, '');
+    return `${base}/${formKey}?ref=${referralCode}`;
+};
 
 // Helper para parsear metadata (llega como string en multipart/form-data)
 const parseMetadata = (metadata) => {
@@ -94,14 +101,19 @@ const createForm = async (req, res) => {
 // LISTAR FORMULARIOS
 const getForms = async (req, res) => {
     try {
-        const rows = await FormModel.findAll();
+        const [rows, referralProfile] = await Promise.all([
+            FormModel.findAll(),
+            GiveawayModel.getOrCreateReferralProfile(req.user.uid)
+        ]);
+
         const forms = rows.map(f => ({
             ...f,
             is_active: Boolean(f.is_active),
             metadata: typeof f.metadata === 'string' ? JSON.parse(f.metadata) : (f.metadata || null),
             neighborhoods: typeof f.neighborhoods === 'string'
                 ? JSON.parse(f.neighborhoods)
-                : (f.neighborhoods || [])
+                : (f.neighborhoods || []),
+            share_link: buildShareLink(f.key, referralProfile.referral_code)
         }));
         res.json({ ok: true, forms });
     } catch (error) {
@@ -116,19 +128,15 @@ const getFormDetail = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // 1. Buscamos la info básica
-        // Nota: Reutilizamos findAll pero filtramos en memoria o creamos un findById en el modelo.
-        // Para hacerlo rápido, usaremos una consulta directa aquí o agregamos al modelo.
-        // Vamos a agregarlo limpio al modelo primero (ver paso abajo).
-        
-        const form = await FormModel.findById(id);
-        
+        const [form, versionData, referralProfile] = await Promise.all([
+            FormModel.findById(id),
+            FormModel.findLatestVersionSchema(id),
+            GiveawayModel.getOrCreateReferralProfile(req.user.uid)
+        ]);
+
         if (!form) {
             return res.status(404).json({ ok: false, message: 'Formulario no encontrado' });
         }
-
-        // 2. Buscamos el esquema (preguntas) de la última versión
-        const versionData = await FormModel.findLatestVersionSchema(id);
 
         res.json({
             ok: true,
@@ -137,7 +145,8 @@ const getFormDetail = async (req, res) => {
                 metadata: typeof form.metadata === 'string' ? JSON.parse(form.metadata) : (form.metadata || null),
                 is_active: Boolean(form.is_active),
                 version: versionData ? versionData.version : 1,
-                schema: versionData ? versionData.schema : [] 
+                schema: versionData ? versionData.schema : [],
+                share_link: buildShareLink(form.key, referralProfile.referral_code)
             }
         });
 
@@ -282,17 +291,22 @@ const deleteForm = async (req, res) => {
 // BUSCAR FORMULARIOS
 const searchForms = async (req, res) => {
     try {
-        const { query } = req.query; // ?query=termino
+        const { query } = req.query;
         if (!query) {
              return res.status(400).json({ ok: false, message: 'Debe enviar un parámetro de búsqueda "query"' });
         }
-        
-        const forms = await FormModel.search(query);
+
+        const [forms, referralProfile] = await Promise.all([
+            FormModel.search(query),
+            GiveawayModel.getOrCreateReferralProfile(req.user.uid)
+        ]);
+
         const parsed = forms.map(f => ({
             ...f,
             is_active: Boolean(f.is_active),
             metadata: typeof f.metadata === 'string' ? JSON.parse(f.metadata) : (f.metadata || null),
-            neighborhoods: typeof f.neighborhoods === 'string' ? JSON.parse(f.neighborhoods) : (f.neighborhoods || [])
+            neighborhoods: typeof f.neighborhoods === 'string' ? JSON.parse(f.neighborhoods) : (f.neighborhoods || []),
+            share_link: buildShareLink(f.key, referralProfile.referral_code)
         }));
         res.json({ ok: true, forms: parsed });
     } catch (error) {
@@ -301,5 +315,51 @@ const searchForms = async (req, res) => {
     }
 };
 
+// OBTENER FORMULARIO PÚBLICO POR KEY (para links de invitación)
+const getFormPublic = async (req, res) => {
+    try {
+        const { key } = req.params;
+        const form = await FormModel.findByKey(key);
+
+        if (!form) {
+            return res.status(404).json({ ok: false, message: 'Formulario no encontrado o inactivo' });
+        }
+
+        const schema = await FormModel.findLatestVersionSchema(form.id);
+
+        res.json({
+            ok: true,
+            data: {
+                id: form.id,
+                key: form.key,
+                title: form.title,
+                description: form.description,
+                metadata: typeof form.metadata === 'string'
+                    ? JSON.parse(form.metadata)
+                    : (form.metadata || null),
+                neighborhood_id: form.neighborhood_id,
+                version: schema ? schema.version : 1,
+                schema: schema ? schema.schema : [],
+                giveaway: {
+                    points_per_referral: form.points_per_referral ?? 10,
+                    is_active: Boolean(form.giveaway_active)
+                },
+                // Campos mínimos que el frontend debe recopilar para registrar al usuario
+                registration_fields: {
+                    name:            { required: true,  type: 'text',     label: 'Nombre completo' },
+                    document_number: { required: true,  type: 'text',     label: 'Número de documento' },
+                    password:        { required: false, type: 'password', label: 'Crear contraseña' },
+                    email:           { required: false, type: 'email',    label: 'Correo electrónico' },
+                    phone:           { required: false, type: 'tel',      label: 'Teléfono' }
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error cargando formulario público:', error);
+        res.status(500).json({ ok: false, message: 'Error interno del servidor' });
+    }
+};
+
 // ¡No olvides agregarlo al exports!
-module.exports = { createForm, getForms, getFormDetail, updateForm, deleteForm, searchForms };
+module.exports = { createForm, getForms, getFormDetail, updateForm, deleteForm, searchForms, getFormPublic };

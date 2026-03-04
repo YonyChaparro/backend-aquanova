@@ -1,5 +1,6 @@
 // src/models/formModel.js
 const pool = require('../config/db');
+const GiveawayModel = require('./giveawayModel');
 
 const FormModel = {
 
@@ -36,6 +37,9 @@ const FormModel = {
                 VALUES (?, ?, ?, NOW(), 1)
             `;
             await connection.query(queryPublication, [publicationId, versionId, neighborhood_id]);
+
+            // D. Crear configuración del sorteo (auto-vinculado al formulario)
+            await GiveawayModel.createConfig(connection, formId);
 
             await connection.commit();
             return true;
@@ -168,6 +172,34 @@ const FormModel = {
         `;
         const [rows] = await pool.query(query, [id]);
         return rows[0];
+    },
+
+    // Buscar formulario activo por su key (slug) — para links de invitación
+    async findByKey(key) {
+        const query = `
+            SELECT
+                f.id,
+                f.key,
+                f.title,
+                f.description,
+                f.metadata,
+                f.is_active,
+                f.created_at,
+                fp.neighborhood_id,
+                gc.points_per_referral,
+                gc.is_active AS giveaway_active
+            FROM forms f
+            LEFT JOIN form_versions fv ON f.id = fv.form_id
+              AND fv.version = (
+                  SELECT MAX(fv2.version) FROM form_versions fv2 WHERE fv2.form_id = f.id
+              )
+            LEFT JOIN form_publications fp ON fv.id = fp.form_version_id AND fp.is_active = 1
+            LEFT JOIN giveaway_configs gc ON gc.form_id = f.id
+            WHERE f.key = ? AND f.is_active = 1
+            LIMIT 1
+        `;
+        const [rows] = await pool.query(query, [key]);
+        return rows[0] || null;
     },
 
     // Buscar formulario por ID (incluye inactivos)

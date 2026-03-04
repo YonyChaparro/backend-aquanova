@@ -1,5 +1,6 @@
 // src/controllers/userController.js
 const UserModel = require('../models/userModel');
+const GiveawayModel = require('../models/giveawayModel');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 
@@ -16,13 +17,16 @@ const getUsers = async (req, res) => {
 // CREAR USUARIO
 const createUser = async (req, res) => {
     try {
-        const { name, document_number, email, password, role_id, neighborhood_id } = req.body;
+        const {
+            name, document_number, email, password, role_id, neighborhood_id,
+            pending_submission_ids   // Array de IDs de submissions hechos como anónimo
+        } = req.body;
 
         // 1. Validaciones básicas
         if (!name || !document_number || !password || !role_id) {
-            return res.status(400).json({ 
-                ok: false, 
-                message: 'Faltan datos (name, document_number, password, role_id)' 
+            return res.status(400).json({
+                ok: false,
+                message: 'Faltan datos (name, document_number, password, role_id)'
             });
         }
 
@@ -45,13 +49,30 @@ const createUser = async (req, res) => {
             email,
             password_hash: hash,
             role_id,
-            neighborhood_id // <--- Pasamos el barrio (puede ser null)
+            neighborhood_id
         });
 
-        res.status(201).json({ 
-            ok: true, 
+        // ─── CONCILIACIÓN DE REFERIDOS ─────────────────────────────────────────
+        const reconciliationResults = [];
+        if (Array.isArray(pending_submission_ids) && pending_submission_ids.length > 0) {
+            for (const submissionId of pending_submission_ids) {
+                try {
+                    const result = await GiveawayModel.reconcileSubmission(newId, submissionId);
+                    reconciliationResults.push({ submissionId, ...result });
+                } catch (reconcileError) {
+                    // Loguear pero NO fallar el registro por esto
+                    console.error(`Error conciliando ${submissionId}:`, reconcileError.message);
+                    reconciliationResults.push({ submissionId, reconciled: false, reason: 'error' });
+                }
+            }
+        }
+        // ───────────────────────────────────────────────────────────────────────
+
+        res.status(201).json({
+            ok: true,
             message: 'Usuario creado exitosamente',
-            userId: newId 
+            userId: newId,
+            reconciliation: reconciliationResults
         });
 
     } catch (error) {

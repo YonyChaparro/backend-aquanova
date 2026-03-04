@@ -3,7 +3,140 @@ const router = express.Router();
 const verifyToken = require('../middlewares/authMiddleware');
 const authorize = require('../middlewares/roleMiddleware');
 const upload = require('../middlewares/uploadMiddleware');
-const { createForm, getForms, getFormDetail, updateForm, deleteForm, searchForms } = require('../controllers/formController');
+const { createForm, getForms, getFormDetail, updateForm, deleteForm, searchForms, getFormPublic } = require('../controllers/formController');
+
+/**
+ * @swagger
+ * /forms/public/{key}:
+ *   get:
+ *     summary: Cargar formulario por su key (endpoint público para links de invitación)
+ *     description: |
+ *       Retorna el formulario identificado por su slug `key` sin requerir autenticación.
+ *       Es el endpoint que el frontend llama cuando el usuario abre un link de invitación
+ *       del tipo `http://localhost:5173/formulario/{key}?ref=XXXXXXX`.
+ *
+ *       Incluye:
+ *       - El **schema de preguntas** del formulario (última versión activa)
+ *       - El **objeto `giveaway`** con los puntos que se otorgarán al referente
+ *       - El **objeto `registration_fields`** con los campos mínimos que el frontend debe mostrar
+ *         para que el usuario se registre al mismo tiempo que llena el formulario.
+ *         Estos campos son derivados de los requerimientos mínimos de la tabla `users` en la BD.
+ *     tags: [Forms]
+ *     parameters:
+ *       - in: path
+ *         name: key
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Slug único del formulario (campo `key`)
+ *         example: "censo-demografico-2026"
+ *     responses:
+ *       200:
+ *         description: Formulario cargado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     key:
+ *                       type: string
+ *                       example: "censo-demografico-2026"
+ *                     title:
+ *                       type: string
+ *                       example: "Censo Demográfico 2026"
+ *                     description:
+ *                       type: string
+ *                       nullable: true
+ *                     metadata:
+ *                       type: object
+ *                       nullable: true
+ *                       properties:
+ *                         imagen:
+ *                           type: string
+ *                     neighborhood_id:
+ *                       type: string
+ *                       format: uuid
+ *                       nullable: true
+ *                     version:
+ *                       type: integer
+ *                       example: 1
+ *                     schema:
+ *                       type: array
+ *                       description: Preguntas del formulario a renderizar
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           type:
+ *                             type: string
+ *                           label:
+ *                             type: string
+ *                           name:
+ *                             type: string
+ *                     giveaway:
+ *                       type: object
+ *                       description: Configuración del sorteo asociado al formulario
+ *                       properties:
+ *                         points_per_referral:
+ *                           type: integer
+ *                           description: Puntos que recibirá el referente cuando el nuevo usuario complete el onboarding
+ *                           example: 10
+ *                         is_active:
+ *                           type: boolean
+ *                           example: true
+ *                     registration_fields:
+ *                       type: object
+ *                       description: |
+ *                         Campos de registro del nuevo usuario. Solo `name` y `document_number`
+ *                         son obligatorios (restricción NOT NULL / UNIQUE en la tabla `users`).
+ *                         Los demás (`password`, `email`, `phone`) son opcionales — el frontend
+ *                         los renderiza según el valor de la propiedad `required` de cada campo.
+ *                       properties:
+ *                         name:
+ *                           type: object
+ *                           properties:
+ *                             required: { type: boolean, example: true }
+ *                             type: { type: string, example: "text" }
+ *                             label: { type: string, example: "Nombre completo" }
+ *                         document_number:
+ *                           type: object
+ *                           properties:
+ *                             required: { type: boolean, example: true }
+ *                             type: { type: string, example: "text" }
+ *                             label: { type: string, example: "Número de documento" }
+ *                         password:
+ *                           type: object
+ *                           properties:
+ *                             required: { type: boolean, example: false }
+ *                             type: { type: string, example: "password" }
+ *                             label: { type: string, example: "Crear contraseña" }
+ *                         email:
+ *                           type: object
+ *                           properties:
+ *                             required: { type: boolean, example: false }
+ *                             type: { type: string, example: "email" }
+ *                             label: { type: string, example: "Correo electrónico" }
+ *                         phone:
+ *                           type: object
+ *                           properties:
+ *                             required: { type: boolean, example: false }
+ *                             type: { type: string, example: "tel" }
+ *                             label: { type: string, example: "Teléfono" }
+ *       404:
+ *         description: Formulario no encontrado o inactivo
+ *       500:
+ *         description: Error interno del servidor
+ */
+// GET /api/forms/public/:key  →  Público (no requiere auth) — debe ir ANTES de router.use(verifyToken)
+router.get('/public/:key', getFormPublic);
 
 router.use(verifyToken);
 
@@ -72,6 +205,10 @@ router.use(verifyToken);
  *                             parent_id:
  *                               type: string
  *                               nullable: true
+ *                       share_link:
+ *                         type: string
+ *                         description: Link de invitación listo para compartir. Incluye el código de referido del usuario autenticado. El destinatario que llene el formulario y luego se registre otorgará puntos al remitente.
+ *                         example: "http://localhost:5173/formulario/censo-demografico-2026?ref=EAL34TM"
  *             examples:
  *               ConImagenYBarrio:
  *                 summary: Formulario activo con imagen de portada y barrio asociado
@@ -93,6 +230,7 @@ router.use(verifyToken);
  *                           name: "Barrio Centro"
  *                           code: "CEN-01"
  *                           parent_id: null
+ *                       share_link: "http://localhost:5173/formulario/censo-barrial-8392?ref=EAL34TM"
  *               SinImagen:
  *                 summary: Formulario sin imagen de portada
  *                 value:
@@ -107,6 +245,7 @@ router.use(verifyToken);
  *                       created_by: "Admin User"
  *                       created_at: "2026-01-05T08:00:00.000Z"
  *                       neighborhoods: []
+ *                       share_link: "http://localhost:5173/formulario/encuesta-agua-1234?ref=EAL34TM"
  *       500:
  *         description: Error al listar formularios
  */
@@ -190,6 +329,10 @@ router.get('/', getForms);
  *                             created_at:
  *                               type: string
  *                               format: date-time
+ *                       share_link:
+ *                         type: string
+ *                         description: Link de invitación listo para compartir con el código de referido del usuario autenticado.
+ *                         example: "http://localhost:5173/formulario/censo-2026-5555?ref=EAL34TM"
  *             examples:
  *               default:
  *                 value:
@@ -212,6 +355,7 @@ router.get('/', getForms);
  *                           parent_id: null
  *                           metadata: null
  *                           created_at: "2026-01-10T10:00:00.000Z"
+ *                       share_link: "http://localhost:5173/formulario/censo-2026-5555?ref=EAL34TM"
  *       400:
  *         description: No se envió el parámetro de búsqueda (query)
  *         content:
@@ -301,6 +445,10 @@ router.get('/search', searchForms);
  *                             type: string
  *                           name:
  *                             type: string
+ *                     share_link:
+ *                       type: string
+ *                       description: Link de invitación listo para compartir. Incluye el código de referido del usuario autenticado. El destinatario que llene el formulario y luego se registre otorgará puntos al remitente.
+ *                       example: "http://localhost:5173/formulario/censo-barrial-2026-8392?ref=EAL34TM"
  *             examples:
  *               default:
  *                 value:
@@ -324,6 +472,7 @@ router.get('/search', searchForms);
  *                       - type: "number"
  *                         label: "Número de habitantes"
  *                         name: "habitantes"
+ *                     share_link: "http://localhost:5173/formulario/censo-barrial-2026-8392?ref=EAL34TM"
  *       404:
  *         description: Formulario no encontrado
  *       500:

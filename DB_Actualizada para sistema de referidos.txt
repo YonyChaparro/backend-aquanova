@@ -1,0 +1,289 @@
+// ==========================================================
+// SISTEMA DE GESTIÓN DE FORMULARIOS DINÁMICOS - AQUANOVA
+// ==========================================================
+
+Enum form_version_status {
+  draft
+  published
+  archived
+}
+
+Enum submission_status {
+  submitted
+  draft
+  failed
+}
+
+Enum lot_status {
+  sin_informacion
+  censado
+  registrado
+}
+
+// ==========================================================
+// SECCIÓN 1: IDENTIDAD Y GEOGRAFÍA (CORE)
+// ==========================================================
+
+Table users {
+  id varchar(36) [pk]
+  name varchar(255) [not null]
+  document_number varchar(50) [unique]
+  email varchar(255) [unique]
+  phone varchar(50)
+  password_hash varchar(255)
+  is_active boolean [default: true]
+  metadata json
+  created_at datetime [default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [default: `CURRENT_TIMESTAMP`]
+}
+
+Table roles {
+  id int [pk, increment]
+  name varchar(50) [not null, unique]
+  description text
+}
+
+Table neighborhoods {
+  id varchar(36) [pk]
+  name varchar(255) [not null]
+  code varchar(50) [not null, unique]
+  parent_id varchar(36)
+  is_active boolean [default: true]
+  geom geometry
+  metadata json
+  created_at datetime [default: `CURRENT_TIMESTAMP`]
+}
+
+Table user_roles {
+  id int [pk, increment]
+  user_id varchar(36) [not null]
+  role_id int [not null]
+  neighborhood_id varchar(36)
+  assigned_by varchar(36)
+  assigned_at datetime [default: `CURRENT_TIMESTAMP`]
+}
+
+// ==========================================================
+// SECCIÓN 2: MOTOR DE FORMULARIOS (DEFINICIÓN)
+// ==========================================================
+
+Table forms {
+  id varchar(36) [pk]
+  key varchar(100) [not null, unique]
+  title varchar(255) [not null]
+  description text
+  metadata json
+  created_by varchar(36) [not null]
+  is_active boolean [default: true]
+  created_at datetime [default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [default: `CURRENT_TIMESTAMP`]
+}
+
+Table form_versions {
+  id varchar(36) [pk]
+  form_id varchar(36) [not null]
+  version int [not null]
+  schema json [not null]
+  created_by varchar(36) [not null]
+  created_at datetime [default: `CURRENT_TIMESTAMP`]
+  published_at datetime
+  status form_version_status [default: 'draft']
+}
+
+// ==========================================================
+// SECCIÓN 3: LOGÍSTICA DE CAMPO (PUBLICACIÓN)
+// ==========================================================
+
+Table form_publications {
+  id varchar(36) [pk]
+  form_version_id varchar(36) [not null]
+  neighborhood_id varchar(36)
+  start_at datetime [not null]
+  end_at datetime
+  is_active boolean [default: true]
+  created_at datetime [default: `CURRENT_TIMESTAMP`]
+}
+
+Table form_links {
+  id varchar(36) [pk]
+  form_publication_id varchar(36) [not null]
+  code varchar(50) [not null, unique]
+  qr_payload text
+  created_by varchar(36) [not null]
+  created_at datetime [default: `CURRENT_TIMESTAMP`]
+  closed_at datetime
+}
+
+// ==========================================================
+// SECCIÓN 4: RECOLECCIÓN DE DATOS (RESPUESTAS)
+// ==========================================================
+
+Table submissions {
+  id varchar(36) [pk]
+  form_version_id varchar(36) [not null]
+  user_id varchar(36)
+  neighborhood_id varchar(36) [not null]
+  responses json [not null]
+  status submission_status [default: 'submitted']
+  device_info json
+  location_lat decimal(10,8)
+  location_lng decimal(11,8)
+  created_at datetime [default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [default: `CURRENT_TIMESTAMP`]
+}
+
+Table attachments {
+  id varchar(36) [pk]
+  submission_id varchar(36) [not null]
+  field_key varchar(100) [not null]
+  storage_path varchar(255) [not null]
+  filename varchar(255) [not null]
+  mime_type varchar(100)
+  size_bytes bigint
+  uploaded_at datetime [default: `CURRENT_TIMESTAMP`]
+}
+
+Table drafts {
+  id varchar(36) [pk]
+  device_id varchar(100) [not null]
+  user_id varchar(36)
+  form_version_id varchar(36) [not null]
+  payload json [not null]
+  saved_at datetime [default: `CURRENT_TIMESTAMP`]
+  sync_status varchar(20) [default: 'pending']
+}
+
+// ==========================================================
+// SECCIÓN 5: CUMPLIMIENTO Y SEGURIDAD
+// ==========================================================
+
+Table data_consents {
+  id varchar(36) [pk]
+  user_id varchar(36)
+  submission_id varchar(36) [not null]
+  policy_version varchar(50) [not null]
+  accepted boolean [default: false]
+  accepted_at datetime [default: `CURRENT_TIMESTAMP`]
+  ip_address varchar(45)
+}
+
+Table audit_logs {
+  id varchar(36) [pk]
+  actor_id varchar(36) [not null]
+  action varchar(100) [not null]
+  target_table varchar(100) [not null]
+  target_id varchar(36) [not null]
+  changes json
+  created_at datetime [default: `CURRENT_TIMESTAMP`]
+}
+
+// ==========================================================
+// SECCIÓN 7: GEMELO DIGITAL (CATASTRO / ACUEDUCTO)
+// ==========================================================
+
+Table blocks {
+  id varchar(36) [pk]
+  code varchar(50) [not null]
+  neighborhood_id varchar(36) [not null]
+  geom_path text [not null]
+  label_position json
+  created_at datetime [default: `CURRENT_TIMESTAMP`]
+}
+
+Table lots {
+  id varchar(36) [pk]
+  block_id varchar(36) [not null]
+  number varchar(20) [not null]
+  status lot_status [default: 'sin_informacion']
+  water_meter_code varchar(50) [note: 'Código del medidor de agua']
+  cadastral_id varchar(50) [note: 'Ficha Catastral o Matrícula']
+  area_m2 decimal(10,2)
+  owner_name varchar(255)
+  svg_path text [not null]
+  centroid json
+  metadata json
+  created_at datetime [default: `CURRENT_TIMESTAMP`]
+  updated_at datetime [default: `CURRENT_TIMESTAMP`]
+  
+  indexes {
+    (block_id, number) [unique]
+  }
+}
+
+// ==========================================================
+// SECCIÓN 8: MOTOR DE SORTEOS Y REFERIDOS (NUEVA)
+// ==========================================================
+
+Table giveaway_configs {
+  id varchar(36) [pk]
+  form_id varchar(36) [not null, unique] 
+  points_per_referral int [default: 10]
+  max_points_per_user int
+  is_active boolean [default: true]
+  start_date datetime
+  end_date datetime
+  metadata json 
+}
+
+Table user_referral_profiles {
+  user_id varchar(36) [pk]
+  referral_code varchar(20) [not null, unique]
+  total_accumulated_points int [default: 0]
+}
+
+Table submission_referrals {
+  id varchar(36) [pk]
+  submission_id varchar(36) [not null, unique]
+  referrer_user_id varchar(36) [not null] 
+  referred_user_id varchar(36) 
+  is_processed boolean [default: false] 
+  created_at datetime [default: `CURRENT_TIMESTAMP`]
+}
+
+Table giveaway_points_ledger {
+  id bigint [pk, increment]
+  user_id varchar(36) [not null]
+  giveaway_id varchar(36) [not null]
+  submission_referral_id varchar(36) [not null]
+  points_earned int [not null]
+  created_at datetime [default: `CURRENT_TIMESTAMP`]
+}
+
+// ==========================================================
+// RELACIONES (FOREIGN KEYS)
+// ==========================================================
+
+// Relaciones Originales
+Ref: neighborhoods.parent_id > neighborhoods.id
+Ref: user_roles.user_id > users.id
+Ref: user_roles.role_id > roles.id
+Ref: user_roles.neighborhood_id > neighborhoods.id
+Ref: user_roles.assigned_by > users.id
+Ref: forms.created_by > users.id
+Ref: form_versions.form_id > forms.id
+Ref: form_versions.created_by > users.id
+Ref: form_publications.form_version_id > form_versions.id
+Ref: form_publications.neighborhood_id > neighborhoods.id
+Ref: form_links.form_publication_id > form_publications.id
+Ref: form_links.created_by > users.id
+Ref: submissions.form_version_id > form_versions.id
+Ref: submissions.user_id > users.id
+Ref: submissions.neighborhood_id > neighborhoods.id
+Ref: attachments.submission_id > submissions.id
+Ref: drafts.user_id > users.id
+Ref: drafts.form_version_id > form_versions.id
+Ref: data_consents.user_id > users.id
+Ref: data_consents.submission_id > submissions.id
+Ref: audit_logs.actor_id > users.id
+Ref: blocks.neighborhood_id > neighborhoods.id
+Ref: lots.block_id > blocks.id
+
+// Relaciones Nuevas (Módulo de Referidos)
+Ref: giveaway_configs.form_id > forms.id
+Ref: user_referral_profiles.user_id > users.id
+Ref: submission_referrals.submission_id > submissions.id
+Ref: submission_referrals.referrer_user_id > users.id
+Ref: submission_referrals.referred_user_id > users.id
+Ref: giveaway_points_ledger.user_id > users.id
+Ref: giveaway_points_ledger.giveaway_id > giveaway_configs.id
+Ref: giveaway_points_ledger.submission_referral_id > submission_referrals.id

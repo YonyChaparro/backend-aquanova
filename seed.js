@@ -13,7 +13,7 @@ const DB_CONFIG = {
 
 const DB_NAME = process.env.DB_NAME || 'app_aquanova_bd';
 
-// HEMOS ACTUALIZADO EL ESQUEMA PARA INCLUIR LAS TABLAS DE GEMELO DIGITAL
+// ESQUEMA ACTUALIZADO: GEMELO DIGITAL + MOTOR DE SORTEOS Y REFERIDOS
 const SCHEMA_SQL = `
 -- ==========================================================
 -- SISTEMA DE GESTIÓN DE FORMULARIOS DINÁMICOS - AQUANOVA
@@ -301,6 +301,72 @@ CREATE TABLE IF NOT EXISTS \`lots\` (
   CONSTRAINT \`fk_lot_block\`
     FOREIGN KEY (\`block_id\`) REFERENCES \`blocks\` (\`id\`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+-- ==========================================================
+-- SECCIÓN 8: MOTOR DE SORTEOS Y REFERIDOS
+-- ==========================================================
+
+-- Configuración de un sorteo asociado a un formulario (1:1)
+CREATE TABLE IF NOT EXISTS \`giveaway_configs\` (
+  \`id\` CHAR(36) NOT NULL,
+  \`form_id\` CHAR(36) NOT NULL,
+  \`points_per_referral\` INT DEFAULT 10,
+  \`max_points_per_user\` INT NULL,
+  \`is_active\` BOOLEAN DEFAULT TRUE,
+  \`start_date\` DATETIME NULL,
+  \`end_date\` DATETIME NULL,
+  \`metadata\` JSON NULL,
+  PRIMARY KEY (\`id\`),
+  UNIQUE INDEX \`giveaway_form_UNIQUE\` (\`form_id\` ASC),
+  CONSTRAINT \`fk_gc_form\`
+    FOREIGN KEY (\`form_id\`) REFERENCES \`forms\` (\`id\`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Perfil de referido por usuario (1:1 con users, lazy-created)
+CREATE TABLE IF NOT EXISTS \`user_referral_profiles\` (
+  \`user_id\` CHAR(36) NOT NULL,
+  \`referral_code\` VARCHAR(20) NOT NULL,
+  \`total_accumulated_points\` INT DEFAULT 0,
+  PRIMARY KEY (\`user_id\`),
+  UNIQUE INDEX \`referral_code_UNIQUE\` (\`referral_code\` ASC),
+  CONSTRAINT \`fk_urp_user\`
+    FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Registro de atribución: qué submission llegó por qué referido
+CREATE TABLE IF NOT EXISTS \`submission_referrals\` (
+  \`id\` CHAR(36) NOT NULL,
+  \`submission_id\` CHAR(36) NOT NULL,
+  \`referrer_user_id\` CHAR(36) NOT NULL,
+  \`referred_user_id\` CHAR(36) NULL,
+  \`is_processed\` BOOLEAN DEFAULT FALSE,
+  \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (\`id\`),
+  UNIQUE INDEX \`submission_ref_UNIQUE\` (\`submission_id\` ASC),
+  CONSTRAINT \`fk_sr_submission\`
+    FOREIGN KEY (\`submission_id\`) REFERENCES \`submissions\` (\`id\`) ON DELETE CASCADE,
+  CONSTRAINT \`fk_sr_referrer\`
+    FOREIGN KEY (\`referrer_user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE RESTRICT,
+  CONSTRAINT \`fk_sr_referred\`
+    FOREIGN KEY (\`referred_user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- Libro mayor de puntos: historial inmutable de puntos otorgados
+CREATE TABLE IF NOT EXISTS \`giveaway_points_ledger\` (
+  \`id\` BIGINT NOT NULL AUTO_INCREMENT,
+  \`user_id\` CHAR(36) NOT NULL,
+  \`giveaway_id\` CHAR(36) NOT NULL,
+  \`submission_referral_id\` CHAR(36) NOT NULL,
+  \`points_earned\` INT NOT NULL,
+  \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (\`id\`),
+  CONSTRAINT \`fk_gpl_user\`
+    FOREIGN KEY (\`user_id\`) REFERENCES \`users\` (\`id\`) ON DELETE RESTRICT,
+  CONSTRAINT \`fk_gpl_giveaway\`
+    FOREIGN KEY (\`giveaway_id\`) REFERENCES \`giveaway_configs\` (\`id\`) ON DELETE RESTRICT,
+  CONSTRAINT \`fk_gpl_referral\`
+    FOREIGN KEY (\`submission_referral_id\`) REFERENCES \`submission_referrals\` (\`id\`) ON DELETE RESTRICT
+) ENGINE=InnoDB;
 `;
 
 const seedDatabase = async () => {
@@ -313,7 +379,7 @@ const seedDatabase = async () => {
         // 2. Ejecutar Script de Creación de Esquema
         console.log('🏗️  Verificando/Creando base de datos y tablas...');
         await connection.query(SCHEMA_SQL);
-        console.log('✅ Esquema de base de datos sincronizado con Gemelo Digital.');
+        console.log('✅ Esquema de base de datos sincronizado (Gemelo Digital + Motor de Referidos).');
 
         // 3. Cambiar a la base de datos
         await connection.changeUser({ database: DB_NAME });
@@ -967,6 +1033,28 @@ const seedDatabase = async () => {
         }
         console.log(`✅ Formularios: ${formsInserted} insertados, ${FORMS_SEED.length - formsInserted} ya existían.`);
         const formId = firstFormId;
+
+        // ---------------------------------------------------------
+        // 8. MIGRACIÓN: Crear giveaway_configs para formularios sin config
+        // ---------------------------------------------------------
+        console.log('\n🎰 Sincronizando configuraciones de sorteo...');
+        const [formsWithoutConfig] = await connection.query(`
+            SELECT f.id FROM forms f
+            LEFT JOIN giveaway_configs gc ON gc.form_id = f.id
+            WHERE gc.id IS NULL
+        `);
+
+        if (formsWithoutConfig.length > 0) {
+            for (const form of formsWithoutConfig) {
+                await connection.query(
+                    'INSERT INTO giveaway_configs (id, form_id, points_per_referral, is_active) VALUES (?, ?, 10, TRUE)',
+                    [uuidv4(), form.id]
+                );
+            }
+            console.log(`✅ giveaway_configs creados para ${formsWithoutConfig.length} formulario(s).`);
+        } else {
+            console.log('✅ Todos los formularios ya tienen configuración de sorteo.');
+        }
 
         console.log('\n=============================================');
         console.log('🎉  DATOS PARA PRUEBAS (COPIA ESTOS IDs)');
