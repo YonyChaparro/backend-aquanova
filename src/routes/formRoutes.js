@@ -71,16 +71,37 @@ const { createForm, getForms, getFormDetail, updateForm, deleteForm, searchForms
  *                       example: 1
  *                     schema:
  *                       type: array
- *                       description: Preguntas del formulario a renderizar
+ *                       description: >
+ *                         Preguntas del formulario a renderizar (última versión activa).
+ *                         Siempre se retorna como un array JavaScript deserializado,
+ *                         nunca como string JSON. No es necesario aplicar `JSON.parse()`.
  *                       items:
  *                         type: object
  *                         properties:
+ *                           key:
+ *                             type: string
+ *                             description: Clave del campo (usar como llave en `responses`)
  *                           type:
  *                             type: string
+ *                             description: "Tipo de input: text, textarea, radio, select, checkbox, range, email, tel, password"
  *                           label:
  *                             type: string
- *                           name:
+ *                           required:
+ *                             type: boolean
+ *                           options:
+ *                             type: array
+ *                             items:
+ *                               type: string
+ *                             description: Solo presente en tipos radio, select y checkbox
+ *                           placeholder:
  *                             type: string
+ *                             description: Solo presente en tipo text
+ *                           min:
+ *                             type: number
+ *                             description: Solo presente en tipo range
+ *                           max:
+ *                             type: number
+ *                             description: Solo presente en tipo range
  *                     giveaway:
  *                       type: object
  *                       description: Configuración del sorteo asociado al formulario
@@ -434,17 +455,23 @@ router.get('/search', searchForms);
  *                       description: Número de la versión activa del esquema
  *                     schema:
  *                       type: array
- *                       description: Definición de preguntas del formulario (última versión)
+ *                       description: >
+ *                         Definición de preguntas del formulario (última versión).
+ *                         Siempre se retorna como un array JavaScript deserializado,
+ *                         nunca como string JSON. No es necesario aplicar `JSON.parse()`.
  *                       items:
  *                         type: object
  *                         properties:
+ *                           key:
+ *                             type: string
+ *                             description: Clave del campo
  *                           type:
  *                             type: string
- *                             description: Tipo de campo (text, number, select, etc.)
+ *                             description: "Tipo de input: text, textarea, radio, select, checkbox, range, email, tel, password"
  *                           label:
  *                             type: string
- *                           name:
- *                             type: string
+ *                           required:
+ *                             type: boolean
  *                     share_link:
  *                       type: string
  *                       description: Link de invitación listo para compartir. Incluye el código de referido del usuario autenticado. El destinatario que llene el formulario y luego se registre otorgará puntos al remitente.
@@ -565,6 +592,16 @@ router.get('/:id', getFormDetail);
  *                     version:
  *                       type: integer
  *                       description: Número de la nueva versión (si se actualizó schema)
+ *                     versionId:
+ *                       type: string
+ *                       description: UUID de la nueva versión (si se actualizó schema)
+ *                     schema:
+ *                       type: array
+ *                       description: >
+ *                         Array de preguntas de la nueva versión (solo si se envió schema).
+ *                         Retornado como array deserializado — listo para renderizar sin JSON.parse().
+ *                       items:
+ *                         type: object
  *                     neighborhood_id:
  *                       type: string
  *                       description: ID del nuevo barrio (si se actualizó)
@@ -591,6 +628,18 @@ router.get('/:id', getFormDetail);
  *                     id: "uuid-form-1"
  *                     title: "Censo Barrial 2026 V3"
  *                     version: 3
+ *                     versionId: "uuid-version-3"
+ *                     schema:
+ *                       - key: "nombre"
+ *                         type: "text"
+ *                         label: "Nombre del encuestado"
+ *                         required: true
+ *                       - key: "edad"
+ *                         type: "range"
+ *                         label: "Edad"
+ *                         required: true
+ *                         min: 1
+ *                         max: 100
  *       400:
  *         description: No se envió ningún campo o datos inválidos
  *       404:

@@ -145,7 +145,9 @@ const getFormDetail = async (req, res) => {
                 metadata: typeof form.metadata === 'string' ? JSON.parse(form.metadata) : (form.metadata || null),
                 is_active: Boolean(form.is_active),
                 version: versionData ? versionData.version : 1,
-                schema: versionData ? versionData.schema : [],
+                schema: versionData
+                    ? (typeof versionData.schema === 'string' ? JSON.parse(versionData.schema) : (versionData.schema || []))
+                    : [],
                 share_link: buildShareLink(form.key, referralProfile.referral_code)
             }
         });
@@ -242,6 +244,7 @@ const updateForm = async (req, res) => {
             const result = await FormModel.updateSchema(id, schemaParsed, adminId);
             responseData.version = result.version;
             responseData.versionId = result.versionId;
+            responseData.schema = schemaParsed;
             message += ` y nueva versión ${result.version} creada`;
         }
 
@@ -339,7 +342,9 @@ const getFormPublic = async (req, res) => {
                     : (form.metadata || null),
                 neighborhood_id: form.neighborhood_id,
                 version: schema ? schema.version : 1,
-                schema: schema ? schema.schema : [],
+                schema: schema
+                    ? (typeof schema.schema === 'string' ? JSON.parse(schema.schema) : (schema.schema || []))
+                    : [],
                 giveaway: {
                     points_per_referral: form.points_per_referral ?? 10,
                     is_active: Boolean(form.giveaway_active)

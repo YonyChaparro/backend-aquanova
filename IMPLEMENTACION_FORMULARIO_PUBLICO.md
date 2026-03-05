@@ -130,6 +130,8 @@ async function loadForm(formKey) {
 
 `schema` es un array de objetos. Cada objeto representa un campo del formulario.
 
+> **`schema` siempre llega como un array JavaScript deserializado.** No es necesario aplicar `JSON.parse()` — el backend lo entrega listo para iterar directamente con `.map()` o `forEach`.
+
 ### Estructura de un campo
 
 ```json

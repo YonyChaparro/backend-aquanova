@@ -21,6 +21,8 @@ Este endpoint es polimórfico:
 
 > ⚠️ **Importante:** El endpoint ahora acepta `multipart/form-data` (no `application/json`). Los campos de texto se envían como campos de texto dentro del form-data. `schema` y `metadata` deben enviarse como strings JSON.
 
+> **Nota sobre `schema` en endpoints GET:** Tras crear una nueva versión con este endpoint, los endpoints `GET /api/forms/:id` y `GET /api/forms/public/:key` retornan el campo `schema` siempre como un **array JavaScript deserializado**. No es necesario aplicar `JSON.parse()` en el cliente.
+
 ## Campos del Form-Data
 
 Todos los campos son opcionales, pero debes enviar **al menos uno**.
@@ -188,7 +190,11 @@ La respuesta incluye únicamente los campos que fueron actualizados.
       "imagen_public_id": "aquanova/forms/nuevaimagen"
     },
     "version": 2,
-    "versionId": "uuid-version",
+    "versionId": "uuid-version-2",
+    "schema": [
+      { "key": "nombre", "type": "text", "label": "Nombre del encuestado", "required": true },
+      { "key": "edad",   "type": "range", "label": "Edad", "required": true, "min": 1, "max": 100 }
+    ],
     "neighborhood_id": "uuid-barrio",
     "publications_updated": 1
   }
@@ -206,6 +212,7 @@ La respuesta incluye únicamente los campos que fueron actualizados.
 | `metadata` | object | Si se actualizó datos básicos o imagen. Contiene `imagen` + `imagen_public_id` de Cloudinary |
 | `version` | integer | Solo si se envió `schema` |
 | `versionId` | string | Solo si se envió `schema` |
+| `schema` | array | Solo si se envió `schema`. **Array deserializado listo para renderizar** — permite al frontend actualizar el estado sin un GET adicional |
 | `neighborhood_id` | string | Solo si se envió `neighborhood_id` |
 | `publications_updated` | integer | Solo si se envió `neighborhood_id` |
 
@@ -402,13 +409,16 @@ La respuesta incluye únicamente los campos que fueron actualizados.
   "message": "Formulario actualizado exitosamente y nueva versión 2 creada, barrio actualizado en 1 publicación(es)",
   "data": {
     "id": "uuid-del-formulario",
-    "title": "Censo 2026",            // Si se actualizó
-    "description": "...",             // Si se actualizó
-    "is_active": 1,                   // Si se actualizó
-    "version": 2,                     // SOLO si se envió 'schema'
-    "versionId": "uuid-version",      // SOLO si se envió 'schema'
-    "neighborhood_id": "uuid-barrio", // SOLO si se envió 'neighborhood_id'
-    "publications_updated": 1         // SOLO si se envió 'neighborhood_id'
+    "title": "Censo 2026",
+    "description": "...",
+    "is_active": true,
+    "version": 2,
+    "versionId": "uuid-version",
+    "schema": [
+      { "key": "nombre", "type": "text", "label": "Nombre del encuestado", "required": true }
+    ],
+    "neighborhood_id": "uuid-barrio",
+    "publications_updated": 1
   }
 }
 ```
@@ -420,9 +430,10 @@ La respuesta incluye únicamente los campos que fueron actualizados.
 | `id` | string | Siempre |
 | `title` | string | Si se actualizó `title` o `description` o `is_active` |
 | `description` | string | Si se actualizó `title` o `description` o `is_active` |
-| `is_active` | number (0/1) | Si se actualizó `title` o `description` o `is_active` |
+| `is_active` | boolean | Si se actualizó `title` o `description` o `is_active` |
 | `version` | integer | Solo si se envió `schema` |
 | `versionId` | string | Solo si se envió `schema` |
+| `schema` | array | Solo si se envió `schema`. **Array deserializado listo para renderizar** — permite al frontend actualizar el estado sin un GET adicional |
 | `neighborhood_id` | string | Solo si se envió `neighborhood_id` |
 | `publications_updated` | integer | Solo si se envió `neighborhood_id` |
 
