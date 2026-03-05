@@ -16,7 +16,7 @@ const SVG_FILE_PATH = path.resolve(__dirname, './Mapa Barrio San Miguel de la Ca
 const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '2405102',
+    password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'app_aquanova_bd'
 };
 

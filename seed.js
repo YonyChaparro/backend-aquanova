@@ -1077,4 +1077,9 @@ const seedDatabase = async () => {
     }
 };
 
-seedDatabase();
+// Solo ejecutar directamente si se llama con `node seed.js`
+if (require.main === module) {
+    seedDatabase();
+}
+
+module.exports = { seedDatabase };
