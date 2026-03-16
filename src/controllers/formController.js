@@ -6,8 +6,8 @@ const { uploadImage, deleteImage, extractPublicId } = require('../helpers/cloudi
 
 // Construye el link de invitación para compartir un formulario
 const buildShareLink = (formKey, referralCode) => {
-    const base = (process.env.FRONTEND_URL || 'https://tuapp.com/formulario').replace(/\/$/, '');
-    return `${base}/${formKey}?ref=${referralCode}`;
+    const base = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
+    return `${base}/formulario/${formKey}?ref=${referralCode}`;
 };
 
 // Helper para parsear metadata (llega como string en multipart/form-data)

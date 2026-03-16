@@ -208,8 +208,8 @@ const createOnboarding = async (req, res) => {
         const referralProfile = await GiveawayModel.getOrCreateReferralProfile(newUserId);
 
         // 10. Construir share_link personalizado del nuevo usuario
-        const baseFrontend = (process.env.FRONTEND_URL || 'https://tuapp.com/formulario').replace(/\/$/, '');
-        const shareLink = `${baseFrontend}/${form.key}?ref=${referralProfile.referral_code}`;
+        const baseFrontend = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
+        const shareLink = `${baseFrontend}/formulario/${form.key}?ref=${referralProfile.referral_code}`;
 
         // 11. Firmar JWT
         const token = jwt.sign(

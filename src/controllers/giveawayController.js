@@ -15,7 +15,7 @@ const getMyReferralProfile = async (req, res) => {
             data: {
                 referral_code: profile.referral_code,
                 total_accumulated_points: profile.total_accumulated_points,
-                share_base_url: process.env.FRONTEND_URL || 'https://tuapp.com/formulario'
+                share_base_url: (process.env.FRONTEND_URL || 'http://localhost:5173') + '/formulario'
             }
         });
     } catch (error) {
