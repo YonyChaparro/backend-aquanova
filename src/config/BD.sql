@@ -197,8 +197,8 @@ CREATE TABLE `attachments` (
   `id` CHAR(36) NOT NULL,
   `submission_id` CHAR(36) NOT NULL,
   `field_key` VARCHAR(100) NOT NULL,         -- ID del campo input tipo 'file' en el JSON Schema
-  `storage_path` VARCHAR(255) NOT NULL,      -- Ruta en S3 / Cloudinary / Local
-  `filename` VARCHAR(255) NOT NULL,
+  `media_urls` JSON NOT NULL,                -- JSON Array para almacenar varios links de Cloudinary
+  `filename` VARCHAR(255) NULL,
   `mime_type` VARCHAR(100) NULL,
   `size_bytes` BIGINT NULL,
   `uploaded_at` DATETIME DEFAULT CURRENT_TIMESTAMP,

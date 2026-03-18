@@ -52,6 +52,21 @@ const optionalAuth = require('../middlewares/optionalAuthMiddleware');
  *                 type: object
  *                 description: Objeto con las respuestas del formulario (clave = field key del schema)
  *                 example: { "nombre_jefe": "María López", "num_personas": 4 }
+ *               attachments:
+ *                 type: array
+ *                 description: Arreglo de archivos adjuntos (multimedia) asociados a la submission, soportando múltiples URLs por campo
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     field_key:
+ *                       type: string
+ *                       description: El ID del campo tipo 'file' en el JSON Schema
+ *                     media_urls:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: Enlaces a Cloudinary (múltiples admitidos)
+ *                 example: [{ "field_key": "foto_fachada", "media_urls": ["https://res.cloudinary.com/db/1.jpg", "https://res.cloudinary.com/db/2.jpg"] }]
  *               referral_code:
  *                 type: string
  *                 description: Código de referido del usuario que compartió el formulario. Se ignora silenciosamente si es inválido.
@@ -214,6 +229,19 @@ router.get('/:formId', verifyToken, getSubmissionsByForm);
  *                 type: object
  *                 description: Respuestas del formulario (clave = field name del schema)
  *                 example: { "nombre_jefe": "Carlos Pérez", "num_personas": 3 }
+ *               attachments:
+ *                 type: array
+ *                 description: Opcional. Arreglo de archivos multimedia subidos, donde cada campo puede tener múltiples URLs alojadas en Cloudinary.
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     field_key:
+ *                       type: string
+ *                     media_urls:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                 example: [{ "field_key": "foto_fachada", "media_urls": ["https://res.cloudinary.com/db/1.jpg"] }]
  *               referral_code:
  *                 type: string
  *                 description: Código de referido del usuario que compartió el link. Viene como `?ref=XXXXXXX` en la URL. Se ignora silenciosamente si es inválido.

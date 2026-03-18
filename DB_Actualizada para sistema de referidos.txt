@@ -136,8 +136,8 @@ Table attachments {
   id varchar(36) [pk]
   submission_id varchar(36) [not null]
   field_key varchar(100) [not null]
-  storage_path varchar(255) [not null]
-  filename varchar(255) [not null]
+  media_urls json [not null, note: "Para almacenar varios links y/o public_ids de Cloudinary"]
+  filename varchar(255)
   mime_type varchar(100)
   size_bytes bigint
   uploaded_at datetime [default: `CURRENT_TIMESTAMP`]

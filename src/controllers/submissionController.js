@@ -9,7 +9,8 @@ const jwt = require('jsonwebtoken');
 
 const createSubmission = async (req, res) => {
     try {
-        const { form_id, neighborhood_id, responses, location, referral_code } = req.body;
+        const bodyObj = req.body || {};
+        const { form_id, neighborhood_id, responses, location, referral_code, attachments = [] } = bodyObj;
 
         // user_id puede ser null si el usuario es anónimo
         const userId = req.user ? req.user.uid : null;
@@ -59,6 +60,18 @@ const createSubmission = async (req, res) => {
                 location ? location.lng : null
             ]);
 
+            // Guardar archivos multimedia (Cloudinary links) si se enviaron
+            if (Array.isArray(attachments) && attachments.length > 0) {
+                for (const att of attachments) {
+                    if (att.field_key && Array.isArray(att.media_urls)) {
+                        await connection.query(`
+                            INSERT INTO attachments (id, submission_id, field_key, media_urls)
+                            VALUES (?, ?, ?, ?)
+                        `, [uuidv4(), submissionId, att.field_key, JSON.stringify(att.media_urls)]);
+                    }
+                }
+            }
+
             if (referrerUserId) {
                 await GiveawayModel.createSubmissionReferral(connection, submissionId, referrerUserId);
             }
@@ -106,12 +119,13 @@ const getSubmissionsByForm = async (req, res) => {
 // ONBOARDING: llenar formulario + registrar usuario en un solo paso (endpoint público)
 const createOnboarding = async (req, res) => {
     try {
+        const bodyObj = req.body || {};
         const {
             form_key, neighborhood_id, responses,
-            referral_code,
+            referral_code, attachments = [],
             name, document_number, password, email, phone,
             location
-        } = req.body;
+        } = bodyObj;
 
         // 1. Validar campos requeridos (password es opcional — campo NULL en la BD)
         if (!form_key || !neighborhood_id || !responses || !name || !document_number) {
@@ -180,6 +194,18 @@ const createOnboarding = async (req, res) => {
                 location ? location.lat : null,
                 location ? location.lng : null
             ]);
+
+            // Guardar archivos multimedia vinculados al formulario (Cloudinary links)
+            if (Array.isArray(attachments) && attachments.length > 0) {
+                for (const att of attachments) {
+                    if (att.field_key && Array.isArray(att.media_urls)) {
+                        await connection.query(`
+                            INSERT INTO attachments (id, submission_id, field_key, media_urls)
+                            VALUES (?, ?, ?, ?)
+                        `, [uuidv4(), submissionId, att.field_key, JSON.stringify(att.media_urls)]);
+                    }
+                }
+            }
 
             // c. Atribuir referido si el código era válido
             if (referrerUserId) {

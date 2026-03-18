@@ -393,6 +393,15 @@ Content-Type: application/json
     "problemas_movi":    ["Falta de andenes", "Sin ciclovía"],
     "tiene_vehiculo":    "No"
   },
+  "attachments": [
+    {
+      "field_key": "foto_fachada",
+      "media_urls": [
+        "https://res.cloudinary.com/db/image/upload/v17.../foto1.jpg",
+        "https://res.cloudinary.com/db/image/upload/v17.../foto2.jpg"
+      ]
+    }
+  ],
   "referral_code":   "EAL34TM",
   "name":            "Carlos Pérez",
   "document_number": "1098765432",
@@ -569,8 +578,9 @@ Frontend                                     Backend
    │                                            │
    │  POST /api/submissions/onboarding          │
    │  { form_key, neighborhood_id, responses,   │
-   │    referral_code, name, document_number,   │
-   │    password, email?, phone?, location? }   │
+   │    attachments?, referral_code, name,      │
+   │    document_number, password, email?,      │
+   │    phone?, location? }                     │
    │──────────────────────────────────────────►│
    │                                            │  ┌─ INSERT user (bcrypt hash)
    │                                            │  ├─ INSERT user_roles (role=3)

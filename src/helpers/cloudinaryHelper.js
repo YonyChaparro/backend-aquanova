@@ -57,6 +57,48 @@ const deleteImage = async (publicId) => {
 };
 
 /**
+ * Sube un video a Cloudinary desde un buffer (multer memoryStorage).
+ * @param {Buffer} fileBuffer - Buffer del archivo de video
+ * @param {string} folder - Carpeta destino en Cloudinary (ej: 'aquanova/submissions')
+ * @param {string} [publicId] - ID público opcional para el video
+ * @returns {Promise<{url: string, public_id: string, resource_type: string}>} URL segura, public_id y tipo
+ */
+const uploadVideo = (fileBuffer, folder = 'aquanova/submissions', publicId = undefined) => {
+    return new Promise((resolve, reject) => {
+        const uploadOptions = {
+            folder,
+            resource_type: 'video',
+            overwrite: true,
+            // Transformaciones opcionales para videos: comprimir sin perder mucha calidad
+            transformation: [
+                { quality: 'auto' }
+            ]
+        };
+
+        if (publicId) {
+            uploadOptions.public_id = publicId;
+        }
+
+        const stream = cloudinary.uploader.upload_stream(
+            uploadOptions,
+            (error, result) => {
+                if (error) {
+                    console.error('❌ Error subiendo video a Cloudinary:', error);
+                    return reject(error);
+                }
+                resolve({
+                    url: result.secure_url,
+                    public_id: result.public_id,
+                    resource_type: 'video'
+                });
+            }
+        );
+
+        stream.end(fileBuffer);
+    });
+};
+
+/**
  * Extrae el public_id de una URL de Cloudinary.
  * Ejemplo: https://res.cloudinary.com/dpnv9gx8m/image/upload/v1772333719/aquanova/neighborhoods/descarga_dq3qip.jpg
  * -> aquanova/neighborhoods/descarga_dq3qip
@@ -76,4 +118,4 @@ const extractPublicId = (cloudinaryUrl) => {
     }
 };
 
-module.exports = { uploadImage, deleteImage, extractPublicId };
+module.exports = { uploadImage, uploadVideo, deleteImage, extractPublicId };
