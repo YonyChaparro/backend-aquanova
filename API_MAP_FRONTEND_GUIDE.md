@@ -46,6 +46,8 @@ Para cargar **todos** los barrios activos a la vez (sin filtro):
 GET /api/map/digital-twin
 ```
 
+> **Nota:** Use `GET /api/map/neighborhoods` (público, sin autenticación) para obtener la lista de barrios disponibles para el mapa. No confundir con `GET /api/neighborhoods` que requiere autenticación y es para gestión administrativa.
+
 ---
 
 ## Estructura de la Respuesta

@@ -48,7 +48,7 @@ Los estados posibles de un predio (`lots.status`) son:
 GET /api/map/digital-twin
 ```
 
-**Autenticación:** No requerida  
+**Autenticación:** No requerida
 **Descripción:** Retorna todos los bloques y predios del proyecto que pertenezcan a barrios **activos**.
 
 #### Respuesta exitosa `200 OK`
@@ -57,7 +57,7 @@ GET /api/map/digital-twin
 {
   "ok": true,
   "data": {
-    "viewBox": "0 0 1200 800",
+    "viewBox": "0 0 1103 667",
     "blocks": [
       {
         "id": "uuid-block-1",
@@ -130,7 +130,7 @@ GET /api/map/digital-twin/:neighborhoodId
 {
   "ok": true,
   "data": {
-    "viewBox": "0 0 1200 800",
+    "viewBox": "0 0 1103 667",
     "blocks": [
       {
         "id": "uuid-block-1",
@@ -215,8 +215,10 @@ PATCH /api/map/predios/:lotId
 GET /api/map/neighborhoods
 ```
 
-**Autenticación:** No requerida  
+**Autenticación:** No requerida
 **Descripción:** Retorna únicamente los barrios con `is_active = 1`, ordenados alfabéticamente. Útil para poblar selectores o filtros de la interfaz antes de cargar el mapa.
+
+> **Nota:** Este endpoint es diferente de `GET /api/neighborhoods` (que requiere autenticación y retorna todos los barrios con su jerarquía completa). Use este endpoint (`/api/map/neighborhoods`) para el renderizado público del mapa.
 
 #### Respuesta exitosa `200 OK`
 
@@ -341,6 +343,6 @@ console.log(`Total: ${todos.length} | Sin info: ${sinInfo} | Censados: ${censado
 - **Sin autenticación:** Ningún endpoint de este módulo usa el middleware `verifyToken`. Si en el futuro se protegen, se debe añadir `Authorization: Bearer <token>`.
 - **SVG paths:** Los campos `geom_path` (bloque) y `path` (predio) contienen comandos SVG estándar y pueden usarse directamente como atributo `d` de un elemento `<path>`.
 - **Centroide y label_position:** Almacenados como JSON en la BD y parseados automáticamente en el controlador. Útiles para posicionar etiquetas sobre el mapa SVG.
-- **viewBox fijo:** El valor `"0 0 1200 800"` está definido en `mapController.js`, no en la base de datos.
+- **viewBox dinámico:** El valor del `viewBox` se extrae del campo `metadata` del barrio (guardado al procesar el plano). Si el barrio no tiene metadata, se usa el fallback `"0 0 1103 667"` (dimensiones del SVG de San Miguel de la Cañada).
 - **Bloque sin predios:** Un bloque puede existir sin predios asociados; en ese caso su array `lots` será vacío (`[]`).
 - **Actualización parcial:** `PATCH /predios/:lotId` construye la sentencia `UPDATE` dinámicamente con solo los campos recibidos en el body.
