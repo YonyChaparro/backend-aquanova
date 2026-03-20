@@ -214,4 +214,67 @@ router.patch('/predios/:lotId', mapController.updateLotStatus);
  */
 router.get('/neighborhoods', mapController.getNeighborhoods);
 
+/**
+ * @swagger
+ * /map/available-lots/{neighborhoodId}:
+ *   get:
+ *     summary: Obtener lotes disponibles para selector en formularios
+ *     tags: [Map]
+ *     description: Retorna todos los lotes de un barrio indicando cuáles están disponibles (sin_informacion). Endpoint público para uso en formularios.
+ *     parameters:
+ *       - name: neighborhoodId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID único del barrio
+ *     responses:
+ *       200:
+ *         description: Lotes obtenidos exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     viewBox:
+ *                       type: string
+ *                     blocks:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                           code:
+ *                             type: string
+ *                           lots:
+ *                             type: array
+ *                             items:
+ *                               type: object
+ *                               properties:
+ *                                 id:
+ *                                   type: string
+ *                                 number:
+ *                                   type: string
+ *                                 status:
+ *                                   type: string
+ *                                 path:
+ *                                   type: string
+ *                                 centroid:
+ *                                   type: object
+ *                                 available:
+ *                                   type: boolean
+ *                                   description: true si el lote puede ser seleccionado
+ *       400:
+ *         description: Falta el ID del barrio
+ *       500:
+ *         description: Error al obtener lotes
+ */
+router.get('/available-lots/:neighborhoodId', mapController.getAvailableLots);
+
 module.exports = router;

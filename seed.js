@@ -171,6 +171,7 @@ CREATE TABLE IF NOT EXISTS \`submissions\` (
   \`form_version_id\` CHAR(36) NOT NULL,
   \`user_id\` CHAR(36) NULL,
   \`neighborhood_id\` CHAR(36) NOT NULL,
+  \`lot_id\` CHAR(36) NULL COMMENT 'Lote/predio asociado al censo (opcional)',
   \`responses\` JSON NOT NULL,
   \`status\` ENUM('submitted', 'draft', 'failed') DEFAULT 'submitted',
   \`device_info\` JSON NULL,
@@ -179,6 +180,7 @@ CREATE TABLE IF NOT EXISTS \`submissions\` (
   \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
   \`updated_at\` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (\`id\`),
+  INDEX \`idx_submissions_lot\` (\`lot_id\`),
   CONSTRAINT \`fk_sub_version\`
     FOREIGN KEY (\`form_version_id\`) REFERENCES \`form_versions\` (\`id\`) ON DELETE RESTRICT,
   CONSTRAINT \`fk_sub_user\`
@@ -409,6 +411,39 @@ const seedDatabase = async () => {
                 console.log('⚠️  Columna metadata ya existe en forms. Continuando...');
             } else {
                 throw e;
+            }
+        }
+
+        // 3d. Migración: agregar lot_id a submissions si no existía
+        try {
+            await connection.query(
+                'ALTER TABLE `submissions` ADD COLUMN `lot_id` CHAR(36) NULL AFTER `neighborhood_id`'
+            );
+            // Agregar índice
+            await connection.query(
+                'CREATE INDEX `idx_submissions_lot` ON `submissions` (`lot_id`)'
+            );
+            console.log('✅ Columna lot_id agregada a submissions.');
+        } catch (e) {
+            if (e.errno === 1060) {
+                console.log('⚠️  Columna lot_id ya existe en submissions. Continuando...');
+            } else {
+                throw e;
+            }
+        }
+
+        // 3e. Migración: agregar FK de submissions.lot_id -> lots (si no existe)
+        try {
+            await connection.query(
+                'ALTER TABLE `submissions` ADD CONSTRAINT `fk_sub_lot` FOREIGN KEY (`lot_id`) REFERENCES `lots` (`id`) ON DELETE SET NULL'
+            );
+            console.log('✅ FK fk_sub_lot agregada a submissions.');
+        } catch (e) {
+            // errno 1061 = Duplicate key name, errno 1826 = Duplicate FK name
+            if (e.errno === 1061 || e.errno === 1826 || e.code === 'ER_DUP_KEYNAME' || e.code === 'ER_FK_DUP_NAME') {
+                console.log('⚠️  FK fk_sub_lot ya existe en submissions. Continuando...');
+            } else {
+                console.log('⚠️  No se pudo agregar FK fk_sub_lot (puede que ya exista):', e.code || e.errno);
             }
         }
 
@@ -1054,6 +1089,103 @@ const seedDatabase = async () => {
             console.log(`✅ giveaway_configs creados para ${formsWithoutConfig.length} formulario(s).`);
         } else {
             console.log('✅ Todos los formularios ya tienen configuración de sorteo.');
+        }
+
+        // ---------------------------------------------------------
+        // 9. SEED GEMELO DIGITAL (MAPA SVG - BLOCKS & LOTS)
+        // ---------------------------------------------------------
+        console.log('\n🗺️  Procesando Gemelo Digital (Mapa)...');
+
+        // Cargar datos del mapa desde el archivo JSON generado
+        const fs = require('fs');
+        const path = require('path');
+        const mapDataPath = path.resolve(__dirname, './map-data-seed.json');
+
+        if (fs.existsSync(mapDataPath)) {
+            const mapData = JSON.parse(fs.readFileSync(mapDataPath, 'utf-8'));
+            const { viewBox, lots } = mapData;
+
+            // Crear el barrio hijo con el mapa (SMCN-001)
+            const mapNeighborhoodCode = 'SMCN-001';
+            const mapNeighborhoodName = 'San Miguel de la Cañana';
+            const mapMetadata = JSON.stringify({ viewBox });
+
+            const [existingMapNeighborhood] = await connection.query(
+                'SELECT id FROM neighborhoods WHERE code = ?',
+                [mapNeighborhoodCode]
+            );
+
+            let mapNeighborhoodId;
+            if (existingMapNeighborhood.length > 0) {
+                mapNeighborhoodId = existingMapNeighborhood[0].id;
+                // Actualizar metadata con viewBox
+                await connection.query(
+                    'UPDATE neighborhoods SET metadata = ?, parent_id = ? WHERE id = ?',
+                    [mapMetadata, neighborhoodId, mapNeighborhoodId]
+                );
+                console.log(`⚠️  Barrio mapa ${mapNeighborhoodCode} ya existe. Metadata actualizada.`);
+            } else {
+                mapNeighborhoodId = uuidv4();
+                await connection.query(
+                    'INSERT INTO neighborhoods (id, name, code, parent_id, metadata, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
+                    [mapNeighborhoodId, mapNeighborhoodName, mapNeighborhoodCode, neighborhoodId, mapMetadata]
+                );
+                console.log(`✅ Barrio mapa creado: ${mapNeighborhoodName} (código: ${mapNeighborhoodCode})`);
+            }
+
+            // Crear el block M-01
+            const blockCode = 'M-01';
+            const [existingBlock] = await connection.query(
+                'SELECT id FROM blocks WHERE neighborhood_id = ? AND code = ?',
+                [mapNeighborhoodId, blockCode]
+            );
+
+            let blockId;
+            if (existingBlock.length > 0) {
+                blockId = existingBlock[0].id;
+                console.log(`⚠️  Block ${blockCode} ya existe.`);
+            } else {
+                blockId = uuidv4();
+                await connection.query(
+                    'INSERT INTO blocks (id, code, neighborhood_id, geom_path, created_at) VALUES (?, ?, ?, ?, NOW())',
+                    [blockId, blockCode, mapNeighborhoodId, 'M0,0 Z']
+                );
+                console.log(`✅ Block creado: ${blockCode}`);
+            }
+
+            // Limpiar lotes existentes e insertar nuevos
+            await connection.query('DELETE FROM lots WHERE block_id = ?', [blockId]);
+
+            // Insertar lotes en lotes de 50 para mejor rendimiento
+            const batchSize = 50;
+            let lotsInserted = 0;
+
+            for (let i = 0; i < lots.length; i += batchSize) {
+                const batch = lots.slice(i, i + batchSize);
+                const values = batch.map(lot => [
+                    uuidv4(),
+                    blockId,
+                    lot.number,
+                    lot.status,
+                    null, // water_meter_code
+                    lot.area_m2 || 0,
+                    lot.svg_path,
+                    JSON.stringify(lot.centroid)
+                ]);
+
+                const placeholders = values.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
+                const flatValues = values.flat();
+
+                await connection.query(
+                    `INSERT INTO lots (id, block_id, number, status, water_meter_code, area_m2, svg_path, centroid) VALUES ${placeholders}`,
+                    flatValues
+                );
+                lotsInserted += batch.length;
+            }
+
+            console.log(`✅ Gemelo Digital: ${lotsInserted} predios insertados en el mapa.`);
+        } else {
+            console.log('⚠️  Archivo map-data-seed.json no encontrado. Ejecuta procesar_plano.js primero si necesitas datos del mapa.');
         }
 
         console.log('\n=============================================');

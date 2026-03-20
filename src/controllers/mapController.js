@@ -89,4 +89,64 @@ const getNeighborhoods = async (req, res) => {
     }
 };
 
-module.exports = { getDigitalTwinData, updateLotStatus, getNeighborhoods };
+/**
+ * Obtiene los lotes disponibles (sin_informacion) de un barrio para el selector de lotes
+ * Este endpoint es público (usado en formularios públicos)
+ */
+const getAvailableLots = async (req, res) => {
+    try {
+        const { neighborhoodId } = req.params;
+
+        if (!neighborhoodId) {
+            return res.status(400).json({ ok: false, message: 'Se requiere el ID del barrio.' });
+        }
+
+        const rows = await MapModel.getBlocksAndLots(neighborhoodId);
+
+        // Extraer viewBox desde metadata del barrio
+        let viewBox = '0 0 1103 667';
+        if (rows.length > 0 && rows[0].neighborhood_metadata) {
+            const meta = typeof rows[0].neighborhood_metadata === 'string'
+                ? JSON.parse(rows[0].neighborhood_metadata)
+                : rows[0].neighborhood_metadata;
+            if (meta && meta.viewBox) viewBox = meta.viewBox;
+        }
+
+        const blocksMap = new Map();
+
+        for (const row of rows) {
+            if (!blocksMap.has(row.block_id)) {
+                blocksMap.set(row.block_id, {
+                    id: row.block_id,
+                    code: row.block_code,
+                    lots: []
+                });
+            }
+
+            // Incluir TODOS los lotes pero marcar cuáles están disponibles
+            if (row.lot_id) {
+                blocksMap.get(row.block_id).lots.push({
+                    id: row.lot_id,
+                    number: row.number,
+                    status: row.status,
+                    path: row.svg_path,
+                    centroid: typeof row.centroid === 'string' ? JSON.parse(row.centroid) : row.centroid,
+                    available: row.status === 'sin_informacion'
+                });
+            }
+        }
+
+        const response = {
+            viewBox,
+            blocks: Array.from(blocksMap.values())
+        };
+
+        res.json({ ok: true, data: response });
+
+    } catch (error) {
+        console.error('Error obteniendo lotes disponibles:', error);
+        res.status(500).json({ ok: false, message: 'Error obteniendo los lotes disponibles.' });
+    }
+};
+
+module.exports = { getDigitalTwinData, updateLotStatus, getNeighborhoods, getAvailableLots };

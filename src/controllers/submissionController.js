@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken');
 const createSubmission = async (req, res) => {
     try {
         const bodyObj = req.body || {};
-        const { form_id, neighborhood_id, responses, location, referral_code, attachments = [] } = bodyObj;
+        const { form_id, neighborhood_id, responses, location, referral_code, attachments = [], lot_id } = bodyObj;
 
         // user_id puede ser null si el usuario es anónimo
         const userId = req.user ? req.user.uid : null;
@@ -41,24 +41,51 @@ const createSubmission = async (req, res) => {
             // Si el código no existe, se ignora silenciosamente (no se bloquea el envío)
         }
 
-        // 4. Abrir transacción para crear submission + referral atómicamente
+        // 4. Abrir transacción para crear submission + referral + actualizar lote atómicamente
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
 
+            // 4a. Si hay lot_id, validar que existe y está disponible
+            if (lot_id) {
+                const [lots] = await connection.query(
+                    'SELECT id, status FROM lots WHERE id = ? FOR UPDATE',
+                    [lot_id]
+                );
+                if (lots.length === 0) {
+                    await connection.rollback();
+                    connection.release();
+                    return res.status(400).json({ ok: false, message: 'El lote seleccionado no existe.' });
+                }
+                if (lots[0].status !== 'sin_informacion') {
+                    await connection.rollback();
+                    connection.release();
+                    return res.status(400).json({ ok: false, message: 'El lote seleccionado ya ha sido censado.' });
+                }
+            }
+
             await connection.query(`
                 INSERT INTO submissions
-                (id, form_version_id, user_id, neighborhood_id, responses, location_lat, location_lng, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+                (id, form_version_id, user_id, neighborhood_id, lot_id, responses, location_lat, location_lng, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
             `, [
                 submissionId,
                 versionData.id,
                 userId,
                 neighborhood_id,
+                lot_id || null,
                 JSON.stringify(responses),
                 location ? location.lat : null,
                 location ? location.lng : null
             ]);
+
+            // 4b. Actualizar el lote a 'censado' si se vinculó
+            if (lot_id) {
+                await connection.query(
+                    'UPDATE lots SET status = ? WHERE id = ?',
+                    ['censado', lot_id]
+                );
+            }
 
             // Guardar archivos multimedia (Cloudinary links) si se enviaron
             if (Array.isArray(attachments) && attachments.length > 0) {
@@ -88,7 +115,8 @@ const createSubmission = async (req, res) => {
             ok: true,
             message: 'Respuestas guardadas exitosamente',
             submissionId,
-            requires_registration: userId === null
+            requires_registration: userId === null,
+            lot_updated: lot_id ? true : false
         });
 
     } catch (error) {
@@ -124,7 +152,7 @@ const createOnboarding = async (req, res) => {
             form_key, neighborhood_id, responses,
             referral_code, attachments = [],
             name, document_number, password, email, phone,
-            location
+            location, lot_id
         } = bodyObj;
 
         // 1. Validar campos requeridos (password es opcional — campo NULL en la BD)
@@ -165,10 +193,28 @@ const createOnboarding = async (req, res) => {
         const newUserId = uuidv4();
         const submissionId = uuidv4();
 
-        // 7. Transacción atómica: usuario + submission + atribución de referido
+        // 7. Transacción atómica: usuario + submission + atribución de referido + actualizar lote
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
+
+            // 7a. Si hay lot_id, validar que existe y está disponible
+            if (lot_id) {
+                const [lots] = await connection.query(
+                    'SELECT id, status FROM lots WHERE id = ? FOR UPDATE',
+                    [lot_id]
+                );
+                if (lots.length === 0) {
+                    await connection.rollback();
+                    connection.release();
+                    return res.status(400).json({ ok: false, message: 'El lote seleccionado no existe.' });
+                }
+                if (lots[0].status !== 'sin_informacion') {
+                    await connection.rollback();
+                    connection.release();
+                    return res.status(400).json({ ok: false, message: 'El lote seleccionado ya ha sido censado.' });
+                }
+            }
 
             // a. Crear usuario (rol 3 = "usuario")
             await connection.query(`
@@ -181,19 +227,28 @@ const createOnboarding = async (req, res) => {
                 [newUserId, neighborhood_id || null]
             );
 
-            // b. Crear submission ligado al nuevo usuario
+            // b. Crear submission ligado al nuevo usuario (con lot_id si aplica)
             await connection.query(`
-                INSERT INTO submissions (id, form_version_id, user_id, neighborhood_id, responses, location_lat, location_lng, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+                INSERT INTO submissions (id, form_version_id, user_id, neighborhood_id, lot_id, responses, location_lat, location_lng, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
             `, [
                 submissionId,
                 versionData.id,
                 newUserId,
                 neighborhood_id,
+                lot_id || null,
                 JSON.stringify(responses),
                 location ? location.lat : null,
                 location ? location.lng : null
             ]);
+
+            // 7b. Actualizar el lote a 'censado' si se vinculó
+            if (lot_id) {
+                await connection.query(
+                    'UPDATE lots SET status = ? WHERE id = ?',
+                    ['censado', lot_id]
+                );
+            }
 
             // Guardar archivos multimedia vinculados al formulario (Cloudinary links)
             if (Array.isArray(attachments) && attachments.length > 0) {
