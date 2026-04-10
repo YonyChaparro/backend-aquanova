@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node seed.js && node server.js",
-    "dev": "node seed.js && nodemon server.js"
+    "start": "node server.js",
+    "dev": "node seed.js && nodemon server.js",
+    "seed": "node seed.js"
   },
   "keywords": [],
   "author": "",

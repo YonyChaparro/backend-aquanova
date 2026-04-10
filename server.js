@@ -31,8 +31,26 @@ app.use(helmet({
         }
     }
 }));
-app.use(cors());
-app.use(morgan('dev'));
+// CORS restrictivo: solo permite el dominio de producción (y localhost en dev)
+const allowedOrigins = [
+    'https://aquavisor.co',
+    'https://www.aquavisor.co',
+    ...(process.env.NODE_ENV !== 'production'
+        ? ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:4200']
+        : [])
+];
+app.use(cors({
+    origin: (origin, callback) => {
+        // Permitir peticiones sin origen (ej: Postman, apps móviles) o del listado
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error(`Origen no permitido por CORS: ${origin}`));
+        }
+    },
+    credentials: true
+}));
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json({ limit: '50mb' }));
 
 // Swagger: spec JSON dinámico
