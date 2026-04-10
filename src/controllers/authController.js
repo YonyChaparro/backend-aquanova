@@ -62,10 +62,14 @@ const login = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error en login:', error);
+        console.error('❌ Error en login:', error.message);
+        console.error('Stack:', error.stack);
+        // En producción NO exponemos detalles internos al cliente
         res.status(500).json({ 
             ok: false, 
-            message: 'Error en el servidor, contacte al administrador' 
+            message: 'Error en el servidor, contacte al administrador',
+            // Solo en dev mostramos el detalle:
+            ...(process.env.NODE_ENV !== 'production' && { detail: error.message })
         });
     }
 };
