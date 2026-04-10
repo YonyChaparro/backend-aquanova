@@ -9,22 +9,26 @@
 ## Arquitectura en Producción
 
 ```
-aquavisor.co          →  Frontend (archivos estáticos en Hostinger)
-api.aquavisor.co      →  Backend Node.js (API REST)
-api.aquavisor.co/api-docs  →  Documentación Swagger interactiva
+aquavisor.co                                       →  Frontend (archivos estáticos en Hostinger)
+https://whitesmoke-mule-772754.hostingersite.com   →  Backend Node.js (API REST)
+https://whitesmoke-mule-772754.hostingersite.com/api-docs  →  Documentación Swagger interactiva
 ```
 
-El frontend y el backend **viven en dominios separados** dentro del mismo hosting.
-El frontend solo debe hacer peticiones a `api.aquavisor.co`.
+El frontend y el backend **viven en dominios separados**.
+El frontend solo debe hacer peticiones a `https://whitesmoke-mule-772754.hostingersite.com`.
+
+> ⚠️ **Nota:** Este es el dominio temporal de Hostinger. Cuando el dominio definitivo
+> `api.aquavisor.co` sea configurado, solo habrá que actualizar `VITE_API_URL` (u equivalente)
+> en el `.env.production` del frontend.
 
 ---
 
 ## URL Base de la API
 
-| Entorno     | Base URL                          |
-|-------------|-----------------------------------|
-| Desarrollo  | `http://localhost:3000/api`       |
-| Producción  | `https://api.aquavisor.co/api`    |
+| Entorno     | Base URL                                                         |
+|-------------|------------------------------------------------------------------|
+| Desarrollo  | `http://localhost:3000/api`                                      |
+| Producción  | `https://whitesmoke-mule-772754.hostingersite.com/api`           |
 
 > **Recomendación:** Usa una variable de entorno en el frontend para no hardcodear la URL.
 
@@ -35,7 +39,7 @@ El frontend solo debe hacer peticiones a `api.aquavisor.co`.
 VITE_API_URL=http://localhost:3000/api
 
 # .env.production
-VITE_API_URL=https://api.aquavisor.co/api
+VITE_API_URL=https://whitesmoke-mule-772754.hostingersite.com/api
 ```
 
 ```js
@@ -51,7 +55,7 @@ const response = await fetch(`${API_URL}/forms`);
 REACT_APP_API_URL=http://localhost:3000/api
 
 # .env.production
-REACT_APP_API_URL=https://api.aquavisor.co/api
+REACT_APP_API_URL=https://whitesmoke-mule-772754.hostingersite.com/api
 ```
 
 ### Ejemplo con Next.js (`next.config.js`)
@@ -61,7 +65,7 @@ REACT_APP_API_URL=https://api.aquavisor.co/api
 module.exports = {
   env: {
     API_URL: process.env.NODE_ENV === 'production'
-      ? 'https://api.aquavisor.co/api'
+      ? 'https://whitesmoke-mule-772754.hostingersite.com/api'
       : 'http://localhost:3000/api',
   },
 };
@@ -76,7 +80,7 @@ La API usa **JSON Web Tokens (JWT)**. El flujo es:
 ### 1. Login — Obtener el token
 
 ```
-POST https://api.aquavisor.co/api/auth/login
+POST https://whitesmoke-mule-772754.hostingersite.com/api/auth/login
 Content-Type: application/json
 
 {
@@ -148,7 +152,7 @@ controlar qué vistas o botones mostrar en el frontend.
 ## Endpoints Disponibles
 
 La documentación interactiva completa está en:
-**`https://api.aquavisor.co/api-docs`**
+**`https://whitesmoke-mule-772754.hostingersite.com/api-docs`**
 
 A continuación, un resumen por módulo:
 
@@ -267,12 +271,12 @@ Las imágenes se almacenan en **Cloudinary**. La API devuelve la URL pública de
 ### Estructura de carpetas en Hostinger
 
 ```
-public_html/          ← carpeta raíz de aquavisor.co
+public_html/          ← carpeta raíz de aquavisor.co (frontend)
   index.html
   assets/
   ...
-api.aquavisor.co/     ← subdominio del backend (carpeta separada)
-  server.js
+public_html/api/      ← carpeta del backend Node.js
+  server.js           ←  https://whitesmoke-mule-772754.hostingersite.com
   src/
   ...
 ```
@@ -319,6 +323,9 @@ El backend **solo acepta peticiones** desde:
 - `https://aquavisor.co`
 - `https://www.aquavisor.co`
 
+> ⚠️ **Durante desarrollo/pruebas:** Si el frontend todavía no está en `aquavisor.co`,
+> contacta al equipo backend para agregar temporalmente tu origen al listado de CORS.
+
 Si el frontend hace peticiones desde cualquier otro dominio en producción,
 recibirá un error de CORS. Esto es intencional por seguridad.
 
@@ -335,7 +342,17 @@ debido a *mixed content*.
 
 ## Contacto / Documentación adicional
 
-- **Swagger UI (producción):** https://api.aquavisor.co/api-docs
+- **Swagger UI (producción):** https://whitesmoke-mule-772754.hostingersite.com/api-docs
 - **Repositorio backend:** https://github.com/YonyChaparro/backend-aquanova
   - Rama de producción: `produccion`
   - Rama de desarrollo: `main`
+
+---
+
+## Dominios — Estado actual
+
+| Dominio | Estado | Uso |
+|---|---|---|
+| `https://whitesmoke-mule-772754.hostingersite.com` | ✅ Activo | Backend (temporal Hostinger) |
+| `https://api.aquavisor.co` | 🔜 Por configurar | Backend (definitivo) |
+| `https://aquavisor.co` | 🔜 Por configurar | Frontend |

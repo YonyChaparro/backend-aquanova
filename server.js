@@ -35,6 +35,8 @@ app.use(helmet({
 const allowedOrigins = [
     'https://aquavisor.co',
     'https://www.aquavisor.co',
+    // Dominio temporal de Hostinger (mientras no se configura el dominio definitivo)
+    'https://whitesmoke-mule-772754.hostingersite.com',
     ...(process.env.NODE_ENV !== 'production'
         ? ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:4200']
         : [])
