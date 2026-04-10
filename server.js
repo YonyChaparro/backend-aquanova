@@ -91,7 +91,8 @@ app.get('/api-docs', (req, res) => {
   </body>
 </html>`);
 });
-console.log(`📄 Documentación disponible en http://localhost:${PORT}/api-docs`);
+const docsBase = process.env.NODE_ENV === 'production' ? 'https://api.aquavisor.co' : `http://localhost:${PORT}`;
+console.log(`📄 Documentación disponible en ${docsBase}/api-docs`);
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 
@@ -109,15 +110,25 @@ app.get('/', (req, res) => {
     res.json({ message: 'API Aquanova v1.0' });
 });
 
-seedDatabase()
-    .then(() => {
-        app.listen(PORT, () => {
-            console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-        });
-    })
-    .catch((err) => {
-        console.error('⚠️  Seed falló, iniciando servidor de todas formas:', err.message);
-        app.listen(PORT, () => {
-            console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-        });
+const startServer = () => {
+    app.listen(PORT, () => {
+        const baseUrl = process.env.NODE_ENV === 'production'
+            ? 'https://api.aquavisor.co'
+            : `http://localhost:${PORT}`;
+        console.log(`🚀 Servidor corriendo en ${baseUrl}`);
     });
+};
+
+if (process.env.NODE_ENV === 'production') {
+    // En producción: arrancar directamente sin seed.
+    // Ejecuta `npm run seed` manualmente una sola vez para poblar la BD.
+    startServer();
+} else {
+    // En desarrollo: seed automático antes de arrancar
+    seedDatabase()
+        .then(startServer)
+        .catch((err) => {
+            console.error('⚠️  Seed falló, iniciando servidor de todas formas:', err.message);
+            startServer();
+        });
+}
