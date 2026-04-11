@@ -11,6 +11,8 @@ const toFiniteNumber = (value, fallback = 0) => {
 
 const toFixedNumber = (value, decimals = 2) => Number(Number(value).toFixed(decimals));
 
+const normalizeColor = (value) => (value || '').trim().toLowerCase().replace(/\s+/g, '');
+
 const pointsToPath = (points, closeShape = true) => {
     const numbers = (points || '').match(NUMBER_REGEX);
     if (!numbers || numbers.length < 4) return null;
@@ -164,12 +166,61 @@ const getViewBox = ($, geometryBounds) => {
     return `0 0 ${width} ${height}`;
 };
 
+const getElementsBySelector = ($, selector) => {
+    if (!selector || typeof selector !== 'string') return [];
+    return $(selector).toArray();
+};
+
+const resolveInteractiveElements = ($, options = {}) => {
+    const defaultSelectors = [
+        options.selector,
+        '.lote-interactivo',
+        '[class~="lote-interactivo"]',
+        'g[fill="#e77148"] path, g[fill="#e77148"] polygon, g[fill="#e77148"] polyline, g[fill="#e77148"] rect',
+        'g[fill="#E77148"] path, g[fill="#E77148"] polygon, g[fill="#E77148"] polyline, g[fill="#E77148"] rect'
+    ];
+
+    const customFallbacks = Array.isArray(options.fallbackSelectors) ? options.fallbackSelectors : [];
+    const selectorChain = [...new Set([...defaultSelectors, ...customFallbacks].filter(Boolean))];
+
+    for (const selector of selectorChain) {
+        const elements = getElementsBySelector($, selector);
+        if (elements.length > 0) {
+            return elements;
+        }
+    }
+
+    // Heurística para SVG exportado desde GIS: tomar el grupo con fill válido que más geometrías tenga.
+    let bestGroupElements = [];
+    $('g').each((_, group) => {
+        const fill = normalizeColor($(group).attr('fill'));
+        if (!fill) return;
+
+        const ignoredFills = new Set(['none', '#fff', '#ffffff', '#000', '#000000', 'transparent', '#00000000']);
+        if (ignoredFills.has(fill)) return;
+
+        const groupElements = $(group).find('path,polygon,polyline,rect').toArray();
+        if (groupElements.length > bestGroupElements.length) {
+            bestGroupElements = groupElements;
+        }
+    });
+
+    if (bestGroupElements.length > 0) {
+        return bestGroupElements;
+    }
+
+    return [];
+};
+
 const parseInteractiveLotsFromSvg = (svgData, options = {}) => {
     const selector = options.selector || '.lote-interactivo';
     const scaleFactor = Number.isFinite(options.scaleFactor) ? options.scaleFactor : DEFAULT_SCALE_FACTOR;
 
     const $ = cheerio.load(svgData, { xmlMode: true });
-    const elements = $(selector).toArray();
+    const elements = resolveInteractiveElements($, {
+        selector,
+        fallbackSelectors: options.fallbackSelectors
+    });
 
     const lots = [];
     const usedNumbers = new Set();
