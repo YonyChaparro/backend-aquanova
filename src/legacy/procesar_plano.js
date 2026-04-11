@@ -1,9 +1,9 @@
 // src/legacy/procesar_plano.js
 const fs = require('fs');
 const path = require('path');
-const cheerio = require('cheerio');
 const mysql = require('mysql2/promise');
 const crypto = require('crypto');
+const { parseInteractiveLotsFromSvgFile } = require('../helpers/svgMapParser');
 
 // Cargar variables de entorno desde el archivo .env en la raíz del proyecto
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
@@ -11,7 +11,8 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 // ==========================================
 // 1. CONFIGURACIÓN
 // ==========================================
-const SVG_FILE_PATH = path.resolve(__dirname, './Mapa Barrio San Miguel de la Cañana.svg');
+const SVG_FILE_PATH = path.resolve(__dirname, './Mapa Barrio Las Mercedes.svg');
+const MAP_DATA_OUTPUT_PATH = path.resolve(__dirname, '../../map-data-seed.json');
 
 const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
@@ -20,40 +21,6 @@ const dbConfig = {
     database: process.env.DB_NAME || 'app_aquanova_bd'
 };
 
-const SCALE_FACTOR = 0.8; 
-
-// ==========================================
-// 2. FUNCIÓN PARA EXTRAER DATOS (SIN MODIFICAR EL TRAZO)
-// ==========================================
-function extractGeometryData(dPath) {
-    // 1. Extraemos las coordenadas para calcular área y centroide
-    const coords = dPath.match(/-?\d+\.?\d*/g);
-    if (!coords || coords.length < 4) return null;
-
-    let xs = [], ys = [];
-    for (let i = 0; i < coords.length; i += 2) {
-        xs.push(parseFloat(coords[i]));
-        ys.push(parseFloat(coords[i + 1]));
-    }
-
-    // 2. Encontrar la "Caja Delimitadora" (Bounding Box)
-    const minX = Math.min(...xs);
-    const maxX = Math.max(...xs);
-    const minY = Math.min(...ys);
-    const maxY = Math.max(...ys);
-
-    // 3. Calculamos el centro para poner la etiqueta/tooltip
-    const centroid = {
-        x: Number(((minX + maxX) / 2).toFixed(2)),
-        y: Number(((minY + maxY) / 2).toFixed(2))
-    };
-    
-    // 4. Área aproximada en base a la caja delimitadora
-    const area_m2 = Number(((maxX - minX) * (maxY - minY) * SCALE_FACTOR).toFixed(2));
-
-    // RETORNAMOS EL TRAZO ORIGINAL EXACTO (dPath) EN LUGAR DEL RECTÁNGULO
-    return { originalPath: dPath, centroid, area_m2 };
-}
 // ==========================================
 // 3. FUNCIÓN PRINCIPAL (PROCESAMIENTO Y BD)
 // ==========================================
@@ -71,17 +38,16 @@ async function main() {
             throw new Error(`No se encontró el archivo SVG en la ruta: ${SVG_FILE_PATH}`);
         }
 
-        const svgData = fs.readFileSync(SVG_FILE_PATH, 'utf-8');
-        const $ = cheerio.load(svgData, { xmlMode: true });
+        const mapData = parseInteractiveLotsFromSvgFile(SVG_FILE_PATH);
+        const svgViewBox = mapData.viewBox;
+        const mapLots = mapData.lots;
 
-        // Extraer viewBox real del SVG para guardarlo en la BD
-        const svgEl = $('svg').first();
-        const svgViewBox = svgEl.attr('viewBox') ||
-            `0 0 ${svgEl.attr('width') || 1103} ${svgEl.attr('height') || 667}`;
         console.log(`📐 viewBox detectado: ${svgViewBox}`);
+        console.log(`Se encontraron ${mapLots.length} lotes interactivos en el SVG.\n`);
 
-        const paths = $('path');
-        console.log(`Se encontraron ${paths.length} trazos en el SVG.\n`);
+        // Mantiene actualizado el archivo de respaldo consumido por seed.js cuando no está disponible el SVG.
+        fs.writeFileSync(MAP_DATA_OUTPUT_PATH, JSON.stringify(mapData, null, 2));
+        console.log(`💾 map-data-seed.json actualizado en: ${MAP_DATA_OUTPUT_PATH}`);
 
         // -------------------------------------------------------
         // PASO A: Buscar o crear el SECTOR padre
@@ -109,7 +75,7 @@ async function main() {
         // -------------------------------------------------------
         // PASO B: Buscar o crear el BARRIO hijo (el que tiene el plano)
         // -------------------------------------------------------
-        const neighborhoodName = 'San Miguel de la Cañana';
+        const neighborhoodName = 'Barrio Las Mercedes';
         const neighborhoodCode = 'SMCN-001';
         const neighborhoodMetadata = JSON.stringify({ viewBox: svgViewBox });
 
@@ -157,19 +123,12 @@ async function main() {
         // Limpiamos los lotes existentes de ESA manzana para actualizarlos
         await connection.execute(`DELETE FROM lots WHERE block_id = ?`, [blockId]);
 
-        let count = 1;
+        let count = 0;
 
-        for (let i = 0; i < paths.length; i++) {
-            const rawPath = $(paths[i]).attr('d');
-            
-            const geometry = extractGeometryData(rawPath);
-            if (!geometry) continue;
-
-            const { originalPath, centroid, area_m2 } = geometry;
-
+        for (const lot of mapLots) {
             const lotId = crypto.randomUUID();
-            const lotNumber = `Lote-${count.toString().padStart(3, '0')}`;
-            const initialStatus = 'sin_informacion';
+            const lotNumber = lot.number;
+            const initialStatus = lot.status || 'sin_informacion';
             const waterMeter = null;
 
             await connection.execute(
@@ -179,13 +138,15 @@ async function main() {
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     lotId, blockId, lotNumber, initialStatus, waterMeter, 
-                    area_m2, originalPath, JSON.stringify(centroid)
+                    lot.area_m2 || 0,
+                    lot.svg_path,
+                    JSON.stringify(lot.centroid || null)
                 ]
             );
-            count++;
+            count += 1;
         }
 
-        console.log(`\n🚀 ¡Proceso finalizado! Se registraron ${count - 1} predios en ${neighborhoodName}.`);
+        console.log(`\n🚀 ¡Proceso finalizado! Se registraron ${count} predios en ${neighborhoodName}.`);
 
     } catch (error) {
         console.error("❌ Ocurrió un error:", error.message);

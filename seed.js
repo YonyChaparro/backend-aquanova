@@ -3,6 +3,7 @@ require('dotenv').config();
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
+const { parseInteractiveLotsFromSvgFile } = require('./src/helpers/svgMapParser');
 
 const DB_CONFIG = {
     host: process.env.DB_HOST || 'localhost',
@@ -1096,18 +1097,34 @@ const seedDatabase = async () => {
         // ---------------------------------------------------------
         console.log('\n🗺️  Procesando Gemelo Digital (Mapa)...');
 
-        // Cargar datos del mapa desde el archivo JSON generado
+        // Cargar mapa preferentemente desde el SVG de Las Mercedes
         const fs = require('fs');
         const path = require('path');
+        const lasMercedesSvgPath = path.resolve(__dirname, './src/legacy/Mapa Barrio Las Mercedes.svg');
         const mapDataPath = path.resolve(__dirname, './map-data-seed.json');
 
-        if (fs.existsSync(mapDataPath)) {
-            const mapData = JSON.parse(fs.readFileSync(mapDataPath, 'utf-8'));
+        let mapData = null;
+
+        if (fs.existsSync(lasMercedesSvgPath)) {
+            try {
+                mapData = parseInteractiveLotsFromSvgFile(lasMercedesSvgPath);
+                console.log(`✅ SVG de Las Mercedes procesado: ${mapData.lots.length} lotes.`);
+            } catch (svgError) {
+                console.log(`⚠️  Error procesando SVG de Las Mercedes: ${svgError.message}`);
+            }
+        }
+
+        if (!mapData && fs.existsSync(mapDataPath)) {
+            mapData = JSON.parse(fs.readFileSync(mapDataPath, 'utf-8'));
+            console.log('⚠️  Usando fallback map-data-seed.json para poblar el gemelo digital.');
+        }
+
+        if (mapData && Array.isArray(mapData.lots) && mapData.lots.length > 0) {
             const { viewBox, lots } = mapData;
 
             // Crear el barrio hijo con el mapa (SMCN-001)
             const mapNeighborhoodCode = 'SMCN-001';
-            const mapNeighborhoodName = 'San Miguel de la Cañana';
+            const mapNeighborhoodName = 'Barrio Las Mercedes';
             const mapMetadata = JSON.stringify({ viewBox });
 
             const [existingMapNeighborhood] = await connection.query(
@@ -1118,10 +1135,10 @@ const seedDatabase = async () => {
             let mapNeighborhoodId;
             if (existingMapNeighborhood.length > 0) {
                 mapNeighborhoodId = existingMapNeighborhood[0].id;
-                // Actualizar metadata con viewBox
+                // Actualizar nombre, metadata y jerarquía para mantener el mapa sincronizado
                 await connection.query(
-                    'UPDATE neighborhoods SET metadata = ?, parent_id = ? WHERE id = ?',
-                    [mapMetadata, neighborhoodId, mapNeighborhoodId]
+                    'UPDATE neighborhoods SET name = ?, metadata = ?, parent_id = ? WHERE id = ?',
+                    [mapNeighborhoodName, mapMetadata, neighborhoodId, mapNeighborhoodId]
                 );
                 console.log(`⚠️  Barrio mapa ${mapNeighborhoodCode} ya existe. Metadata actualizada.`);
             } else {
@@ -1166,11 +1183,11 @@ const seedDatabase = async () => {
                     uuidv4(),
                     blockId,
                     lot.number,
-                    lot.status,
+                    lot.status || 'sin_informacion',
                     null, // water_meter_code
-                    lot.area_m2 || 0,
+                    Number.isFinite(Number(lot.area_m2)) ? Number(lot.area_m2) : 0,
                     lot.svg_path,
-                    JSON.stringify(lot.centroid)
+                    JSON.stringify(lot.centroid || null)
                 ]);
 
                 const placeholders = values.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
@@ -1185,7 +1202,7 @@ const seedDatabase = async () => {
 
             console.log(`✅ Gemelo Digital: ${lotsInserted} predios insertados en el mapa.`);
         } else {
-            console.log('⚠️  Archivo map-data-seed.json no encontrado. Ejecuta procesar_plano.js primero si necesitas datos del mapa.');
+            console.log('⚠️  No se encontró información de mapa válida (ni SVG de Las Mercedes ni map-data-seed.json).');
         }
 
         console.log('\n=============================================');
