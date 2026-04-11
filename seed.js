@@ -4,6 +4,7 @@ const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const { parseInteractiveLotsFromSvgFile } = require('./src/helpers/svgMapParser');
+const censoMasivoCatastroFormSeed = require('./seed-censo-form');
 
 const DB_CONFIG = {
     host: process.env.DB_HOST || 'localhost',
@@ -813,7 +814,7 @@ const seedDatabase = async () => {
         }
 
         // ---------------------------------------------------------
-        // 7. SEED FORMULARIOS (10 formularios con preguntas variadas)
+        // 7. SEED FORMULARIOS
         // ---------------------------------------------------------
         console.log('\n📝 Procesando Formularios...');
         const [admins] = await connection.query('SELECT id FROM users WHERE email = ?', [adminData.email]);
@@ -1034,6 +1035,7 @@ const seedDatabase = async () => {
                     { key: 'sugerencias',        type: 'textarea', label: 'Sugerencias para mejorar el acceso digital en el barrio', required: false },
                 ]
             },
+            censoMasivoCatastroFormSeed,
         ];
 
         // Insertar los formularios de forma idempotente
