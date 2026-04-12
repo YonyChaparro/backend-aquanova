@@ -74,8 +74,16 @@ const executeTopologyTransaction = async (action, deletedLots, newLots) => {
         if (deletedLots && deletedLots.length > 0) {
             for (const lot of deletedLots) {
                 // Soft delete & Optimistic Concurrency Control
-                const query = `UPDATE lots SET status = 'inactive' WHERE id = ? AND version = ?`;
-                const [result] = await connection.execute(query, [lot.id, lot.version]);
+                // Añadimos un sufijo al 'number' para liberar el nombre (unique_lot_block) 
+                // ya que la base de datos no ignora los soft deletes en la llave única.
+                const version = lot.version || 1;
+                // El campo number en bd puede ser de 20 caracteres (varchar 20). 
+                // Generar un random number corto u omitirlo evitando concatenar el time complet.
+                // Como es aleatorio usar random pequeño (0-999) + 'd' (deleted).
+                const randomId = Math.floor(Math.random() * 9999);
+                const deleteSuffix = `-d${randomId}`;
+                const query = `UPDATE lots SET status = 'inactive', number = CONCAT(SUBSTRING(number, 1, 20 - LENGTH(?)), ?) WHERE id = ? AND version = ?`;
+                const [result] = await connection.execute(query, [deleteSuffix, deleteSuffix, lot.id, version]);
                 
                 if (result.affectedRows === 0) {
                     const conflictErr = new Error('Conflicto de concurrencia: El predio ha sido modificado por otro usuario.');
@@ -83,6 +91,13 @@ const executeTopologyTransaction = async (action, deletedLots, newLots) => {
                     throw conflictErr;
                 }
             }
+        }
+
+        let inferredBlockId = null;
+        if (deletedLots && deletedLots.length > 0) {
+            // Obtener el block_id de la base de datos por si el frontend no lo envía en los newLots
+            const [dlots] = await connection.execute('SELECT block_id FROM lots WHERE id = ?', [deletedLots[0].id]);
+            if (dlots.length > 0) inferredBlockId = dlots[0].block_id;
         }
 
         const createdLots = [];
@@ -96,7 +111,7 @@ const executeTopologyTransaction = async (action, deletedLots, newLots) => {
             
             for (const lot of newLots) {
                 const newLotId = uuidv4();
-                // Accepted always the one that's valid, path or svg_path (frontend sends both)
+                // Accepted always the one that's valid, path or svg_path
                 const svgPathValue = lot.svg_path || lot.path || null;
 
                 if (!svgPathValue) {
@@ -105,25 +120,61 @@ const executeTopologyTransaction = async (action, deletedLots, newLots) => {
                 }
 
                 const centroidJson = lot.centroid ? JSON.stringify(lot.centroid) : null;
-                const lotNumber = lot.number || lot.display_id || `Lote-${Date.now()}`;
+                const baseLotNumber = lot.number || lot.display_id || `Lote-${Date.now()}`;
+                
+                // Si ya llegó a existir en inactivo por pruebas previas, usamos ON DUPLICATE KEY UPDATE o similar? 
+                // Mejor simplemente intentamos insertar
+                const finalBlockId = lot.block_id || inferredBlockId;
+                if (!finalBlockId) {
+                    throw new Error('No se pudo determinar el block_id para el nuevo predio.');
+                }
 
-                const lotData = [
-                    newLotId,
-                    lot.block_id, 
-                    lotNumber, 
-                    'sin_informacion', 
-                    svgPathValue, 
-                    centroidJson, 
-                    lot.area_m2 || 0,
-                    parentIdsJson
-                ];
-                await connection.execute(query, lotData);
+                // Generar un random_number si falla la llave única podría ser mejor, pero como ya renombramos los soft-deletes, no debería chocar con los eliminados.
+                
+                let attemptUrl = 0;
+                let inserted = false;
+                let actualNumber = baseLotNumber;
+                
+                // Si el baseLotNumber es más de 20 caracteres, lo cortamos por seguridad
+                if (actualNumber.length > 20) {
+                    actualNumber = actualNumber.substring(0, 20);
+                }
+
+                // Intentamos insertar, si colisiona con uno inactivo que no fue atrapado, generamos uno nuevo.
+                while (!inserted && attemptUrl < 5) {
+                    try {
+                        const lotData = [
+                            newLotId,
+                            finalBlockId, 
+                            actualNumber, 
+                            'sin_informacion', 
+                            svgPathValue, 
+                            centroidJson, 
+                            lot.area_m2 || 0,
+                            parentIdsJson
+                        ];
+                        await connection.execute(query, lotData);
+                        inserted = true;
+                    } catch (err) {
+                        if (err.code === 'ER_DUP_ENTRY') {
+                            attemptUrl++;
+                            const randId = Math.floor(Math.random() * 9999);
+                            actualNumber = `${baseLotNumber.substring(0, 14)}-${randId}`;
+                        } else {
+                            throw err;
+                        }
+                    }
+                }
+
+                if (!inserted) {
+                    throw new Error('No se pudo asignar un identificador único al predio (duplicado en DB).');
+                }
                 
                 createdLots.push({
                     id: newLotId,
-                    block_id: lot.block_id,
-                    number: lotNumber,
-                    display_id: lot.display_id || lotNumber.replace('Lote-', ''),
+                    block_id: finalBlockId,
+                    number: actualNumber,
+                    display_id: lot.display_id || actualNumber.replace('Lote-', ''),
                     status: 'sin_informacion',
                     svg_path: svgPathValue,
                     path: svgPathValue, // Retrocompatibilidad: MapEngine usa 'path'

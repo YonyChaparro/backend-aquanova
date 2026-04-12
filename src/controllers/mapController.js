@@ -32,6 +32,7 @@ const getDigitalTwinData = async (req, res) => {
             if (row.lot_id) {
                 blocksMap.get(row.block_id).lots.push({
                     id: row.lot_id,
+                    block_id: row.block_id,
                     number: row.number,
                     status: row.status, 
                     water_meter_code: row.water_meter_code,
