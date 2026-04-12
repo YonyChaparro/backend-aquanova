@@ -8,6 +8,12 @@ async function run() {
     try {
        await pool.execute("ALTER TABLE lots ADD COLUMN version INT DEFAULT 1");
     } catch(e) { if(e.code!=='ER_DUP_FIELDNAME') throw e; }
+    try {
+       await pool.execute("ALTER TABLE lots ADD COLUMN property_state VARCHAR(60) NULL");
+    } catch(e) { if(e.code!=='ER_DUP_FIELDNAME') throw e; }
+    try {
+       await pool.execute("ALTER TABLE lots MODIFY COLUMN property_state VARCHAR(60) NULL");
+    } catch(e) { console.error(e); }
     console.log("DB Updated!");
   } catch (e) {
     console.error(e);

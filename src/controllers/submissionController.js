@@ -81,10 +81,22 @@ const createSubmission = async (req, res) => {
 
             // 4b. Actualizar el lote a 'censado' si se vinculó
             if (lot_id) {
-                await connection.query(
-                    'UPDATE lots SET status = ? WHERE id = ?',
-                    ['censado', lot_id]
-                );
+                // Si la metadata viene con la respuesta exacta de estado, actualizamos
+                let propertyState = null;
+                if (responses) {
+                    // Extraer de las respuestas, la llave podría llamarse de muchas maneras según tu frontend
+                    // Verificamos posibles nombres: 'property_state', 'estado_predio', 'estadoPredio'
+                    propertyState = responses['property_state'] || responses['estado_predio'] || responses['estadoPredio'] || null;
+                }
+
+                const updateQuery = propertyState 
+                    ? 'UPDATE lots SET status = ?, property_state = ? WHERE id = ?'
+                    : 'UPDATE lots SET status = ? WHERE id = ?';
+                const updateParams = propertyState 
+                    ? ['censado', propertyState, lot_id]
+                    : ['censado', lot_id];
+
+                await connection.query(updateQuery, updateParams);
             }
 
             // Guardar archivos multimedia (Cloudinary links) si se enviaron

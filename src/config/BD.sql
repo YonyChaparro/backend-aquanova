@@ -308,12 +308,15 @@ CREATE TABLE `lots` (
   `number` VARCHAR(20) NOT NULL,
   
   -- LÓGICA DE NEGOCIO (ACUEDUCTO)
-  `status` ENUM('sin_informacion', 'censado', 'registrado') DEFAULT 'sin_informacion',
+  `status` ENUM('sin_informacion', 'censado', 'registrado', 'inactive') DEFAULT 'sin_informacion',
   `water_meter_code` VARCHAR(50) NULL COMMENT 'Código del medidor de agua',
   `cadastral_id` VARCHAR(50) NULL COMMENT 'Ficha Catastral o Matrícula',
+  `property_state` VARCHAR(60) NULL COMMENT 'Estado fisico o legal del predio extraido del censo',
+  `version` INT DEFAULT 1,
   
   `area_m2` DECIMAL(10, 2) NULL,
   `owner_name` VARCHAR(255) NULL,
+  `parent_ids` JSON NULL,
   
   -- VISUALIZACIÓN (SVG)
   `svg_path` TEXT NOT NULL,

@@ -35,6 +35,7 @@ const getDigitalTwinData = async (req, res) => {
                     block_id: row.block_id,
                     number: row.number,
                     status: row.status, 
+                    property_state: row.property_state,
                     water_meter_code: row.water_meter_code,
                     cadastral_id: row.cadastral_id,
                     area_m2: parseFloat(row.area_m2),
@@ -131,6 +132,7 @@ const getAvailableLots = async (req, res) => {
                     id: row.lot_id,
                     number: row.number,
                     status: row.status,
+                    property_state: row.property_state,
                     path: row.svg_path,
                     centroid: typeof row.centroid === 'string' ? JSON.parse(row.centroid) : row.centroid,
                     available: row.status === 'sin_informacion'

@@ -6,7 +6,7 @@ const getBlocksAndLots = async (neighborhoodId) => {
     let query = `
         SELECT 
             b.id AS block_id, b.code AS block_code, b.geom_path AS block_geom, b.label_position,
-            l.id AS lot_id, l.number, l.number AS display_id, l.status, l.water_meter_code, l.cadastral_id,
+            l.id AS lot_id, l.number, l.number AS display_id, l.status, l.property_state, l.water_meter_code, l.cadastral_id,
             l.area_m2, l.svg_path, l.centroid, l.version,
             n.metadata AS neighborhood_metadata
         FROM blocks b
@@ -102,15 +102,13 @@ const executeTopologyTransaction = async (action, deletedLots, newLots) => {
 
         const createdLots = [];
         if (newLots && newLots.length > 0) {
-            const query = `
-                INSERT INTO lots 
-                (id, block_id, number, status, svg_path, centroid, area_m2, parent_ids, version) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
-            `;
-            const parentIdsJson = deletedLots ? JSON.stringify(deletedLots.map(l => l.id)) : null;
             
             for (const lot of newLots) {
-                const newLotId = uuidv4();
+                // Si la acción es RESTORE, idealmente deberíamos intentar hacer un UNDELETE 
+                // del lote original si es posible (ON DUPLICATE KEY UPDATE) o insertarlo con su ID original
+                // Para mantenerlo simple según la guía, podemos insertarlo como nuevo si no existe, o forzar su ID.
+                const newLotId = (action === 'RESTORE' && lot.id) ? lot.id : uuidv4();
+                
                 // Accepted always the one that's valid, path or svg_path
                 const svgPathValue = lot.svg_path || lot.path || null;
 
@@ -121,10 +119,11 @@ const executeTopologyTransaction = async (action, deletedLots, newLots) => {
 
                 const centroidJson = lot.centroid ? JSON.stringify(lot.centroid) : null;
                 const baseLotNumber = lot.number || lot.display_id || `Lote-${Date.now()}`;
+                const parentIdsJson = deletedLots ? JSON.stringify(deletedLots.map(l => l.id)) : null;
                 
-                // Si ya llegó a existir en inactivo por pruebas previas, usamos ON DUPLICATE KEY UPDATE o similar? 
-                // Mejor simplemente intentamos insertar
-                const finalBlockId = lot.block_id || inferredBlockId;
+                // Privilegiamos el inferredBlockId (obtenido de la base de datos de los predios padres)
+                // Esto previene que el frontend envíe códigos descriptivos de bloque ('M-01') en lugar del UUID del block.
+                const finalBlockId = inferredBlockId || lot.block_id;
                 if (!finalBlockId) {
                     throw new Error('No se pudo determinar el block_id para el nuevo predio.');
                 }
@@ -140,7 +139,17 @@ const executeTopologyTransaction = async (action, deletedLots, newLots) => {
                     actualNumber = actualNumber.substring(0, 20);
                 }
 
-                // Intentamos insertar, si colisiona con uno inactivo que no fue atrapado, generamos uno nuevo.
+                // Intentamos insertar o actualizar si la acción es RESTORE
+                const query = `
+                    INSERT INTO lots 
+                    (id, block_id, number, status, svg_path, centroid, area_m2, parent_ids, version) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+                    ON DUPLICATE KEY UPDATE 
+                    status = 'sin_informacion', svg_path = VALUES(svg_path), 
+                    centroid = VALUES(centroid), area_m2 = VALUES(area_m2),
+                    number = VALUES(number)
+                `;
+
                 while (!inserted && attemptUrl < 5) {
                     try {
                         const lotData = [

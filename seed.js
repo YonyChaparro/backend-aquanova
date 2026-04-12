@@ -454,12 +454,12 @@ const seedDatabase = async () => {
         // 3f. Migración: agregar parent_ids y version a lots para soporte de topología
         try {
             await connection.query(
-                'ALTER TABLE `lots` ADD COLUMN `parent_ids` JSON NULL, ADD COLUMN `version` INT NOT NULL DEFAULT 1'
+                'ALTER TABLE `lots` ADD COLUMN `parent_ids` JSON NULL, ADD COLUMN `version` INT NOT NULL DEFAULT 1, ADD COLUMN `property_state` VARCHAR(60) NULL'
             );
-            console.log('✅ Columnas parent_ids y version agregadas a lots.');
+            console.log('✅ Columnas parent_ids, version y property_state agregadas a lots.');
         } catch (e) {
             if (e.errno === 1060) {
-                console.log('⚠️  Columnas parent_ids y version ya existen en lots. Continuando...');
+                console.log('⚠️  Columnas parent_ids/version/property_state ya existen en lots. Continuando...');
             } else {
                 console.log('⚠️  Error al agregar parent_ids/version a lots:', e.code || e.errno);
                 // Si falla porque version existe pero parent_ids no, o viceversa, lo intentamos individualmente
@@ -468,6 +468,9 @@ const seedDatabase = async () => {
                 } catch(err){}
                 try {
                     await connection.query('ALTER TABLE `lots` ADD COLUMN `version` INT NOT NULL DEFAULT 1');
+                } catch(err){}
+                try {
+                    await connection.query('ALTER TABLE `lots` ADD COLUMN `property_state` VARCHAR(60) NULL');
                 } catch(err){}
             }
         }
