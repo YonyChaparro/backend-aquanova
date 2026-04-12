@@ -38,8 +38,7 @@ const getDigitalTwinData = async (req, res) => {
                     cadastral_id: row.cadastral_id,
                     area_m2: parseFloat(row.area_m2),
                     path: row.svg_path,
-                    centroid: typeof row.centroid === 'string' ? JSON.parse(row.centroid) : row.centroid,
-                    version: typeof row.version !== 'undefined' ? row.version : 1
+                    centroid: typeof row.centroid === 'string' ? JSON.parse(row.centroid) : row.centroid
                 });
             }
         }
@@ -150,45 +149,4 @@ const getAvailableLots = async (req, res) => {
     }
 };
 
-const updateTopology = async (req, res) => {
-    try {
-        const { action, deletedLots, newLots } = req.body;
-
-        if (!action || !deletedLots || !newLots) {
-            return res.status(400).json({ ok: false, message: 'Faltan parámetros obligatorios.' });
-        }
-
-        const result = await MapModel.executeTopologyTransaction(action, deletedLots, newLots);
-
-        res.json({ 
-            ok: true, 
-            message: `Operación ${action} ejecutada exitosamente.`,
-            newData: result.createdLots 
-        });
-    } catch (error) {
-        if (error.code === 409) {
-            return res.status(409).json({ ok: false, message: error.message });
-        }
-        console.error(`Error en transacción topológica (${req.body.action}):`, error);
-        res.status(500).json({ ok: false, message: 'Error interno al actualizar topología catastral.' });
-    }
-};
-
-const updateBlock = async (req, res) => {
-    try {
-        const { blockId } = req.params;
-        const { code } = req.body;
-
-        if (!code || !String(code).trim()) {
-            return res.status(400).json({ ok: false, message: 'El código de manzana no puede estar vacío.' });
-        }
-
-        await MapModel.updateBlock(blockId, { code: String(code).trim() });
-        res.json({ ok: true, message: 'Manzana actualizada exitosamente.', code: String(code).trim() });
-    } catch (error) {
-        console.error('Error actualizando manzana:', error);
-        res.status(500).json({ ok: false, message: 'Error interno al actualizar la manzana.' });
-    }
-};
-
-module.exports = { getDigitalTwinData, updateLotStatus, getNeighborhoods, getAvailableLots, updateTopology, updateBlock };
+module.exports = { getDigitalTwinData, updateLotStatus, getNeighborhoods, getAvailableLots };

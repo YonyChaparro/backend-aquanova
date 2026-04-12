@@ -277,36 +277,4 @@ router.get('/neighborhoods', mapController.getNeighborhoods);
  */
 router.get('/available-lots/:neighborhoodId', mapController.getAvailableLots);
 
-/**
- * @swagger
- * /map/topology-update:
- *   post:
- *     summary: Actualizar topología del mapa (Merge o Split)
- *     tags: [Map]
- *     description: Ejecuta una transacción para eliminar predios antiguos e insertar los nuevos tras una partición o fusión.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               action:
- *                 type: string
- *               deletedLotIds:
- *                 type: array
- *                 items:
- *                   type: string
- *               newLots:
- *                 type: array
- *                 items:
- *                   type: object
- *     responses:
- *       200:
- *         description: Topología actualizada exitosamente
- */
-router.post('/topology-update', mapController.updateTopology);
-
 module.exports = router;
-// PATCH /map/blocks/:blockId — Editar código de manzana
-router.patch('/blocks/:blockId', mapController.updateBlock);

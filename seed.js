@@ -298,8 +298,6 @@ CREATE TABLE IF NOT EXISTS \`lots\` (
   \`svg_path\` TEXT NOT NULL,
   \`centroid\` JSON NULL,
   \`metadata\` JSON NULL,
-  \`parent_ids\` JSON NULL,
-  \`version\` INT NOT NULL DEFAULT 1,
   \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
   \`updated_at\` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (\`id\`),
@@ -448,27 +446,6 @@ const seedDatabase = async () => {
                 console.log('⚠️  FK fk_sub_lot ya existe en submissions. Continuando...');
             } else {
                 console.log('⚠️  No se pudo agregar FK fk_sub_lot (puede que ya exista):', e.code || e.errno);
-            }
-        }
-
-        // 3f. Migración: agregar parent_ids y version a lots para soporte de topología
-        try {
-            await connection.query(
-                'ALTER TABLE `lots` ADD COLUMN `parent_ids` JSON NULL, ADD COLUMN `version` INT NOT NULL DEFAULT 1'
-            );
-            console.log('✅ Columnas parent_ids y version agregadas a lots.');
-        } catch (e) {
-            if (e.errno === 1060) {
-                console.log('⚠️  Columnas parent_ids y version ya existen en lots. Continuando...');
-            } else {
-                console.log('⚠️  Error al agregar parent_ids/version a lots:', e.code || e.errno);
-                // Si falla porque version existe pero parent_ids no, o viceversa, lo intentamos individualmente
-                try {
-                    await connection.query('ALTER TABLE `lots` ADD COLUMN `parent_ids` JSON NULL');
-                } catch(err){}
-                try {
-                    await connection.query('ALTER TABLE `lots` ADD COLUMN `version` INT NOT NULL DEFAULT 1');
-                } catch(err){}
             }
         }
 
@@ -1195,44 +1172,37 @@ const seedDatabase = async () => {
                 console.log(`✅ Block creado: ${blockCode}`);
             }
 
-            // Limpiar lotes existentes solo si se solicita o si está vacío
-            const [currentLots] = await connection.query('SELECT COUNT(*) as count FROM lots WHERE block_id = ?', [blockId]);
-            const shouldSeedLots = process.env.FORCE_SEED === 'true' || currentLots[0].count === 0;
+            // Limpiar lotes existentes e insertar nuevos
+            await connection.query('DELETE FROM lots WHERE block_id = ?', [blockId]);
 
-            if (!shouldSeedLots) {
-                console.log(`ℹ️  El bloque ${blockCode} ya tiene ${currentLots[0].count} predios. Saltando inserción inicial (Usa FORCE_SEED=true para resetear).`);
-            } else {
-                console.log(`🧹 Limpiando y recargando predios para el bloque ${blockCode}...`);
-                await connection.query('DELETE FROM lots WHERE block_id = ?', [blockId]);
+            // Insertar lotes en lotes de 50 para mejor rendimiento
+            const batchSize = 50;
+            let lotsInserted = 0;
 
-                // Insertar lotes en lotes de 50 para mejor rendimiento
-                const batchSize = 50;
-                let lotsInserted = 0;
+            for (let i = 0; i < lots.length; i += batchSize) {
+                const batch = lots.slice(i, i + batchSize);
+                const values = batch.map(lot => [
+                    uuidv4(),
+                    blockId,
+                    lot.number,
+                    lot.status || 'sin_informacion',
+                    null, // water_meter_code
+                    Number.isFinite(Number(lot.area_m2)) ? Number(lot.area_m2) : 0,
+                    lot.svg_path,
+                    JSON.stringify(lot.centroid || null)
+                ]);
 
-                for (let i = 0; i < lots.length; i += batchSize) {
-                    const batch = lots.slice(i, i + batchSize);
-                    const values = batch.map(lot => [
-                        uuidv4(),
-                        blockId,
-                        lot.number,
-                        lot.status || 'sin_informacion',
-                        null, // water_meter_code
-                        Number.isFinite(Number(lot.area_m2)) ? Number(lot.area_m2) : 0,
-                        lot.svg_path,
-                        JSON.stringify(lot.centroid || null)
-                    ]);
+                const placeholders = values.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
+                const flatValues = values.flat();
 
-                    const placeholders = values.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
-                    const flatValues = values.flat();
-
-                    await connection.query(
-                        `INSERT INTO lots (id, block_id, number, status, water_meter_code, area_m2, svg_path, centroid) VALUES ${placeholders}`,
-                        flatValues
-                    );
-                    lotsInserted += batch.length;
-                }
-                console.log(`✅ Gemelo Digital: ${lotsInserted} predios insertados en el mapa.`);
+                await connection.query(
+                    `INSERT INTO lots (id, block_id, number, status, water_meter_code, area_m2, svg_path, centroid) VALUES ${placeholders}`,
+                    flatValues
+                );
+                lotsInserted += batch.length;
             }
+
+            console.log(`✅ Gemelo Digital: ${lotsInserted} predios insertados en el mapa.`);
         } else {
             console.log('⚠️  No se encontró información de mapa válida (ni SVG de Las Mercedes ni map-data-seed.json).');
         }
