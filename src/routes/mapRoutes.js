@@ -308,3 +308,5 @@ router.get('/available-lots/:neighborhoodId', mapController.getAvailableLots);
 router.post('/topology-update', mapController.updateTopology);
 
 module.exports = router;
+// PATCH /map/blocks/:blockId — Editar código de manzana
+router.patch('/blocks/:blockId', mapController.updateBlock);

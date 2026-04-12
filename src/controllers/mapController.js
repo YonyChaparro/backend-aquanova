@@ -174,4 +174,21 @@ const updateTopology = async (req, res) => {
     }
 };
 
-module.exports = { getDigitalTwinData, updateLotStatus, getNeighborhoods, getAvailableLots, updateTopology };
+const updateBlock = async (req, res) => {
+    try {
+        const { blockId } = req.params;
+        const { code } = req.body;
+
+        if (!code || !String(code).trim()) {
+            return res.status(400).json({ ok: false, message: 'El código de manzana no puede estar vacío.' });
+        }
+
+        await MapModel.updateBlock(blockId, { code: String(code).trim() });
+        res.json({ ok: true, message: 'Manzana actualizada exitosamente.', code: String(code).trim() });
+    } catch (error) {
+        console.error('Error actualizando manzana:', error);
+        res.status(500).json({ ok: false, message: 'Error interno al actualizar la manzana.' });
+    }
+};
+
+module.exports = { getDigitalTwinData, updateLotStatus, getNeighborhoods, getAvailableLots, updateTopology, updateBlock };

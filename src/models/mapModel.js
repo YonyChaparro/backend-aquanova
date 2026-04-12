@@ -42,6 +42,24 @@ const updateLot = async (lotId, updateData) => {
     return result;
 };
 
+const updateBlock = async (blockId, updateData) => {
+    const fields = [];
+    const values = [];
+
+    for (const [key, value] of Object.entries(updateData)) {
+        fields.push(`${key} = ?`);
+        values.push(value);
+    }
+
+    if (fields.length === 0) return null;
+
+    const query = `UPDATE blocks SET ${fields.join(', ')} WHERE id = ?`;
+    values.push(blockId);
+
+    const [result] = await db.execute(query, values);
+    return result;
+};
+
 // Traer solo los barrios activos
 const getAllNeighborhoods = async () => {
     const [rows] = await db.execute('SELECT id, name, code FROM neighborhoods WHERE is_active = 1 ORDER BY name ASC');
@@ -126,4 +144,4 @@ const executeTopologyTransaction = async (action, deletedLots, newLots) => {
     }
 };
 
-module.exports = { getBlocksAndLots, updateLot, getAllNeighborhoods, executeTopologyTransaction };
+module.exports = { getBlocksAndLots, updateLot, updateBlock, getAllNeighborhoods, executeTopologyTransaction };
