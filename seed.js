@@ -23,6 +23,7 @@ const SCHEMA_SQL = `
 -- ==========================================================
 
 -- 1. CREACIÓN DEL ENTORNO
+DROP DATABASE IF EXISTS \`${DB_NAME}\`;
 CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
