@@ -14,6 +14,7 @@ const neighborhoodRoutes = require('./src/routes/neighborhoodRoutes');
 const mapRoutes = require('./src/routes/mapRoutes');
 const giveawayRoutes = require('./src/routes/giveawayRoutes');
 const uploadRoutes = require('./src/routes/uploadRoutes');
+const chatRoutes = require('./src/routes/chatRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./src/config/swagger');
 
@@ -22,7 +23,10 @@ const PORT = process.env.PORT || 3000;
 
 // Middlewares
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: ["https://aquavisor.co", "https://api.aquavisor.co"],
+  credentials: true
+}));
 app.use(morgan('dev'));
 app.use(express.json({ limit: '50mb' }));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, { swaggerOptions: { persistAuthorization: true } }));
@@ -38,7 +42,8 @@ app.use('/api/submissions', submissionRoutes); // <--- NUEVO (Prefijo /api/submi
 app.use('/api/neighborhoods', neighborhoodRoutes); // <--- NUEVO (Prefijo /api/neighborhoods)
 app.use('/api/map', mapRoutes);
 app.use('/api/giveaways', giveawayRoutes);
-app.use('/api/upload', uploadRoutes); // Upload de imágenes a Cloudinary
+app.use('/api/upload', uploadRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Ruta base
 app.get('/', (req, res) => {

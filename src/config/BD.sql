@@ -175,20 +175,24 @@ CREATE TABLE `submissions` (
   `form_version_id` CHAR(36) NOT NULL,       -- Vincula a la estructura EXACTA que respondió el usuario
   `user_id` CHAR(36) NULL,                   -- NULL permite encuestas anónimas
   `neighborhood_id` CHAR(36) NOT NULL,       -- Barrio reportado (puede diferir de la publicación si es GPS)
+  `lot_id` CHAR(36) NULL COMMENT 'Lote/predio asociado al censo (opcional)',
   `responses` JSON NOT NULL,                 -- JSON: {"pregunta_1": "respuesta", "pregunta_2": 5}
   `status` ENUM('submitted', 'draft', 'failed') DEFAULT 'submitted',
   `device_info` JSON NULL,                   -- UserAgent, OS, Marca del celular
   `location_lat` DECIMAL(10, 8) NULL,        -- Coordenadas GPS de donde se llenó
   `location_lng` DECIMAL(11, 8) NULL,
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Clave para ediciones posteriores
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
+  INDEX `idx_submissions_lot` (`lot_id`),
   CONSTRAINT `fk_sub_version`
     FOREIGN KEY (`form_version_id`) REFERENCES `form_versions` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fk_sub_user`
     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_sub_neighborhood`
-    FOREIGN KEY (`neighborhood_id`) REFERENCES `neighborhoods` (`id`) ON DELETE RESTRICT
+    FOREIGN KEY (`neighborhood_id`) REFERENCES `neighborhoods` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_sub_lot`
+    FOREIGN KEY (`lot_id`) REFERENCES `lots` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 -- TABLA: ATTACHMENTS
@@ -301,6 +305,9 @@ CREATE TABLE `blocks` (
     FOREIGN KEY (`neighborhood_id`) REFERENCES `neighborhoods` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- NOTA: submissions.lot_id tiene FK a lots, pero lots se define después.
+-- En producción se agregó vía ALTER TABLE tras crear ambas tablas.
+
 -- TABLA: LOTS (Predios)
 CREATE TABLE `lots` (
   `id` CHAR(36) NOT NULL,
@@ -329,4 +336,75 @@ CREATE TABLE `lots` (
   UNIQUE INDEX `unique_lot_block` (`block_id`, `number`),
   CONSTRAINT `fk_lot_block`
     FOREIGN KEY (`block_id`) REFERENCES `blocks` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- ==========================================================
+-- SECCIÓN 8: SISTEMA DE REFERIDOS Y SORTEOS
+-- ==========================================================
+
+-- TABLA: GIVEAWAY_CONFIGS
+-- Configuración de campañas de sorteo/puntos vinculadas a un formulario.
+CREATE TABLE `giveaway_configs` (
+  `id` CHAR(36) NOT NULL,
+  `form_id` CHAR(36) NOT NULL,
+  `points_per_referral` INT DEFAULT 10,
+  `max_points_per_user` INT NULL,            -- NULL = sin límite
+  `is_active` BOOLEAN DEFAULT TRUE,
+  `start_date` DATETIME NULL,
+  `end_date` DATETIME NULL,
+  `metadata` JSON NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `giveaway_form_UNIQUE` (`form_id`),
+  CONSTRAINT `fk_gc_form`
+    FOREIGN KEY (`form_id`) REFERENCES `forms` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- TABLA: USER_REFERRAL_PROFILES
+-- Código de referido único por usuario y puntos acumulados totales.
+CREATE TABLE `user_referral_profiles` (
+  `user_id` CHAR(36) NOT NULL,
+  `referral_code` VARCHAR(20) NOT NULL,
+  `total_accumulated_points` INT DEFAULT 0,
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `referral_code_UNIQUE` (`referral_code`),
+  CONSTRAINT `fk_urp_user`
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- TABLA: SUBMISSION_REFERRALS
+-- Registro de qué submission fue referida por quién.
+-- Soporta atribución diferida: referred_user_id puede quedar NULL si el usuario aún no se registra.
+CREATE TABLE `submission_referrals` (
+  `id` CHAR(36) NOT NULL,
+  `submission_id` CHAR(36) NOT NULL,
+  `referrer_user_id` CHAR(36) NOT NULL,      -- Usuario que compartió el link
+  `referred_user_id` CHAR(36) NULL,          -- NULL hasta que el referido se registre
+  `is_processed` BOOLEAN DEFAULT FALSE,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `submission_ref_UNIQUE` (`submission_id`),
+  CONSTRAINT `fk_sr_submission`
+    FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_sr_referrer`
+    FOREIGN KEY (`referrer_user_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `fk_sr_referred`
+    FOREIGN KEY (`referred_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- TABLA: GIVEAWAY_POINTS_LEDGER
+-- Libro contable de puntos: cada fila es un evento de puntos ganados.
+CREATE TABLE `giveaway_points_ledger` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `user_id` CHAR(36) NOT NULL,
+  `giveaway_id` CHAR(36) NOT NULL,
+  `submission_referral_id` CHAR(36) NOT NULL,
+  `points_earned` INT NOT NULL,
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_gpl_user`
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `fk_gpl_giveaway`
+    FOREIGN KEY (`giveaway_id`) REFERENCES `giveaway_configs` (`id`),
+  CONSTRAINT `fk_gpl_referral`
+    FOREIGN KEY (`submission_referral_id`) REFERENCES `submission_referrals` (`id`)
 ) ENGINE=InnoDB;
