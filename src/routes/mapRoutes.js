@@ -60,6 +60,10 @@ const mapController = require('../controllers/mapController');
  *                                   type: string
  *                                 cadastral_id:
  *                                   type: string
+ *                                 external_id:
+ *                                   type: string
+ *                                   nullable: true
+ *                                   description: UUID del sistema anterior para cruzar con censo legado
  *                                 area_m2:
  *                                   type: number
  *                                 path:
@@ -213,5 +217,80 @@ router.patch('/predios/:lotId', mapController.updateLotStatus);
  *         description: Error interno al obtener los sectores
  */
 router.get('/neighborhoods', mapController.getNeighborhoods);
+
+/**
+ * @swagger
+ * /map/census/{neighborhoodId}:
+ *   get:
+ *     summary: Obtener datos del censo por barrio
+ *     tags: [Map]
+ *     description: |
+ *       Devuelve todos los registros del formulario "Censo de Usuarios" para un barrio.
+ *       El frontend usa este endpoint para calcular el status visual de cada predio
+ *       (sin_informacion / censado / registrado) y mostrar el detalle del censo en el panel lateral.
+ *
+ *       **Lógica de status que aplica el frontend:**
+ *       - `sin_informacion` — no hay registro de censo para ese predio
+ *       - `censado`         — hay registro de censo pero sin código de medidor (`registro`)
+ *       - `registrado`      — hay registro de censo y tiene código de medidor (`registro`)
+ *
+ *       **Nota sobre `lot_id`:**
+ *       Cada registro expone `lot_id` resuelto: si la submission tiene FK directa a un predio
+ *       actual, se usa ese UUID; si no, se usa el UUID legado guardado en el campo
+ *       `predio_id` del formulario. El frontend debe cruzar este campo con el `id` de cada
+ *       predio del gemelo digital.
+ *     parameters:
+ *       - name: neighborhoodId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID único del barrio
+ *     responses:
+ *       200:
+ *         description: Registros del censo obtenidos exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id_respuesta:         { type: string, format: uuid }
+ *                       lot_id:               { type: string, nullable: true, description: "UUID del predio resuelto (directo > external_id > legado)" }
+ *                       lot_id_directo:       { type: string, nullable: true, description: "FK real a lots.id (null si no resuelto)" }
+ *                       lot_id_via_external:  { type: string, nullable: true, description: "lots.id resuelto via external_id mapping (null si no hay mapeo)" }
+ *                       predio_id_legado:     { type: string, nullable: true, description: "UUID original del formulario (sistema anterior)" }
+ *                       fecha_creacion:       { type: string, format: date-time }
+ *                       barrio:               { type: string }
+ *                       manzana:              { type: number }
+ *                       direccion:            { type: string }
+ *                       tipo_punto:           { type: string }
+ *                       clase_uso:            { type: string }
+ *                       estado_predio:        { type: string }
+ *                       unidades_habitacionales: { type: number, nullable: true }
+ *                       numero_habitantes:    { type: number, nullable: true }
+ *                       numero_familias:      { type: number, nullable: true }
+ *                       tiene_agua:           { type: string }
+ *                       horas_agua:           { type: number, nullable: true }
+ *                       registro:             { type: string, nullable: true, description: "Código del medidor de agua" }
+ *                       plano:                { type: string, nullable: true }
+ *                       observaciones:        { type: string, nullable: true }
+ *                       inspector_nombre:     { type: string }
+ *                       atendio_nombre:       { type: string, nullable: true }
+ *                       atendio_rol:          { type: string, nullable: true }
+ *                       foto_fachada:         { type: string, nullable: true }
+ *                       firma_digital:        { type: string, nullable: true }
+ *       500:
+ *         description: Error al obtener datos del censo
+ */
+router.get('/census/:neighborhoodId', mapController.getCensusData);
 
 module.exports = router;

@@ -33,9 +33,11 @@ const getDigitalTwinData = async (req, res) => {
                 blocksMap.get(row.block_id).lots.push({
                     id: row.lot_id,
                     number: row.number,
-                    status: row.status, 
+                    display_id: `${row.block_code}-${row.number}`,
+                    status: row.status,
                     water_meter_code: row.water_meter_code,
                     cadastral_id: row.cadastral_id,
+                    external_id: row.external_id || null,
                     area_m2: parseFloat(row.area_m2),
                     path: row.svg_path,
                     centroid: typeof row.centroid === 'string' ? JSON.parse(row.centroid) : row.centroid
@@ -89,4 +91,15 @@ const getNeighborhoods = async (req, res) => {
     }
 };
 
-module.exports = { getDigitalTwinData, updateLotStatus, getNeighborhoods };
+const getCensusData = async (req, res) => {
+    try {
+        const { neighborhoodId } = req.params;
+        const rows = await MapModel.getCensusByNeighborhood(neighborhoodId);
+        res.json({ ok: true, count: rows.length, data: rows });
+    } catch (error) {
+        console.error('Error obteniendo datos del censo:', error);
+        res.status(500).json({ ok: false, message: 'Error al obtener datos del censo.' });
+    }
+};
+
+module.exports = { getDigitalTwinData, updateLotStatus, getNeighborhoods, getCensusData };

@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 
 const createSubmission = async (req, res) => {
     try {
-        const { form_id, neighborhood_id, responses, location, referral_code } = req.body;
+        const { form_id, neighborhood_id, responses, location, referral_code, lot_id } = req.body;
 
         // user_id puede ser null si el usuario es anónimo
         const userId = req.user ? req.user.uid : null;
@@ -31,6 +31,14 @@ const createSubmission = async (req, res) => {
             });
         }
 
+        // 2b. Validar lot_id si fue enviado
+        if (lot_id) {
+            const [lotCheck] = await pool.query('SELECT id FROM lots WHERE id = ?', [lot_id]);
+            if (!lotCheck.length) {
+                return res.status(400).json({ ok: false, message: 'El predio seleccionado no existe' });
+            }
+        }
+
         const submissionId = uuidv4();
 
         // 3. Si hay referral_code, validar que el referente existe
@@ -47,17 +55,25 @@ const createSubmission = async (req, res) => {
 
             await connection.query(`
                 INSERT INTO submissions
-                (id, form_version_id, user_id, neighborhood_id, responses, location_lat, location_lng, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+                (id, form_version_id, user_id, neighborhood_id, lot_id, responses, location_lat, location_lng, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
             `, [
                 submissionId,
                 versionData.id,
                 userId,
                 neighborhood_id,
+                lot_id || null,
                 JSON.stringify(responses),
                 location ? location.lat : null,
                 location ? location.lng : null
             ]);
+
+            if (lot_id) {
+                await connection.query(
+                    `UPDATE lots SET status = 'censado', updated_at = NOW() WHERE id = ? AND status = 'sin_informacion'`,
+                    [lot_id]
+                );
+            }
 
             if (referrerUserId) {
                 await GiveawayModel.createSubmissionReferral(connection, submissionId, referrerUserId);
@@ -108,7 +124,7 @@ const createOnboarding = async (req, res) => {
     try {
         const {
             form_key, neighborhood_id, responses,
-            referral_code,
+            referral_code, lot_id,
             name, document_number, password, email, phone,
             location
         } = req.body;
@@ -140,6 +156,14 @@ const createOnboarding = async (req, res) => {
             passwordHash = await bcrypt.hash(password, salt);
         }
 
+        // 4b. Validar lot_id si fue enviado
+        if (lot_id) {
+            const [lotCheck] = await pool.query('SELECT id FROM lots WHERE id = ?', [lot_id]);
+            if (!lotCheck.length) {
+                return res.status(400).json({ ok: false, message: 'El predio seleccionado no existe' });
+            }
+        }
+
         // 5. Validar referral_code si fue enviado
         let referrerUserId = null;
         if (referral_code) {
@@ -169,19 +193,28 @@ const createOnboarding = async (req, res) => {
 
             // b. Crear submission ligado al nuevo usuario
             await connection.query(`
-                INSERT INTO submissions (id, form_version_id, user_id, neighborhood_id, responses, location_lat, location_lng, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+                INSERT INTO submissions (id, form_version_id, user_id, neighborhood_id, lot_id, responses, location_lat, location_lng, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
             `, [
                 submissionId,
                 versionData.id,
                 newUserId,
                 neighborhood_id,
+                lot_id || null,
                 JSON.stringify(responses),
                 location ? location.lat : null,
                 location ? location.lng : null
             ]);
 
-            // c. Atribuir referido si el código era válido
+            // c. Marcar el predio como censado si fue seleccionado en el mapa
+            if (lot_id) {
+                await connection.query(
+                    `UPDATE lots SET status = 'censado', updated_at = NOW() WHERE id = ? AND status = 'sin_informacion'`,
+                    [lot_id]
+                );
+            }
+
+            // d. Atribuir referido si el código era válido
             if (referrerUserId) {
                 await GiveawayModel.createSubmissionReferral(connection, submissionId, referrerUserId);
             }

@@ -13,6 +13,7 @@ const submissionRoutes = require('./src/routes/submissionRoutes');
 const neighborhoodRoutes = require('./src/routes/neighborhoodRoutes');
 const mapRoutes = require('./src/routes/mapRoutes');
 const giveawayRoutes = require('./src/routes/giveawayRoutes');
+const uploadRoutes = require('./src/routes/uploadRoutes');
 const swaggerSpecs = require('./src/config/swagger');
 const { seedDatabase } = require('./seed');
 
@@ -106,6 +107,7 @@ app.use('/api/submissions', submissionRoutes); // <--- NUEVO (Prefijo /api/submi
 app.use('/api/neighborhoods', neighborhoodRoutes); // <--- NUEVO (Prefijo /api/neighborhoods)
 app.use('/api/map', mapRoutes);
 app.use('/api/giveaways', giveawayRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Ruta base
 app.get('/', (req, res) => {

@@ -337,6 +337,7 @@ const getFormPublic = async (req, res) => {
                 key: form.key,
                 title: form.title,
                 description: form.description,
+                is_active: Boolean(form.is_active),
                 metadata: typeof form.metadata === 'string'
                     ? JSON.parse(form.metadata)
                     : (form.metadata || null),

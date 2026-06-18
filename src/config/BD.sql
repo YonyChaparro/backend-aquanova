@@ -175,6 +175,7 @@ CREATE TABLE `submissions` (
   `form_version_id` CHAR(36) NOT NULL,       -- Vincula a la estructura EXACTA que respondió el usuario
   `user_id` CHAR(36) NULL,                   -- NULL permite encuestas anónimas
   `neighborhood_id` CHAR(36) NOT NULL,       -- Barrio reportado (puede diferir de la publicación si es GPS)
+  `lot_id` CHAR(36) NULL,                    -- Predio censado (FK a lots, NULL si no hay predio vinculado)
   `responses` JSON NOT NULL,                 -- JSON: {"pregunta_1": "respuesta", "pregunta_2": 5}
   `status` ENUM('submitted', 'draft', 'failed') DEFAULT 'submitted',
   `device_info` JSON NULL,                   -- UserAgent, OS, Marca del celular
@@ -311,7 +312,8 @@ CREATE TABLE `lots` (
   `status` ENUM('sin_informacion', 'censado', 'registrado') DEFAULT 'sin_informacion',
   `water_meter_code` VARCHAR(50) NULL COMMENT 'Código del medidor de agua',
   `cadastral_id` VARCHAR(50) NULL COMMENT 'Ficha Catastral o Matrícula',
-  
+  `external_id` VARCHAR(36) NULL COMMENT 'UUID del sistema anterior (para migración de datos históricos)',
+
   `area_m2` DECIMAL(10, 2) NULL,
   `owner_name` VARCHAR(255) NULL,
   
@@ -324,6 +326,12 @@ CREATE TABLE `lots` (
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `unique_lot_block` (`block_id`, `number`),
+  INDEX `idx_lot_external_id` (`external_id`),
   CONSTRAINT `fk_lot_block`
     FOREIGN KEY (`block_id`) REFERENCES `blocks` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+-- FK diferida: submissions.lot_id → lots (lots se define después de submissions)
+ALTER TABLE `submissions`
+  ADD CONSTRAINT `fk_sub_lot`
+    FOREIGN KEY (`lot_id`) REFERENCES `lots` (`id`) ON DELETE SET NULL;

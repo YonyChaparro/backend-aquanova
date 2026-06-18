@@ -1,0 +1,2514 @@
+{
+  "_instrucciones": [
+    "Para cada entrada con match_type == \"PENDIENTE\" y new_lot_id == null:",
+    "  1. Identifica el predio en el mapa SVG usando csv_manzana y csv_direccion.",
+    "  2. Busca el lot_id correspondiente en la BD (ver lista_lotes_disponibles).",
+    "  3. Pon ese UUID en new_lot_id y cambia match_type a \"manual\".",
+    "Luego ejecuta: node apply-lot-mapping.js"
+  ],
+  "_resumen": {
+    "total_predios_csv": 172,
+    "ya_resueltos": 0,
+    "pendientes_mapeo_manual": 172
+  },
+  "lista_lotes_disponibles": [
+    {
+      "id": "86011ef0-f5a7-42f7-a96c-306bb331a331",
+      "number": "Lote-001",
+      "external_id": null
+    },
+    {
+      "id": "cb3fdcc3-b247-490c-9087-68b9c77a125b",
+      "number": "Lote-002",
+      "external_id": null
+    },
+    {
+      "id": "404d3c61-c952-4528-901e-8cbb1291e60c",
+      "number": "Lote-003",
+      "external_id": null
+    },
+    {
+      "id": "3b41321f-90b2-4a51-a5db-4d5b9810a7ae",
+      "number": "Lote-004",
+      "external_id": null
+    },
+    {
+      "id": "72e0ade8-d835-43a5-a4e8-29ac18b561e0",
+      "number": "Lote-005",
+      "external_id": null
+    },
+    {
+      "id": "5e3a71e3-5178-43b0-b4a9-1f830eacd914",
+      "number": "Lote-006",
+      "external_id": null
+    },
+    {
+      "id": "9028de76-067a-48ce-945d-4e0fae16ca1a",
+      "number": "Lote-007",
+      "external_id": null
+    },
+    {
+      "id": "ac2cf39e-1cea-403e-ba4f-c26888c0881e",
+      "number": "Lote-008",
+      "external_id": null
+    },
+    {
+      "id": "3707e051-a110-4caf-81e4-d2c450e349b3",
+      "number": "Lote-009",
+      "external_id": null
+    },
+    {
+      "id": "612d744f-40c7-45d9-b21f-0a47f3f3917c",
+      "number": "Lote-010",
+      "external_id": null
+    },
+    {
+      "id": "9a1e5e25-4e2c-490f-a64a-73b4ebfc7cf4",
+      "number": "Lote-011",
+      "external_id": null
+    },
+    {
+      "id": "912fd41e-eef7-448b-9aba-95d1375ea8f3",
+      "number": "Lote-012",
+      "external_id": null
+    },
+    {
+      "id": "6128d69c-9d6f-48c7-aecb-f56ef6e16ca8",
+      "number": "Lote-013",
+      "external_id": null
+    },
+    {
+      "id": "1916c459-635c-4320-b9a7-b2beae60cfbc",
+      "number": "Lote-014",
+      "external_id": null
+    },
+    {
+      "id": "09f5aab4-9433-48e1-b34b-e2a77a21b77d",
+      "number": "Lote-015",
+      "external_id": null
+    },
+    {
+      "id": "460d65c1-5acc-4645-9a05-b80dc99125cd",
+      "number": "Lote-016",
+      "external_id": null
+    },
+    {
+      "id": "f6cc3e0b-f6b7-44ab-bd2c-6f5cde6c39ff",
+      "number": "Lote-017",
+      "external_id": null
+    },
+    {
+      "id": "ad38c6e9-a274-4016-8565-f3bae414a779",
+      "number": "Lote-018",
+      "external_id": null
+    },
+    {
+      "id": "78533ca7-a728-4d10-9c03-9f8e5498b950",
+      "number": "Lote-019",
+      "external_id": null
+    },
+    {
+      "id": "7b51a05e-e0f4-4dc7-b186-fadce3c5f55d",
+      "number": "Lote-020",
+      "external_id": null
+    },
+    {
+      "id": "0140e3d0-7828-4e76-b7b8-368c2d8c045d",
+      "number": "Lote-021",
+      "external_id": null
+    },
+    {
+      "id": "556bfdeb-08a7-44c8-940f-1c4a23d88a35",
+      "number": "Lote-022",
+      "external_id": null
+    },
+    {
+      "id": "d1f6eb19-c5a6-475c-a6b7-031f1b94c0a7",
+      "number": "Lote-023",
+      "external_id": null
+    },
+    {
+      "id": "6dc1a0d3-0984-4a10-b15f-6f0c16e392e7",
+      "number": "Lote-024",
+      "external_id": null
+    },
+    {
+      "id": "a37dd013-f9c9-44f9-8a64-79381d7c0f7a",
+      "number": "Lote-025",
+      "external_id": null
+    },
+    {
+      "id": "c3fb7333-56c7-461d-9d0b-1a977ab681f0",
+      "number": "Lote-026",
+      "external_id": null
+    },
+    {
+      "id": "59854f20-3570-446d-9700-68e0ee75a6d2",
+      "number": "Lote-027",
+      "external_id": null
+    },
+    {
+      "id": "1af6b292-d77e-4a13-b599-1730fd569a40",
+      "number": "Lote-028",
+      "external_id": null
+    },
+    {
+      "id": "9d7412cd-9bd4-4b48-9886-2edc8ae7a445",
+      "number": "Lote-029",
+      "external_id": null
+    },
+    {
+      "id": "f458cc9b-300a-4e7f-aa89-3f331f733441",
+      "number": "Lote-030",
+      "external_id": null
+    },
+    {
+      "id": "50253785-a6b3-42ad-82fd-2543431c2e89",
+      "number": "Lote-031",
+      "external_id": null
+    },
+    {
+      "id": "ce6dc6aa-1f54-4df1-80db-f2dd69a934cb",
+      "number": "Lote-032",
+      "external_id": null
+    },
+    {
+      "id": "9b8d3f3a-e63a-46e2-9703-87597cbe1457",
+      "number": "Lote-033",
+      "external_id": null
+    },
+    {
+      "id": "0083d176-998f-4ce9-bb97-40cb8a72cb9a",
+      "number": "Lote-034",
+      "external_id": null
+    },
+    {
+      "id": "49879b1b-b4ee-4711-bbc7-17e8f86445dd",
+      "number": "Lote-035",
+      "external_id": null
+    },
+    {
+      "id": "dd9c6a2d-f7d1-49ce-ad92-11d8195b1c35",
+      "number": "Lote-036",
+      "external_id": null
+    },
+    {
+      "id": "780776fc-48cb-4023-b4d2-a932922103d2",
+      "number": "Lote-037",
+      "external_id": null
+    },
+    {
+      "id": "e55b247a-e4f7-4195-ae10-b26a90636956",
+      "number": "Lote-038",
+      "external_id": null
+    },
+    {
+      "id": "56794069-a5d7-4a27-9c81-fb18296a0dd9",
+      "number": "Lote-039",
+      "external_id": null
+    },
+    {
+      "id": "a751dce7-ac42-4ebc-ba8f-9345f8bae2bd",
+      "number": "Lote-040",
+      "external_id": null
+    },
+    {
+      "id": "85253fd4-958f-4296-bc10-7fccc0518027",
+      "number": "Lote-041",
+      "external_id": null
+    },
+    {
+      "id": "cdd41bb0-aad7-4d5e-acfe-5ddefd931ce9",
+      "number": "Lote-042",
+      "external_id": null
+    },
+    {
+      "id": "aa3439c7-a83d-4ada-b089-ae145f5a9efa",
+      "number": "Lote-043",
+      "external_id": null
+    },
+    {
+      "id": "135fb53a-a4d1-4601-97eb-0855991ffc44",
+      "number": "Lote-044",
+      "external_id": null
+    },
+    {
+      "id": "7f6df250-9c24-488c-ad1f-aae6ffaf75cf",
+      "number": "Lote-045",
+      "external_id": null
+    },
+    {
+      "id": "07176f3a-4133-487d-8178-c6b7e48b853b",
+      "number": "Lote-046",
+      "external_id": null
+    },
+    {
+      "id": "c1a003b7-63b1-49d2-801b-2fc2f4eb2915",
+      "number": "Lote-047",
+      "external_id": null
+    },
+    {
+      "id": "3ad84eb7-ab7a-4b0f-afc7-312ed8081817",
+      "number": "Lote-048",
+      "external_id": null
+    },
+    {
+      "id": "a475b662-452e-4d9f-8bac-2dce7086f825",
+      "number": "Lote-049",
+      "external_id": null
+    },
+    {
+      "id": "dc306d48-54b5-4b7f-895b-ede3f48f5c7f",
+      "number": "Lote-050",
+      "external_id": null
+    },
+    {
+      "id": "32303c5f-3e2c-4788-b42a-3c0f7eee1f85",
+      "number": "Lote-051",
+      "external_id": null
+    },
+    {
+      "id": "c1a60d7f-2590-4ba5-b53d-23ead39cbbf5",
+      "number": "Lote-052",
+      "external_id": null
+    },
+    {
+      "id": "900fb0e4-d9cd-4734-8c39-09895534c4ad",
+      "number": "Lote-053",
+      "external_id": null
+    },
+    {
+      "id": "73b0e960-000a-4543-a5bc-4964c1d885f6",
+      "number": "Lote-054",
+      "external_id": null
+    },
+    {
+      "id": "ca74116f-af18-415d-9a33-da4aa18d0da5",
+      "number": "Lote-055",
+      "external_id": null
+    },
+    {
+      "id": "a516934f-adde-4c40-9f79-44d866e2f837",
+      "number": "Lote-056",
+      "external_id": null
+    },
+    {
+      "id": "0b3e1f9e-a8b7-4a70-b749-b0be42c8b8b2",
+      "number": "Lote-057",
+      "external_id": null
+    },
+    {
+      "id": "5f51f34e-c2a0-4bb5-9096-1437a558fc51",
+      "number": "Lote-058",
+      "external_id": null
+    },
+    {
+      "id": "138c1928-a9ed-4a1e-872a-a1bb5d40577a",
+      "number": "Lote-059",
+      "external_id": null
+    },
+    {
+      "id": "9e60c26b-0957-49d1-b6c1-25a98b3fc4b8",
+      "number": "Lote-060",
+      "external_id": null
+    },
+    {
+      "id": "e75a182a-7594-45dc-9622-aa1bdecf60f6",
+      "number": "Lote-061",
+      "external_id": null
+    },
+    {
+      "id": "4f5ffa29-1a3c-4fef-b819-e1b838ce7270",
+      "number": "Lote-062",
+      "external_id": null
+    },
+    {
+      "id": "568d9655-9ce6-44a0-a530-9055888d1115",
+      "number": "Lote-063",
+      "external_id": null
+    },
+    {
+      "id": "b5404a47-b4bd-4ef4-aeca-679ccd75ef9e",
+      "number": "Lote-064",
+      "external_id": null
+    },
+    {
+      "id": "d5c1ce95-6497-46a7-b206-b12b2ec7a2fa",
+      "number": "Lote-065",
+      "external_id": null
+    },
+    {
+      "id": "5df94300-e8a8-444b-b7e7-7d86428fef46",
+      "number": "Lote-066",
+      "external_id": null
+    },
+    {
+      "id": "e7a404c2-8679-4e71-9072-bdede5a32d21",
+      "number": "Lote-067",
+      "external_id": null
+    },
+    {
+      "id": "d611df07-c7fe-4cd1-a340-145d8a738adf",
+      "number": "Lote-068",
+      "external_id": null
+    },
+    {
+      "id": "3d6b152a-7b87-49df-8a6c-3cc5e7374aa1",
+      "number": "Lote-069",
+      "external_id": null
+    },
+    {
+      "id": "8e782745-330b-40a9-98c4-8785eb134d67",
+      "number": "Lote-070",
+      "external_id": null
+    },
+    {
+      "id": "5b498178-2533-43e9-a922-7ffd03bb3f78",
+      "number": "Lote-071",
+      "external_id": null
+    },
+    {
+      "id": "7e8a5e27-7f72-49b7-a008-b27dcb642c8a",
+      "number": "Lote-072",
+      "external_id": null
+    },
+    {
+      "id": "dfb2ac59-37f9-4e69-9574-5f73edb11422",
+      "number": "Lote-073",
+      "external_id": null
+    },
+    {
+      "id": "cfe2243f-cdc9-4dee-9c24-75c16563321b",
+      "number": "Lote-074",
+      "external_id": null
+    },
+    {
+      "id": "2563f626-c4ee-43c1-8b3e-bb98013dd402",
+      "number": "Lote-075",
+      "external_id": null
+    },
+    {
+      "id": "f78b747a-6a16-43f7-885a-08aac5aebcaa",
+      "number": "Lote-076",
+      "external_id": null
+    },
+    {
+      "id": "09508c5e-ec46-4908-8594-477717b50daf",
+      "number": "Lote-077",
+      "external_id": null
+    },
+    {
+      "id": "f4589639-2e0e-4cf4-a66e-f9b788466ce1",
+      "number": "Lote-078",
+      "external_id": null
+    },
+    {
+      "id": "38529a77-4d40-44cd-ac12-cf5217386661",
+      "number": "Lote-079",
+      "external_id": null
+    },
+    {
+      "id": "a8a8b198-6d3e-40cb-928e-7c6e75c6e576",
+      "number": "Lote-080",
+      "external_id": null
+    },
+    {
+      "id": "fb22dbf4-d4af-4300-9f7a-713297294c3f",
+      "number": "Lote-081",
+      "external_id": null
+    },
+    {
+      "id": "7d36c9e7-dd63-4420-b307-3e4d0282ebd5",
+      "number": "Lote-082",
+      "external_id": null
+    },
+    {
+      "id": "1d79c15d-ce15-4c98-a573-ef462a498f55",
+      "number": "Lote-083",
+      "external_id": null
+    },
+    {
+      "id": "4b239c5b-048a-442e-913b-1178f2b7d041",
+      "number": "Lote-084",
+      "external_id": null
+    },
+    {
+      "id": "a04542f5-76bb-4ca0-a219-880efc158a58",
+      "number": "Lote-085",
+      "external_id": null
+    },
+    {
+      "id": "16932466-3e52-441e-892e-f13061ce3ba9",
+      "number": "Lote-086",
+      "external_id": null
+    },
+    {
+      "id": "afb1d8b1-8415-4fd2-82f2-e601c16812ab",
+      "number": "Lote-087",
+      "external_id": null
+    },
+    {
+      "id": "a32b2da6-cd03-4b4a-95d9-c639aa7fa101",
+      "number": "Lote-088",
+      "external_id": null
+    },
+    {
+      "id": "9a8629f7-4ef2-4be7-b301-95e3afa36d94",
+      "number": "Lote-089",
+      "external_id": null
+    },
+    {
+      "id": "8b1de316-00af-4398-b027-c55346d55d48",
+      "number": "Lote-090",
+      "external_id": null
+    },
+    {
+      "id": "755b451d-ebb4-4956-af5c-6c1b50c0614d",
+      "number": "Lote-091",
+      "external_id": null
+    },
+    {
+      "id": "19155977-76df-4c4b-a8d6-ccfb0c886880",
+      "number": "Lote-092",
+      "external_id": null
+    },
+    {
+      "id": "221e5f1c-5220-40e2-8014-178c131d9f8a",
+      "number": "Lote-093",
+      "external_id": null
+    },
+    {
+      "id": "4b24a34e-fad2-4f6e-b831-00e676dc8798",
+      "number": "Lote-094",
+      "external_id": null
+    },
+    {
+      "id": "dee46ddd-ee1e-4850-9cb1-a65c6f1b4bdf",
+      "number": "Lote-095",
+      "external_id": null
+    },
+    {
+      "id": "82fedfd3-7c6d-4172-b50a-e2032631dd19",
+      "number": "Lote-096",
+      "external_id": null
+    },
+    {
+      "id": "75719772-e0e4-4321-abd1-470672cf560e",
+      "number": "Lote-097",
+      "external_id": null
+    },
+    {
+      "id": "cb1118d0-2f6b-49c0-a728-eff5d23ab357",
+      "number": "Lote-098",
+      "external_id": null
+    },
+    {
+      "id": "c8980e4f-f9e9-4e35-82d9-d81948757a9e",
+      "number": "Lote-099",
+      "external_id": null
+    },
+    {
+      "id": "0243f1cf-5931-47a8-87c0-a0776e65a9e8",
+      "number": "Lote-100",
+      "external_id": null
+    },
+    {
+      "id": "3bca2598-8f8e-441d-acbf-1f0fc3bd92c1",
+      "number": "Lote-101",
+      "external_id": null
+    },
+    {
+      "id": "9211e94e-ea88-4ca8-997f-4c88964d15f3",
+      "number": "Lote-102",
+      "external_id": null
+    },
+    {
+      "id": "cefa6918-541f-4faa-abb8-375ec741ad2e",
+      "number": "Lote-103",
+      "external_id": null
+    },
+    {
+      "id": "6643084a-6da8-47f5-8486-11f266c44eb5",
+      "number": "Lote-104",
+      "external_id": null
+    },
+    {
+      "id": "9a0f9bec-cf02-41b5-9b88-ae98db3dcecd",
+      "number": "Lote-105",
+      "external_id": null
+    },
+    {
+      "id": "0df7eb04-1978-42a1-97b4-e49b33dd29c3",
+      "number": "Lote-106",
+      "external_id": null
+    },
+    {
+      "id": "4b9bc528-210a-40fb-ad5f-d1fdc8d08d13",
+      "number": "Lote-107",
+      "external_id": null
+    },
+    {
+      "id": "42f6d523-dcd2-421a-b9e3-e6e0606560b7",
+      "number": "Lote-108",
+      "external_id": null
+    },
+    {
+      "id": "d71b35fb-2544-41ed-bc03-a17ade79c7d4",
+      "number": "Lote-109",
+      "external_id": null
+    },
+    {
+      "id": "4b8a81e4-7430-4b1d-a382-6b04424190c0",
+      "number": "Lote-110",
+      "external_id": null
+    },
+    {
+      "id": "ce529f75-f04b-45ac-bc26-2c2f0b2c0e90",
+      "number": "Lote-111",
+      "external_id": null
+    },
+    {
+      "id": "3c05cff6-adb3-481f-95b9-a0ce2012a6db",
+      "number": "Lote-112",
+      "external_id": null
+    },
+    {
+      "id": "0c3b65bb-7d5f-4c8a-8a4a-77bd2e58dc28",
+      "number": "Lote-113",
+      "external_id": null
+    },
+    {
+      "id": "3a7b81f8-bd0f-4256-a74c-e5922df447d3",
+      "number": "Lote-114",
+      "external_id": null
+    },
+    {
+      "id": "6eaa8035-9ea6-44be-9755-a371f0a1e836",
+      "number": "Lote-115",
+      "external_id": null
+    },
+    {
+      "id": "ac3228cb-a335-40c2-91cf-5c58811dc7f3",
+      "number": "Lote-116",
+      "external_id": null
+    },
+    {
+      "id": "7322ae09-3f21-4db4-9f1c-9b761750f9fc",
+      "number": "Lote-117",
+      "external_id": null
+    },
+    {
+      "id": "c163d36e-8d41-4059-8d28-8ec94257a34a",
+      "number": "Lote-118",
+      "external_id": null
+    },
+    {
+      "id": "de16a824-b28f-42f5-9765-c006b2d42c2c",
+      "number": "Lote-119",
+      "external_id": null
+    },
+    {
+      "id": "5baff662-1601-4a3d-b149-178c75ffea81",
+      "number": "Lote-120",
+      "external_id": null
+    },
+    {
+      "id": "4380e8b4-36c4-4575-8410-eb727a19bbb9",
+      "number": "Lote-121",
+      "external_id": null
+    },
+    {
+      "id": "a63f9848-e086-4777-bae2-88444d6d6790",
+      "number": "Lote-122",
+      "external_id": null
+    },
+    {
+      "id": "d8581cce-146c-44be-9f07-9bdb5fd422da",
+      "number": "Lote-123",
+      "external_id": null
+    },
+    {
+      "id": "c1562b2a-5549-4395-8a4a-1cc8aa68d6a0",
+      "number": "Lote-124",
+      "external_id": null
+    },
+    {
+      "id": "5e4cf772-45d5-4fb0-8f5c-e5245b71378f",
+      "number": "Lote-125",
+      "external_id": null
+    },
+    {
+      "id": "1483e5c3-9a73-4095-a726-661c2b9b856d",
+      "number": "Lote-126",
+      "external_id": null
+    },
+    {
+      "id": "c9c3305e-479b-404d-8bd6-a92a6be101ff",
+      "number": "Lote-127",
+      "external_id": null
+    },
+    {
+      "id": "ddd75c93-849c-4301-8cf9-7973735e7128",
+      "number": "Lote-128",
+      "external_id": null
+    },
+    {
+      "id": "41f7f22e-ed71-43f7-b14c-159e5172fae1",
+      "number": "Lote-129",
+      "external_id": null
+    },
+    {
+      "id": "d5bf5b8f-9f5c-4a3c-a1e7-337517d5e2ed",
+      "number": "Lote-130",
+      "external_id": null
+    },
+    {
+      "id": "c652517a-a6a8-4b59-ab7e-c8f21d834d66",
+      "number": "Lote-131",
+      "external_id": null
+    },
+    {
+      "id": "e10e6905-1461-4642-9e67-ca4bd4ce4c77",
+      "number": "Lote-132",
+      "external_id": null
+    },
+    {
+      "id": "092699ce-33c9-40f3-a8f6-99cf389c97cb",
+      "number": "Lote-133",
+      "external_id": null
+    },
+    {
+      "id": "314e024d-9f8a-457f-972d-1d4b83ffced5",
+      "number": "Lote-134",
+      "external_id": null
+    },
+    {
+      "id": "c14f51e8-6f68-48b7-b2ff-2bd16697ad0c",
+      "number": "Lote-135",
+      "external_id": null
+    },
+    {
+      "id": "50e0d1d9-c561-498f-89bd-4e32d4b7b764",
+      "number": "Lote-136",
+      "external_id": null
+    },
+    {
+      "id": "8109a5b6-923b-416e-b159-bdb8e5f6a125",
+      "number": "Lote-137",
+      "external_id": null
+    },
+    {
+      "id": "a84b6581-f38b-4453-815f-98b67c7eb017",
+      "number": "Lote-138",
+      "external_id": null
+    },
+    {
+      "id": "cbb0c5e0-a8b7-4b20-9445-e03adaa6a481",
+      "number": "Lote-139",
+      "external_id": null
+    },
+    {
+      "id": "118f7232-812c-416c-b7d5-628bcb665ec8",
+      "number": "Lote-140",
+      "external_id": null
+    },
+    {
+      "id": "cf11d74f-837a-4393-8606-b281ef83210e",
+      "number": "Lote-141",
+      "external_id": null
+    },
+    {
+      "id": "0a0a0466-927d-455b-af94-f7924be05e41",
+      "number": "Lote-142",
+      "external_id": null
+    },
+    {
+      "id": "76562e5d-0499-4de8-80a4-23a4c8e98e44",
+      "number": "Lote-143",
+      "external_id": null
+    },
+    {
+      "id": "2c99d2b2-4ead-4b10-9c28-12d7af370467",
+      "number": "Lote-144",
+      "external_id": null
+    },
+    {
+      "id": "d77b5e09-6eac-4495-9d39-986716f6f623",
+      "number": "Lote-145",
+      "external_id": null
+    },
+    {
+      "id": "fc6988ea-6b33-483d-a40b-f81b09deef8e",
+      "number": "Lote-146",
+      "external_id": null
+    },
+    {
+      "id": "c657c76f-8611-4dba-989b-5761a261e60c",
+      "number": "Lote-147",
+      "external_id": null
+    },
+    {
+      "id": "206fb32e-cab3-4e69-b89a-b094ca9b6b95",
+      "number": "Lote-148",
+      "external_id": null
+    },
+    {
+      "id": "31ad0ac7-31bc-43b8-9247-f5292cf231a5",
+      "number": "Lote-149",
+      "external_id": null
+    },
+    {
+      "id": "5fe49560-2cfa-4aa1-aadd-eb03727a07da",
+      "number": "Lote-150",
+      "external_id": null
+    },
+    {
+      "id": "cd210ab0-9888-4b55-98f9-6c30e86f39c4",
+      "number": "Lote-151",
+      "external_id": null
+    },
+    {
+      "id": "27562362-2d65-4770-b463-812e339b5945",
+      "number": "Lote-152",
+      "external_id": null
+    },
+    {
+      "id": "bb6aed86-3508-4fc4-8b8d-84522c9cf876",
+      "number": "Lote-153",
+      "external_id": null
+    },
+    {
+      "id": "d83d5e65-3660-4e04-9a94-72c35f75352d",
+      "number": "Lote-154",
+      "external_id": null
+    },
+    {
+      "id": "91b9f49d-884c-4d75-8371-fe896f044cad",
+      "number": "Lote-155",
+      "external_id": null
+    },
+    {
+      "id": "39d5ae84-7859-417d-a084-1f04e0907b8b",
+      "number": "Lote-156",
+      "external_id": null
+    },
+    {
+      "id": "f52dd57d-d88f-4a9c-ae29-8fc212c789d8",
+      "number": "Lote-157",
+      "external_id": null
+    },
+    {
+      "id": "0f2476ab-e7f6-454d-a2d1-60fdafa2e9d3",
+      "number": "Lote-158",
+      "external_id": null
+    },
+    {
+      "id": "da8268ab-1c8b-43eb-9bc1-b8f5e81218ef",
+      "number": "Lote-159",
+      "external_id": null
+    },
+    {
+      "id": "14b4e802-0922-4dea-9ec7-9a3d553b74f4",
+      "number": "Lote-160",
+      "external_id": null
+    },
+    {
+      "id": "d22d6d7b-f5e1-4c5d-87ae-3671e8904578",
+      "number": "Lote-161",
+      "external_id": null
+    },
+    {
+      "id": "b4b3b075-ab46-43c9-9068-b088209b8d65",
+      "number": "Lote-162",
+      "external_id": null
+    },
+    {
+      "id": "bf4b15a5-9b87-4b95-96ed-96e51afb13d2",
+      "number": "Lote-163",
+      "external_id": null
+    },
+    {
+      "id": "caae500d-a3d9-4a80-8121-1377f8534e56",
+      "number": "Lote-164",
+      "external_id": null
+    },
+    {
+      "id": "992e0034-4b15-49cc-b419-56ee08667570",
+      "number": "Lote-165",
+      "external_id": null
+    },
+    {
+      "id": "70dde100-3def-422e-988f-55d4c00c8d5c",
+      "number": "Lote-166",
+      "external_id": null
+    },
+    {
+      "id": "ed62e815-baf3-4879-8d82-0a0545780d3e",
+      "number": "Lote-167",
+      "external_id": null
+    },
+    {
+      "id": "4e3eae07-5522-486a-b02a-b9aa2731599e",
+      "number": "Lote-168",
+      "external_id": null
+    },
+    {
+      "id": "b2e4a852-600e-470d-99b4-9efb14fd647d",
+      "number": "Lote-169",
+      "external_id": null
+    },
+    {
+      "id": "e703f4dd-3781-4367-9b6e-f26ede3cf432",
+      "number": "Lote-170",
+      "external_id": null
+    },
+    {
+      "id": "523193e7-33fb-4ed5-9988-7e98581efe39",
+      "number": "Lote-171",
+      "external_id": null
+    },
+    {
+      "id": "94f24c04-22bd-456d-9bd0-1988a19b6477",
+      "number": "Lote-172",
+      "external_id": null
+    },
+    {
+      "id": "8dc87db5-5d6e-4065-bf08-c6457489bfe6",
+      "number": "Lote-173",
+      "external_id": null
+    },
+    {
+      "id": "1a28e780-acd0-4d2b-a287-bd8ef6743582",
+      "number": "Lote-174",
+      "external_id": null
+    },
+    {
+      "id": "f7ea39fe-0889-4ce7-b634-4548b6864c78",
+      "number": "Lote-175",
+      "external_id": null
+    },
+    {
+      "id": "6ab91a1c-b3b0-463b-8e19-752f0c6379bc",
+      "number": "Lote-176",
+      "external_id": null
+    },
+    {
+      "id": "07a6bf7e-fdce-4117-a86a-f46c23fbe122",
+      "number": "Lote-177",
+      "external_id": null
+    },
+    {
+      "id": "8e6d0191-a0f2-4908-ae67-890aaba4ba8b",
+      "number": "Lote-178",
+      "external_id": null
+    },
+    {
+      "id": "03cc9d07-184e-4fc1-8bd8-fd04ba71d58a",
+      "number": "Lote-179",
+      "external_id": null
+    },
+    {
+      "id": "04748cc8-fdba-4e6b-ac2d-20ea45e273c7",
+      "number": "Lote-180",
+      "external_id": null
+    },
+    {
+      "id": "3f9948f4-3786-4a5d-8b1e-1fa1baacccb6",
+      "number": "Lote-181",
+      "external_id": null
+    },
+    {
+      "id": "fa790454-be6e-4b5f-b7c2-b0ca89fd4e9c",
+      "number": "Lote-182",
+      "external_id": null
+    },
+    {
+      "id": "783069ac-32de-411b-889a-b187cfcc9f57",
+      "number": "Lote-183",
+      "external_id": null
+    },
+    {
+      "id": "032c72c5-4255-4e6f-97ef-d179c09be0a9",
+      "number": "Lote-184",
+      "external_id": null
+    },
+    {
+      "id": "cf1c8a9a-91af-4867-a984-32bcc04577f4",
+      "number": "Lote-185",
+      "external_id": null
+    },
+    {
+      "id": "fc38486e-95fe-4fb8-be27-c4f6343091b3",
+      "number": "Lote-186",
+      "external_id": null
+    },
+    {
+      "id": "5bdc430d-84fb-4399-8ff6-55e2ec6cc797",
+      "number": "Lote-187",
+      "external_id": null
+    },
+    {
+      "id": "e874eeb7-445a-4724-8534-d0dac7d1382d",
+      "number": "Lote-188",
+      "external_id": null
+    },
+    {
+      "id": "c9bf7a33-463d-4661-be4b-7a41bd061b8d",
+      "number": "Lote-189",
+      "external_id": null
+    },
+    {
+      "id": "af0dde31-40d8-469f-b4ac-4abe44502c57",
+      "number": "Lote-190",
+      "external_id": null
+    },
+    {
+      "id": "fc11b86d-7459-44d0-8063-110b9c80980a",
+      "number": "Lote-191",
+      "external_id": null
+    },
+    {
+      "id": "dbb40dcb-edc3-44b9-8db6-96385dcb2a94",
+      "number": "Lote-192",
+      "external_id": null
+    },
+    {
+      "id": "418764f2-7cdb-49f0-9011-037ef9d07c70",
+      "number": "Lote-193",
+      "external_id": null
+    },
+    {
+      "id": "8fd1c7e8-dbc0-40b3-aef8-940bdf461567",
+      "number": "Lote-194",
+      "external_id": null
+    },
+    {
+      "id": "c0ebab8a-990e-421e-a134-a333a59adefb",
+      "number": "Lote-195",
+      "external_id": null
+    },
+    {
+      "id": "3fdeefad-f2b1-4711-901a-7fe8f2e5496f",
+      "number": "Lote-196",
+      "external_id": null
+    },
+    {
+      "id": "0eb278e0-c077-4b41-8633-815819e33a3c",
+      "number": "Lote-197",
+      "external_id": null
+    },
+    {
+      "id": "ec24d091-5a21-4adf-ac10-19296a77115d",
+      "number": "Lote-198",
+      "external_id": null
+    },
+    {
+      "id": "6949eb4c-479b-44c5-8595-2b868b16a4d1",
+      "number": "Lote-199",
+      "external_id": null
+    },
+    {
+      "id": "b368a6e1-615d-46a0-9cb1-0b670d7e8b48",
+      "number": "Lote-200",
+      "external_id": null
+    },
+    {
+      "id": "8b126a24-1ab4-4d90-918a-c209c020f6b4",
+      "number": "Lote-201",
+      "external_id": null
+    },
+    {
+      "id": "2fba9a7a-caea-4394-9766-0ebfa39537b0",
+      "number": "Lote-202",
+      "external_id": null
+    },
+    {
+      "id": "273843dc-9aa2-4e1b-afd5-8fd4780c07df",
+      "number": "Lote-203",
+      "external_id": null
+    },
+    {
+      "id": "777cd61b-545d-4c6f-8aa0-60364060d663",
+      "number": "Lote-204",
+      "external_id": null
+    },
+    {
+      "id": "1ffd1f09-a4f2-4e6a-aeb4-b58603170813",
+      "number": "Lote-205",
+      "external_id": null
+    },
+    {
+      "id": "f8ef7047-df30-4a81-a5bc-420456953b40",
+      "number": "Lote-206",
+      "external_id": null
+    },
+    {
+      "id": "fe6db7be-904a-45c1-8327-2fb7feead455",
+      "number": "Lote-207",
+      "external_id": null
+    },
+    {
+      "id": "584562ec-78dc-4833-97b4-74017a32cff8",
+      "number": "Lote-208",
+      "external_id": null
+    },
+    {
+      "id": "69ab19eb-ae2d-4c69-9ff8-da55ce61ef5b",
+      "number": "Lote-209",
+      "external_id": null
+    },
+    {
+      "id": "cd5b0c4f-c1cd-4444-b056-c183c0038c3b",
+      "number": "Lote-210",
+      "external_id": null
+    },
+    {
+      "id": "ecd325b2-3d0f-48e4-a1b9-9876edcd7288",
+      "number": "Lote-211",
+      "external_id": null
+    },
+    {
+      "id": "3af7b8db-392d-47ae-99ff-af25149160e0",
+      "number": "Lote-212",
+      "external_id": null
+    },
+    {
+      "id": "e70c014f-a734-4f66-8283-955b7ea85b8b",
+      "number": "Lote-213",
+      "external_id": null
+    },
+    {
+      "id": "1385512e-09ac-4398-aada-b62050da8940",
+      "number": "Lote-214",
+      "external_id": null
+    },
+    {
+      "id": "fd7a0444-a011-48ce-8c0b-c565e44bf7da",
+      "number": "Lote-215",
+      "external_id": null
+    },
+    {
+      "id": "ab820cc7-3992-4fad-b468-ace077e8737e",
+      "number": "Lote-216",
+      "external_id": null
+    },
+    {
+      "id": "7970f8c9-b4a2-4c4a-b9d2-f3ff344594a1",
+      "number": "Lote-217",
+      "external_id": null
+    },
+    {
+      "id": "764f55c9-cce3-466d-8cc9-f93bb269c8ae",
+      "number": "Lote-218",
+      "external_id": null
+    },
+    {
+      "id": "a227f241-88be-4177-97fd-987820b8fba7",
+      "number": "Lote-219",
+      "external_id": null
+    },
+    {
+      "id": "d7279f3d-2658-4153-8289-01a42869bfb7",
+      "number": "Lote-220",
+      "external_id": null
+    },
+    {
+      "id": "52ceb11d-ab03-46a2-a0c1-328ade16abd5",
+      "number": "Lote-221",
+      "external_id": null
+    },
+    {
+      "id": "08054b06-02ed-4916-8991-8fefbc4c10e5",
+      "number": "Lote-222",
+      "external_id": null
+    },
+    {
+      "id": "da3a099a-3aae-4d43-a15c-562bc9df9727",
+      "number": "Lote-223",
+      "external_id": null
+    },
+    {
+      "id": "16326769-b7b1-4094-afe8-e85d1e3a2421",
+      "number": "Lote-224",
+      "external_id": null
+    }
+  ],
+  "mapeo": {
+    "49fb78c1-c9f8-47e0-80ef-e4f75b541207": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur # 16 - 162",
+      "csv_visitas": 3,
+      "lot_number": null
+    },
+    "d344a8e8-bd1b-4c42-875c-759d80505404": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur # 16 - 0",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "256ff243-9e94-497c-b950-026b280ae7c8": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur # 16 - 22",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "5dfab7c5-2482-445d-85a4-594aafd526f9": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "8",
+      "csv_direccion": "Carrera 16A # 36C - 20",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "21fffb66-75b4-4a4a-a99d-f125e99c3614": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "8",
+      "csv_direccion": "Calle 37 Sur # 16 - 32",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "fdbf123f-4fe9-40de-b12a-c360b54e3045": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur # 16 - 24",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "1e05c1e1-be28-456b-adaa-285aeb523565": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur # 16 - 32",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "2a87f06b-aa69-4ad7-a08d-96ecc913efdb": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16 - 105",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "a4414cca-7245-4177-873f-eca3fffa9f55": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "8",
+      "csv_direccion": "Calle 37 Sur # 16 - 28",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "3c266839-dc9c-4601-9fdd-f3a6e373a51c": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur # 16 - 28",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "692449f4-c07b-44cb-a46b-e129d853742d": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "8",
+      "csv_direccion": "Calle 37 Sur # 16 - 04",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "eafa60a6-3b10-493c-8ba7-82a7d77926d9": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "8",
+      "csv_direccion": "Calle 16 Sur # 16 - 24",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "c21d06a6-cc7b-4aea-b971-235facd7648c": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur 16",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "c56bd145-2933-4ed2-bec6-a5595400eb89": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "7",
+      "csv_direccion": "Carrera 16C 36C 15 Sur",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "f42a6ccc-5846-42cd-bcde-20b6e8ec4464": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "8",
+      "csv_direccion": "Carrera 16 # 37 Sur - 55",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "258a7768-7c06-4424-9b80-af4b80f37fb7": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "8",
+      "csv_direccion": "Calle 37 Sur # 16 - 8",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "8966fe45-6cbf-4be3-a894-84c4a8103c17": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur # 16 - 56",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "f6994cdb-badc-4fb2-909b-cc9a2d51dee1": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "9",
+      "csv_direccion": "Calle 36C 16A 12 Sur",
+      "csv_visitas": 4,
+      "lot_number": null
+    },
+    "6b33df71-25ce-4eb2-afa6-9f896bfd07b4": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur # 16 - 60",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "1eb1a71f-ebfa-4c77-81ef-42b44543c89a": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "8",
+      "csv_direccion": "Calle 36 Sur # 16C - 13",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "a4aabb4f-6bb4-48d3-a51a-9c8d61ce1224": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "9",
+      "csv_direccion": "Calle 36C 16A 16 Sur",
+      "csv_visitas": 3,
+      "lot_number": null
+    },
+    "a2b9e355-bd8f-4db1-b941-ac3b93a54228": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "9",
+      "csv_direccion": "Calle 36C 16A 28 Sur",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "bf629e39-2c64-424f-90d2-251aa1ef1a8c": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur # 16 - 66",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "a9e72522-7b57-49c1-82b5-bde3b5a4ea67": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "8",
+      "csv_direccion": "Calle 36C Sur # 16 - 25",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "8febeb7f-c688-448b-841e-85253624fcfc": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur 16 entré nomenclatura 68 y 66",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "aec86973-23c6-453a-b873-0af36768ef6a": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "6",
+      "csv_direccion": "Carrera 16C # 36C Sur - 04",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "81748a2a-e4ba-4ab1-94d2-1bd743fc74fb": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur # 16 - 68",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "5432bc52-03ea-4b04-a7ec-505aaab6ef13": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "8",
+      "csv_direccion": "Calle 36C Sur # 16 - 17",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "5782470f-afe5-4331-a734-ec8cc71b2b03": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "7",
+      "csv_direccion": "Carrera 16A # 36C Sur - 21",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "aa92b7eb-f18e-45ca-b846-ca61c132d71a": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "6",
+      "csv_direccion": "Carrera 16C # 36C - 12",
+      "csv_visitas": 4,
+      "lot_number": null
+    },
+    "8873e345-32a8-4382-baf4-04b07081a1f7": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "7",
+      "csv_direccion": "Lote baldío",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "deeea8e1-20bc-41c7-a8a2-6b71870f0f3b": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "6",
+      "csv_direccion": "Carrera 16 # 36C Sur - 06",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "5bdbfb11-19b3-498f-88b1-d1d6645b14f1": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "7",
+      "csv_direccion": "Carrera 16A 36C 26 Sur - Casa 2",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "7d1e5985-5cd7-4398-8b8c-0b44c89c3d93": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur 16",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "e3100126-ab79-4603-99d8-9b72361c42a6": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "7",
+      "csv_direccion": "Carrera 16A # 36C Sur -17",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "a8d9c170-0ec1-44c7-a07c-4a812e1d028d": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur # 16 - 80",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "2053036c-427c-410e-87a9-7cb44b084456": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "8",
+      "csv_direccion": "Calle 36C Sur # 16 - 13",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "03ae8722-92e0-4406-a6de-80f22d17cb24": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "7",
+      "csv_direccion": "Carrera 16A 36C 09 Sur",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "df35844e-673f-4ae4-b4c3-e12eb5eec5d8": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "8",
+      "csv_direccion": "Calle 36 Sur # 16C - 05",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "b8ae592b-55c5-4b34-b027-d827765517c2": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur # 16 - 88",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "4259ccae-3148-4d08-b5ec-1d4b1139a707": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "6",
+      "csv_direccion": "Carrera 16C # 36C - 20",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "ba816db5-90f5-4217-a86e-261e6779e6d4": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "8",
+      "csv_direccion": "Calle 36C Sur # 16 - 01",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "ee846fff-8a21-43c8-b1d0-96032046329a": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "7",
+      "csv_direccion": "Carrera 16A 36C Sur 23 - Casa 1",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "9745b2b8-b2bb-4399-9631-bff24de6e007": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur 16",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "092d7359-67b6-4ad1-af46-efeef895ea95": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "6",
+      "csv_direccion": "Carrera 16B # 36C Sur - 84",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "781fb925-406b-4fc7-8a9c-cfd8fade9855": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "7",
+      "csv_direccion": "Carrera 16A # 36C Sur - 11",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "c63c2680-97cb-4d08-a34b-e9eef4ce31c3": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur # 16 - 102",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "3a8d2fe3-4ff7-4430-ae5f-4a9bab34576c": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur # 16 - 100",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "1e96b5bb-8812-4c65-83ad-8faa61bea943": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur 16",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "ed49c2e9-bb0f-4802-9020-640c24d1de33": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "7",
+      "csv_direccion": "Carrera 16B # 36C Sur - 30",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "bc8f22d6-5374-475b-9d69-223fa25f8cf2": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "6",
+      "csv_direccion": "Carrera 37 Sur # 16C - ?",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "1f7a8b52-f2e1-4a63-9fcc-c14c64fc4a15": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "5",
+      "csv_direccion": null,
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "16cc14e2-edfe-4a64-8d80-79d1029fe282": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "7",
+      "csv_direccion": "Carrera 16B # 36C Sur",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "ee0a9580-7099-4a01-89e6-b64bca489c04": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 38 Sur # 16D - 04",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "a7cf022e-d0bd-47b7-8f0f-390c4dd7b4f4": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "6",
+      "csv_direccion": "Carrera 16B - # 36C - ?",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "6aec63b7-0701-4cbe-b67c-4a8392857259": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 38 Sur # 16D - 12",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "a7babb58-e27e-41dd-94a0-6035120fb4a6": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 37 Sur # 16C - 11",
+      "csv_visitas": 4,
+      "lot_number": null
+    },
+    "d457978e-c7ff-4f7c-9434-42fc1a9f8b57": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "9",
+      "csv_direccion": "Calle 36C Sur # 16B-24",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "13ff2a98-007c-484c-92a2-a658f89f6e8e": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "6",
+      "csv_direccion": "Carrera 16B # 36C Sur - 21",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "fc8edaf2-ea41-4d37-953c-306931536dd7": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "6",
+      "csv_direccion": "Carrera 16B # 36C - 09",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "b36f3d7d-99c6-4b03-925a-82a22156322c": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 38 Sur # 16D - 16",
+      "csv_visitas": 3,
+      "lot_number": null
+    },
+    "87c213ed-7674-4a92-87f4-53befb72c05a": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 37 # 16D - 21",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "d95d42a6-f459-4298-b878-d319f8437fa3": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "6",
+      "csv_direccion": "Carrera 16B # 36C Sur - 01",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "b37066fc-b386-4d07-9af8-f9a63938008f": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 37 # 16D - 33",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "c054df74-621d-4d93-9443-c3287c2470f8": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "5",
+      "csv_direccion": "Carrera 16C # 36C-07",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "d084a7c7-d611-415b-b525-53ee5c7859a3": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 38 Sur # 16D - 20",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "ec4b033e-e511-4733-a04a-134bdd4c2aad": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 36 Sur # 16 - 85",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "a9184110-c7cf-4866-a99d-ec219cce5676": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "5",
+      "csv_direccion": null,
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "ce373656-1772-4708-b9af-dd55313889da": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "5",
+      "csv_direccion": null,
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "04fa2afe-86ce-4479-a4f0-c41029088854": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 38 Sur # 16D - 24",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "15239890-ac28-4ede-984d-131c61482718": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur # 16-88",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "3e6b473d-6047-4597-bc12-7896ff7cc41d": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 38 Sur # 16D - 32",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "ef86e3a7-a7c3-4963-8878-21bfc26b1f6e": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 37 Sur Carrera 16E 65",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "4a5daf88-a13f-4ea1-809e-7e144ae09d3d": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 38 Sur # 16D - 36",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "38d84806-e524-4a66-82ad-dadc4d097880": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 37 Sur # 16E - 57",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "09cdb0a0-0ffd-4414-aa8b-37e754bb2b8e": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 38 Sur # 16D - 40",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "649aaf7b-6254-4bbe-9600-ddebd8829e4d": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "8",
+      "csv_direccion": "Calle 37 Sur # 16 - 08",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "67b44fbb-1c38-47cb-8473-738209e19652": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16-47",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "b718a6a4-dd8b-4e74-ac51-cb1e7c27ab63": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16 - 43",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "9bd65cd6-983f-4ab4-a9b9-0c917372fb66": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 37 Sur Carrera 16E 49",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "444b1f0b-2303-491c-b62d-8f0eadc46367": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 38 Sur # 16D - 48",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "6bbb4d03-f6ee-4c1c-8e31-e22c52369ef5": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16-31",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "12d567c3-5d3d-4c58-a8ad-794e9aa8f48f": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 38 Sur # 16 - 52",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "5faa62fd-5308-4a1a-aaf1-3cabef05dece": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 38 Sur # 16E - 12",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "ee8a78ad-455b-496a-a26e-f4360091442b": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16 - 13",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "71ee6162-7ed4-4dae-9251-be7ee83bdf2c": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 38B Sur # 16D - 52",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "8d6d4f8e-e970-4603-828d-564ae4b179aa": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16 - 01",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "0f78f324-9edb-4917-9e12-e6495c5e114e": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16-21",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "c18f4e0f-e86b-44e0-be80-3b7180597ce9": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 37 Sur # 16A - 37",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "1fb59f21-d464-49f9-9d2f-5f7c9933d673": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16 - 05",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "1e487e14-4043-4326-ab13-2f688973fcbf": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 38 # 16D - 64",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "448547f9-67ce-4af6-bf5f-d0516fab5c8e": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Carrera 38 Sur # 16 - 13",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "d4592322-361f-44f9-9dea-d76396b4cdf7": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 37 Sur # 16A - 31",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "bd72b243-4df1-4ce4-bb6d-782ad5e5fd88": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 38 Sur # 16D - 56",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "936ea764-da6f-4849-8780-e24ffb340a61": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16-15",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "cfc292ac-27bd-4618-a0e1-b23e9ccc24f0": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 37 Sur # 16F - 31",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "17f02e6f-c93a-44d3-adc3-4daf54c5dead": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": null,
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "05be296e-3532-4222-aad2-24bbb18aeb1b": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 37 Sur # 16 - 53",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "4b7a8cea-94b8-4e7f-813d-09dcfff2aa5c": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16-35",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "d3511392-9027-4e38-8590-f0800c143465": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 37 Sur # 16A - 19",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "d8f652d1-4886-4164-a0e7-e71c96ca390e": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16 - 23",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "d5151450-1dc0-4e2a-a081-7285381de49b": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 37 Sur Carrera 16E 29",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "4c540745-e93b-4c79-a1f1-8751f166ee75": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 37 S # 16E - 17",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "38d50df2-642e-4b6e-a6b5-f5744560cf36": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16-75",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "ace1507e-731b-49a6-8d5d-7d03756b2662": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 37 Sur Carrera 16E 25",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "52548c7f-495b-461a-8759-60468478bb21": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16 - 39",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "b7bcec23-c142-4bd8-a011-9011f24d8602": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 37 Sur # 16 - 41",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "fc658987-c8f1-4918-a847-3f0908e83e39": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 37 Sur Carrera 16E 13",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "e418a825-a47a-4075-bc34-5527cf7e325c": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 37 Sur # 16B - 27",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "2a54824a-90fc-4b07-a631-46c801775808": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16 - 49",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "d2bbc111-9b28-4ed4-9f09-463111b8a7a4": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 37 Sur # 16B - 31",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "75f5066f-d104-4cfd-bd89-82409dba13cb": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16 - 59",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "18735232-3a76-43cb-a380-a5c08452ffc1": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 37 Sur # 16D - 63",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "272f2412-aead-46cb-b4a5-d41f4f54bb28": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 37 Sur # 16A - 39",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "338b591d-ed61-4b5e-9004-60a7e4f7d83a": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16 - 67",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "f1da00e9-bdd9-408e-80de-b2688728d0dc": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 37 Sur Carrera 16E 09",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "bf69597d-df9e-42c1-ae3b-0098216cdc9d": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 37 Sur # 16D - 57",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "952cb8c1-553a-4aad-b97e-8907b361854f": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 37 Sur 17",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "0e37ed58-f5aa-4b46-a203-d80182d17c8b": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16 - 81",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "1957f97a-a080-4142-9c79-986cc555c2a2": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 37 Sur 16 17/43",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "d7be8099-a3a1-400a-b87b-8811bd691d1e": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 76-87",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "755336ca-404a-4516-91fa-bb00448c80e2": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16 - 83",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "ad11cc6e-0861-4c86-b87e-debe091f370c": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 37 Sur # 16 - 13",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "23a1ebaf-61b5-465a-afd4-8f781fdab024": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16 - 91",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "83cc728c-b5ae-4fce-9c40-d1703f3b3a3e": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16 - 97",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "9fa1f9f0-82cd-47cc-bf7e-038dceed499f": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 37 Sur # 16 - 09",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "cdb8dbbb-321d-4535-a8be-cacc138618fd": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16D - 03",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "97ad8fb9-dfeb-4a89-8e56-0af0e6e12979": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16D-15",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "8e39fb4b-ccf6-4382-a186-87a3699f1d33": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 37 Sur # 16 - 27",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "26e30246-305b-47cd-bdcf-91401f9ec3bf": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16D - 07",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "7aa91d86-c958-4ab5-ba1b-7cf1d7987525": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 38 Sur # 16F - 16",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "5e9d8791-68ac-49e5-8a3a-8f1d48630766": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 38 Sur # 16F - 16",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "a24f2de2-209f-4763-a7d6-bdb32b730c91": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 37 Sur # 16D - 27",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "99319eef-ded0-481a-8047-89260e61ca60": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16D - 11",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "741ace3d-a439-4f72-a549-742ee6a63648": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16D - 23",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "46e097fb-4e85-4487-8b00-05d2b8e65c1c": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 37 Sur # 16 - 23",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "f46a4a6f-4506-41dc-88d0-589606f1eabd": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16D-27",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "e1996d26-cf57-4524-92ca-41efab8aea0c": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16D - 31",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "bc7c9817-c45a-45ea-b3ed-0e310d55b1e2": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "4",
+      "csv_direccion": "Calle 37 Sur 16 19/21",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "eaeecbc8-b88e-4c36-8573-6c679f906320": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16D - 43",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "f6fb12fa-faac-4126-9502-a3337c55093a": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16D - 53",
+      "csv_visitas": 3,
+      "lot_number": null
+    },
+    "9937d4e7-41c3-4a9d-9797-8cd034dafb90": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "3",
+      "csv_direccion": "Calle 38 Sur # 16D - 16",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "90ae7a10-cde7-40a5-be55-6f5756f7ce1c": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16D - 57",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "5165d5c1-a429-4106-b5f8-5e1ba5a3a8d1": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16D - 59",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "32922b39-f11f-4d37-8039-cf11ae3da1cd": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16D - 63",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "25c1d37c-14ed-4651-aa14-68a7e0d93b43": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "[\"1\",\"8\"]",
+      "csv_direccion": "Ajhah",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "d0c250ea-df3a-4aa2-b115-244b67a4be63": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "[\"4\"]",
+      "csv_direccion": "Esto es una prueba",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "d81b0d71-41af-4825-8be4-edb45688bd63": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 38 Sur # 16F - 28",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "ad3cf6f8-cd6e-4533-9bef-7be07a15ec93": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": null,
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "fa0ca0c2-3ee3-4796-b33f-a5b75c26e33d": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16D - 39",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "c6118b72-e201-4599-bbad-6b7edcaa0170": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16D - 63",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "84e1995f-3f64-4d4f-872b-aa790e5bf5ca": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 33 Sur # 16F - 36",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "099001c5-7bfa-460f-8c9e-d03d65d34c51": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16D - 71",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "031656c2-0325-467d-8308-5bc89190541a": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 38 Sur # 16F - 40",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "af453b07-0bbe-44f8-bd68-7ef45dce7968": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16D - 75",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "8d958518-efdd-463b-bf4d-41af37c3cf70": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16F - 03",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "8c88df38-4be0-43e6-a3dd-efaab001be55": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 # 16 43 Sur",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "8b1f84b3-2a82-4e8c-8a0a-482c1b9d58d4": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16E - 13",
+      "csv_visitas": 3,
+      "lot_number": null
+    },
+    "f69b1a74-7087-4f63-95e8-27d9166903bd": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 38 # 16F - 44",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "54e3da77-1078-40f1-9c55-a05c7c18167a": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 38 # 16E - 56",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "3c1359bf-3f01-473a-9261-4ed5a2214c59": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 38 Sur # 16E - 64",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "c15ee1de-02c5-4b83-874e-be16d0c18633": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16F - 15",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "02189d67-90eb-407b-b054-31fbe6cced9d": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "2",
+      "csv_direccion": "Calle 38 Sur # 16F - 72",
+      "csv_visitas": 2,
+      "lot_number": null
+    },
+    "14c24878-08a3-4a91-af11-7a864d161da1": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16F - 19",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "df55814d-6da6-4ca9-8d79-70aced657989": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16F - 23",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "260d12de-fa33-4003-8431-9c38a10d1db3": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16E - 41",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "eb925de3-423a-47a1-b075-8560b8c45c25": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": null,
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "e2038700-d858-4846-8ddc-d949865bf395": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16F - 43",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "cbd5e15e-da58-405e-9246-aab6f4b615dd": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "8bdefa54-c849-48cc-8976-04c3bd5c70dc": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur",
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "a150c6a9-6e39-4e68-bd8a-fa3fc65b832c": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": null,
+      "csv_visitas": 1,
+      "lot_number": null
+    },
+    "77b8b566-426a-4573-bd95-f9c20267fc46": {
+      "new_lot_id": null,
+      "match_type": "PENDIENTE",
+      "csv_manzana": "1",
+      "csv_direccion": "Calle 38 Sur # 16F - 71",
+      "csv_visitas": 1,
+      "lot_number": null
+    }
+  }
+}

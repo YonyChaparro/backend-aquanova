@@ -97,37 +97,57 @@ const main = async () => {
         const rows = parseCSV(csvContent);
         console.log(`📊 Filas en CSV: ${rows.length}`);
 
-        // 4. Validar qué lot UUIDs del CSV existen en la BD
+        // 4. Resolver lot_id para cada UUID del CSV: por id directo o por external_id
         const lotUUIDs = [...new Set(rows.map(r => r['Selecciona el predio']).filter(Boolean))];
-        const validLotIds = new Set();
+        // Map<oldUUID, newLotId> — resuelve cada UUID del CSV al id del lote en la BD actual
+        const lotIdResolution = new Map();
+        let directCount = 0;
+        let externalCount = 0;
+
         if (lotUUIDs.length) {
             const placeholders = lotUUIDs.map(() => '?').join(',');
-            const [existingLots] = await connection.query(
+
+            // Coincidencias directas: el UUID del CSV ES el id del lote en BD
+            const [lotsById] = await connection.query(
                 `SELECT id FROM lots WHERE id IN (${placeholders})`, lotUUIDs
             );
-            existingLots.forEach(l => validLotIds.add(l.id));
+            lotsById.forEach(l => { lotIdResolution.set(l.id, l.id); directCount++; });
+
+            // Coincidencias por external_id: el UUID del CSV está mapeado en lots.external_id
+            const [lotsByExtId] = await connection.query(
+                `SELECT id, external_id FROM lots WHERE external_id IN (${placeholders})`, lotUUIDs
+            );
+            lotsByExtId.forEach(l => {
+                if (l.external_id && !lotIdResolution.has(l.external_id)) {
+                    lotIdResolution.set(l.external_id, l.id);
+                    externalCount++;
+                }
+            });
         }
-        console.log(`🗺️  Lotes válidos en BD: ${validLotIds.size} de ${lotUUIDs.length} UUIDs del CSV`);
-        if (validLotIds.size === 0) {
-            console.log('   ⚠️  Los UUIDs de lotes del CSV no coinciden con los actuales en BD.');
-            console.log('   ℹ️  Se importarán las submissions con lot_id = NULL y el UUID original quedará en responses.predio_id');
+
+        console.log(`🗺️  Lotes resueltos: ${lotIdResolution.size} de ${lotUUIDs.length} UUIDs del CSV`);
+        console.log(`   • Por coincidencia directa (id):    ${directCount}`);
+        console.log(`   • Por external_id mapeado:          ${externalCount}`);
+        if (lotIdResolution.size === 0) {
+            console.log('   ⚠️  Ningún UUID del CSV coincide con la BD. Ejecuta apply-lot-mapping.js primero.');
+            console.log('   ℹ️  Las submissions se importarán con lot_id = NULL (UUID legado en responses.predio_id).');
         }
 
         // 5. Procesar cada fila
-        let inserted = 0, skipped = 0, errors = 0;
+        let inserted = 0, updated = 0, errors = 0;
 
         for (const row of rows) {
             const submissionId = row['ID Respuesta'];
             if (!submissionId) continue;
 
-            // Idempotencia: saltar si ya existe
+            // Upsert: si ya existe, borrarlo (cascada limpia attachments y data_consents)
             const [existing] = await connection.query(
                 'SELECT id FROM submissions WHERE id = ?', [submissionId]
             );
-            if (existing.length > 0) { skipped++; continue; }
+            const isUpdate = existing.length > 0;
 
             const lotIdRaw = row['Selecciona el predio'];
-            const lotId = validLotIds.has(lotIdRaw) ? lotIdRaw : null;
+            const lotId = lotIdResolution.get(lotIdRaw) || null;
             const lat = orNullNum(row['Latitud']);
             const lng = orNullNum(row['Longitud']);
             const createdAt = row['Fecha Creación'] || null;
@@ -201,6 +221,11 @@ const main = async () => {
             try {
                 await connection.beginTransaction();
 
+                // Si ya existía, eliminar en cascada (limpia attachments y data_consents)
+                if (isUpdate) {
+                    await connection.query('DELETE FROM submissions WHERE id = ?', [submissionId]);
+                }
+
                 // Insertar submission
                 await connection.query(
                     `INSERT INTO submissions
@@ -256,7 +281,7 @@ const main = async () => {
                 }
 
                 await connection.commit();
-                inserted++;
+                if (isUpdate) { updated++; } else { inserted++; }
             } catch (e) {
                 await connection.rollback();
                 console.error(`❌ Error en submission ${submissionId}:`, e.message);
@@ -265,8 +290,8 @@ const main = async () => {
         }
 
         console.log('\n=============================================');
-        console.log(`✅ Submissions insertadas: ${inserted}`);
-        console.log(`⏭️  Ya existían (skipped): ${skipped}`);
+        console.log(`✅ Submissions insertadas (nuevas): ${inserted}`);
+        console.log(`🔄 Submissions reescritas (upsert): ${updated}`);
         console.log(`❌ Errores: ${errors}`);
         console.log('=============================================\n');
 

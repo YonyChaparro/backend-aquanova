@@ -171,6 +171,7 @@ CREATE TABLE IF NOT EXISTS \`submissions\` (
   \`form_version_id\` CHAR(36) NOT NULL,
   \`user_id\` CHAR(36) NULL,
   \`neighborhood_id\` CHAR(36) NOT NULL,
+  \`lot_id\` CHAR(36) NULL,
   \`responses\` JSON NOT NULL,
   \`status\` ENUM('submitted', 'draft', 'failed') DEFAULT 'submitted',
   \`device_info\` JSON NULL,
@@ -412,6 +413,37 @@ const seedDatabase = async () => {
             }
         }
 
+        // 3d. Migración segura: agregar lot_id a submissions si no existía
+        try {
+            await connection.query(
+                'ALTER TABLE `submissions` ADD COLUMN `lot_id` CHAR(36) NULL AFTER `neighborhood_id`'
+            );
+            console.log('✅ Columna lot_id agregada a submissions.');
+        } catch (e) {
+            if (e.errno === 1060) {
+                console.log('⚠️  Columna lot_id ya existe en submissions. Continuando...');
+            } else {
+                throw e;
+            }
+        }
+
+        // 3e. Migración segura: agregar external_id a lots (UUID del sistema anterior)
+        try {
+            await connection.query(
+                'ALTER TABLE `lots` ADD COLUMN `external_id` VARCHAR(36) NULL COMMENT \'UUID del sistema anterior\' AFTER `cadastral_id`'
+            );
+            await connection.query(
+                'ALTER TABLE `lots` ADD INDEX `idx_lot_external_id` (`external_id`)'
+            );
+            console.log('✅ Columna external_id agregada a lots.');
+        } catch (e) {
+            if (e.errno === 1060 || e.errno === 1061) {
+                console.log('⚠️  Columna/índice external_id ya existe en lots. Continuando...');
+            } else {
+                throw e;
+            }
+        }
+
         // ---------------------------------------------------------
         // 4. SEED BARRIOS (Ajustado al nuevo mapa)
         // ---------------------------------------------------------
@@ -436,6 +468,28 @@ const seedDatabase = async () => {
             `;
             await connection.query(queryNeighborhood, [neighborhoodId, neighborhoodName, neighborhoodCode]);
             console.log(`✅ Barrio creado exitosamente: ${neighborhoodName} (ID: ${neighborhoodId})`);
+        }
+
+        // ---------------------------------------------------------
+        // 4b. SEED BARRIO LAS MERCEDES (para censo catastral)
+        // ---------------------------------------------------------
+        console.log('\n🏘️  Procesando Barrio Las Mercedes...');
+        let lasMercedesId;
+        const lasMercedesCode = 'SMCN-001';
+
+        const [existingLM] = await connection.query(
+            'SELECT id FROM neighborhoods WHERE code = ?', [lasMercedesCode]
+        );
+        if (existingLM.length > 0) {
+            lasMercedesId = existingLM[0].id;
+            console.log(`⚠️  El barrio Las Mercedes ya existe. ID: ${lasMercedesId}`);
+        } else {
+            lasMercedesId = uuidv4();
+            await connection.query(
+                'INSERT INTO neighborhoods (id, name, code, is_active, created_at) VALUES (?, ?, ?, 1, NOW())',
+                [lasMercedesId, 'Las Mercedes', lasMercedesCode]
+            );
+            console.log(`✅ Barrio creado: Las Mercedes (ID: ${lasMercedesId})`);
         }
 
         // ---------------------------------------------------------
@@ -998,6 +1052,56 @@ const seedDatabase = async () => {
                     { key: 'sugerencias',        type: 'textarea', label: 'Sugerencias para mejorar el acceso digital en el barrio', required: false },
                 ]
             },
+            {
+                key: 'censo-masivo-catastro-v2',
+                title: 'Censo de Usuarios',
+                description: 'Censo masivo catastral del servicio de acueducto por predio.',
+                schema: [
+                    { key: 'predio_id',                   type: 'lot_selector', label: 'Selecciona el predio',                      required: false },
+                    { key: 'recolectado_por',              type: 'text',         label: 'Recolectado por',                           required: false },
+                    { key: 'persona_encuestada',           type: 'text',         label: '¿La persona encuestada es?',                required: false },
+                    { key: 'fecha',                        type: 'date',         label: 'Fecha de visita',                           required: true  },
+                    { key: 'municipio',                    type: 'text',         label: 'Municipio',                                 required: true  },
+                    { key: 'zona',                         type: 'number',       label: 'Zona',                                      required: false },
+                    { key: 'manzana',                      type: 'number',       label: 'Manzana',                                   required: true,  min: 1 },
+                    { key: 'direccion',                    type: 'text',         label: 'Dirección 1',                               required: true  },
+                    { key: 'direccion_2',                  type: 'text',         label: 'Dirección 2',                               required: false },
+                    { key: 'plano',                        type: 'text',         label: 'Plano',                                     required: false },
+                    { key: 'id_usuario',                   type: 'number',       label: 'ID Usuario',                                required: false },
+                    { key: 'cuenta_contrato',              type: 'text',         label: 'Cuenta Contrato',                           required: false },
+                    { key: 'telefono',                     type: 'phone',        label: 'Teléfono',                                  required: false },
+                    { key: 'email',                        type: 'email',        label: 'Email',                                     required: false },
+                    { key: 'nombre_atiende',               type: 'text',         label: 'Nombre de quien atendió la visita',         required: false },
+                    { key: 'rol_atiende',                  type: 'select',       label: 'Rol de quien atendió',                      required: false, options: ['Propietario', 'Arrendatario', 'Familiar', 'Empleado', 'Otro'] },
+                    { key: 'marca_medidor',                type: 'text',         label: 'Marca del medidor',                         required: false },
+                    { key: 'tipo_medidor',                 type: 'text',         label: 'Tipo de medidor',                           required: false },
+                    { key: 'no_serie_medidor',             type: 'text',         label: 'No. de serie del medidor',                  required: false },
+                    { key: 'lectura_medidor',              type: 'number',       label: 'Lectura del medidor',                       required: false, min: 0 },
+                    { key: 'diametro_medidor',             type: 'text',         label: 'Diámetro del medidor',                      required: false },
+                    { key: 'tipo_punto',                   type: 'text',         label: 'Tipo de Punto',                             required: false },
+                    { key: 'clase_uso',                    type: 'select',       label: 'Clase de Uso',                              required: false, options: ['Residencial', 'Comercial', 'Industrial', 'Oficial', 'Especial'] },
+                    { key: 'estado_predio',                type: 'text',         label: 'Estado del Predio',                         required: false },
+                    { key: 'unidades_habitacionales',      type: 'number',       label: 'Unidades Habitacionales',                   required: false, min: 0 },
+                    { key: 'unidades_no_habitacionales',   type: 'number',       label: 'Unidades No Habitacionales',                required: false, min: 0 },
+                    { key: 'numero_familias',              type: 'number',       label: 'Número de Familias',                        required: false, min: 0 },
+                    { key: 'numero_habitantes',            type: 'number',       label: 'Número de Habitantes',                      required: false, min: 0 },
+                    { key: 'numero_banos',                 type: 'number',       label: 'Número de Baños',                           required: false, min: 0 },
+                    { key: 'numero_cocinas',               type: 'number',       label: 'Número de Cocinas',                         required: false, min: 0 },
+                    { key: 'tiene_agua',                   type: 'radio',        label: '¿Tiene agua?',                              required: true,  options: ['Sí', 'No'] },
+                    { key: 'horas_agua',                   type: 'number',       label: 'Horas de agua por día',                     required: false, min: 0, max: 24 },
+                    { key: 'tipo_actividad',               type: 'text',         label: 'Tipo de Actividad',                         required: false },
+                    { key: 'tanque_reserva',               type: 'radio',        label: 'Tanque de Reserva',                         required: false, options: ['Sí', 'No'] },
+                    { key: 'capacidad_tanque_reserva',     type: 'text',         label: 'Capacidad del tanque de reserva',            required: false },
+                    { key: 'disponibilidad_cajilla',       type: 'text',         label: 'Disponibilidad Cajilla',                    required: false },
+                    { key: 'observaciones',                type: 'textarea',     label: 'Observaciones',                             required: false },
+                    { key: 'autorizacion_datos',           type: 'radio',        label: 'Autorización Datos Personales',             required: true,  options: ['Sí', 'No'] },
+                    { key: 'nombre_inspector',             type: 'text',         label: 'Nombre del inspector o funcionario',        required: true  },
+                    { key: 'cc_inspector',                 type: 'text',         label: 'Cédula del Inspector',                      required: true  },
+                    { key: 'registro_inspector',           type: 'text',         label: 'Registro del Inspector',                    required: false },
+                    { key: 'foto_fachada',                 type: 'file',         label: 'Foto de la fachada del predio',             required: false, accept: 'image/*' },
+                    { key: 'firma_digital',                type: 'file',         label: 'Firma Digital',                             required: false, accept: 'image/*' },
+                ]
+            },
         ];
 
         // Insertar los formularios de forma idempotente
@@ -1029,6 +1133,13 @@ const seedDatabase = async () => {
                 'INSERT INTO form_publications (id, form_version_id, neighborhood_id, start_at, is_active) VALUES (?, ?, ?, NOW(), 1)',
                 [uuidv4(), vId, neighborhoodId]
             );
+            // El formulario de censo también se publica en Las Mercedes
+            if (formDef.key === 'censo-masivo-catastro-v2' && lasMercedesId) {
+                await connection.query(
+                    'INSERT INTO form_publications (id, form_version_id, neighborhood_id, start_at, is_active) VALUES (?, ?, ?, NOW(), 1)',
+                    [uuidv4(), vId, lasMercedesId]
+                );
+            }
             formsInserted++;
         }
         console.log(`✅ Formularios: ${formsInserted} insertados, ${FORMS_SEED.length - formsInserted} ya existían.`);
@@ -1054,6 +1165,34 @@ const seedDatabase = async () => {
             console.log(`✅ giveaway_configs creados para ${formsWithoutConfig.length} formulario(s).`);
         } else {
             console.log('✅ Todos los formularios ya tienen configuración de sorteo.');
+        }
+
+        // ---------------------------------------------------------
+        // 8b. MIGRACIÓN: Publicar formulario censo en Las Mercedes
+        // ---------------------------------------------------------
+        if (lasMercedesId) {
+            const [censusVersions] = await connection.query(`
+                SELECT fv.id FROM form_versions fv
+                JOIN forms f ON f.id = fv.form_id
+                WHERE f.\`key\` = 'censo-masivo-catastro-v2' AND fv.status = 'published'
+                ORDER BY fv.version DESC LIMIT 1
+            `);
+            if (censusVersions.length > 0) {
+                const censusVId = censusVersions[0].id;
+                const [existingPub] = await connection.query(
+                    'SELECT id FROM form_publications WHERE form_version_id = ? AND neighborhood_id = ?',
+                    [censusVId, lasMercedesId]
+                );
+                if (existingPub.length === 0) {
+                    await connection.query(
+                        'INSERT INTO form_publications (id, form_version_id, neighborhood_id, start_at, is_active) VALUES (?, ?, ?, NOW(), 1)',
+                        [uuidv4(), censusVId, lasMercedesId]
+                    );
+                    console.log('✅ Formulario censo publicado en Las Mercedes.');
+                } else {
+                    console.log('⚠️  Formulario censo ya publicado en Las Mercedes.');
+                }
+            }
         }
 
         console.log('\n=============================================');
