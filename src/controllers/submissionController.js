@@ -2,6 +2,7 @@
 const SubmissionModel = require('../models/submissionModel');
 const FormModel = require('../models/formModel');
 const GiveawayModel = require('../models/giveawayModel');
+const UserModel = require('../models/userModel');
 const pool = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
@@ -244,9 +245,10 @@ const createOnboarding = async (req, res) => {
         const baseFrontend = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
         const shareLink = `${baseFrontend}/formulario/${form.key}?ref=${referralProfile.referral_code}`;
 
-        // 11. Firmar JWT
+        // 11. Firmar JWT con token_version
+        const tokenVersion = await UserModel.getTokenVersion(newUserId);
         const token = jwt.sign(
-            { uid: newUserId, role: 3, role_name: 'usuario' },
+            { uid: newUserId, role: 3, role_name: 'usuario', token_version: tokenVersion },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
         );

@@ -81,7 +81,22 @@ const UserModel = {
         const query = 'UPDATE users SET is_active = ? WHERE id = ?';
         const [result] = await pool.query(query, [status, id]);
         return result.affectedRows > 0;
+    },
+
+    // 5. Obtener token_version de un usuario
+    async getTokenVersion(userId) {
+        const query = 'SELECT token_version FROM users WHERE id = ?';
+        const [rows] = await pool.query(query, [userId]);
+        return rows[0]?.token_version || 1;
+    },
+
+    // 6. Incrementar token_version (invalida tokens anteriores)
+    async incrementTokenVersion(userId) {
+        const query = 'UPDATE users SET token_version = token_version + 1 WHERE id = ?';
+        const [result] = await pool.query(query, [userId]);
+        return result.affectedRows > 0;
     }
+};
 };
 
 module.exports = UserModel;

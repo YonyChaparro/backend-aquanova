@@ -5,10 +5,15 @@
  */
 const authorize = (allowedRoles) => {
     return (req, res, next) => {
-        // req.user viene del middleware anterior (verifyToken)
+        if (!req.user || !req.user.role) {
+            return res.status(401).json({ 
+                ok: false, 
+                message: 'No autenticado' 
+            });
+        }
+
         const userRole = req.user.role; 
 
-        // Si el rol del usuario está incluido en los permitidos, pasa.
         if (allowedRoles.includes(userRole)) {
             next();
         } else {

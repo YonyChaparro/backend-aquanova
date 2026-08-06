@@ -18,36 +18,40 @@ const login = async (req, res) => {
         // 2. Buscar usuario en BD (SQL Directo)
         const user = await UserModel.findByDocumentWithRole(document_number);
 
-        if (!user) {
-            return res.status(401).json({ 
-                ok: false, 
-                message: 'Credenciales inválidas (Usuario no encontrado)' 
-            });
-        }
-
         // 3. Comparar contraseñas (La que llega vs el Hash en BD)
-        const validPassword = await bcrypt.compare(password, user.password_hash);
+        const validPassword = await bcrypt.compare(password, user?.password_hash || '');
 
-        if (!validPassword) {
+        if (!user || !validPassword) {
+            console.warn(`[AUTH] Login fallido - documento: ${document_number} - IP: ${req.ip || req.connection.remoteAddress} - hora: ${new Date().toISOString()}`);
             return res.status(401).json({ 
                 ok: false, 
-                message: 'Credenciales inválidas (Contraseña incorrecta)' 
+                message: 'Credenciales inválidas' 
             });
         }
 
-        // 4. Generar el Token (JWT)
-        // Guardamos el ID y el ROL dentro del token para usarlo en el Frontend
+        // 4. Generar el Token (JWT) con token_version para revocación
+        const tokenVersion = await UserModel.getTokenVersion(user.id);
         const token = jwt.sign(
             { 
                 uid: user.id, 
                 role: user.role_id,   // 1, 2 o 3
-                role_name: user.role_name 
+                role_name: user.role_name,
+                token_version: tokenVersion
             }, 
             process.env.JWT_SECRET, 
             { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
         );
 
-        // 5. Responder al cliente
+        // 5. Configurar cookie HttpOnly
+        const cookieOptions = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 8 * 60 * 60 * 1000 // 8 horas en ms
+        };
+        res.cookie('auth_token', token, cookieOptions);
+
+        // 6. Responder al cliente
         res.json({
             ok: true,
             message: 'Login exitoso',
@@ -74,4 +78,25 @@ const login = async (req, res) => {
     }
 };
 
-module.exports = { login };
+const logout = async (req, res) => {
+    try {
+        const userId = req.user?.uid;
+        
+        if (userId) {
+            await UserModel.incrementTokenVersion(userId);
+        }
+
+        res.clearCookie('auth_token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        });
+
+        res.json({ ok: true, message: 'Sesión cerrada correctamente' });
+    } catch (error) {
+        console.error('Error en logout:', error.message);
+        res.status(500).json({ ok: false, message: 'Error al cerrar sesión' });
+    }
+};
+
+module.exports = { login, logout };

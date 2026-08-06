@@ -33,15 +33,14 @@
 
 const express = require('express');
 const router = express.Router();
-const { login } = require('../controllers/authController');
-const authorize = require('../middlewares/roleMiddleware'); // <--- NUEVO IMPORT
-
-// 1. IMPORTAR EL MIDDLEWARE (El "Portero")
-// Asegúrate de haber creado el archivo en src/middlewares/authMiddleware.js
+const { login, logout } = require('../controllers/authController');
+const authorize = require('../middlewares/roleMiddleware');
 const verifyToken = require('../middlewares/authMiddleware');
+const loginLimiter = require('../middlewares/rateLimiter');
 
-// 2. Definir el endpoint POST /login (PÚBLICO)
-router.post('/login', login);
+router.post('/login', loginLimiter, login);
+
+router.post('/logout', verifyToken, logout);
 
 /**
  * @swagger
