@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS \`users\` (
   \`phone\` VARCHAR(50) NULL,
   \`password_hash\` VARCHAR(255) NULL,
   \`is_active\` BOOLEAN DEFAULT TRUE,
+  \`token_version\` INT NOT NULL DEFAULT 1,
   \`metadata\` JSON NULL,
   \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
   \`updated_at\` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -439,6 +440,20 @@ const seedDatabase = async () => {
         } catch (e) {
             if (e.errno === 1060 || e.errno === 1061) {
                 console.log('⚠️  Columna/índice external_id ya existe en lots. Continuando...');
+            } else {
+                throw e;
+            }
+        }
+
+        // 3f. Migración segura: agregar token_version a users para revocación de JWT
+        try {
+            await connection.query(
+                'ALTER TABLE `users` ADD COLUMN `token_version` INT NOT NULL DEFAULT 1 AFTER `is_active`'
+            );
+            console.log('✅ Columna token_version agregada a users.');
+        } catch (e) {
+            if (e.errno === 1060) {
+                console.log('⚠️  Columna token_version ya existe en users. Continuando...');
             } else {
                 throw e;
             }

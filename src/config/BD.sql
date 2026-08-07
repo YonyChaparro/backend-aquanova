@@ -26,6 +26,7 @@ CREATE TABLE `users` (
   `phone` VARCHAR(50) NULL,                  -- Teléfono (útil para auth por SMS)
   `password_hash` VARCHAR(255) NULL,         -- Hash seguro (Bcrypt/Argon2)
   `is_active` BOOLEAN DEFAULT TRUE,          -- "Soft Delete": nunca borramos, solo desactivamos
+  `token_version` INT NOT NULL DEFAULT 1,    -- Versión del token para revocación de JWT
   `metadata` JSON NULL,                      -- JSON: Preferencias de UI, avatar, config extra
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

@@ -97,6 +97,5 @@ const UserModel = {
         return result.affectedRows > 0;
     }
 };
-};
 
 module.exports = UserModel;
