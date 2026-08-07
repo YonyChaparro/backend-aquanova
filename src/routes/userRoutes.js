@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { getUsers, createUser } = require('../controllers/userController');
-const { getMyReferralProfile } = require('../controllers/giveawayController');
+const { getMyReferralProfile, getReferralQR } = require('../controllers/giveawayController');
 const verifyToken = require('../middlewares/authMiddleware');
 const authorize = require('../middlewares/roleMiddleware');
 
@@ -58,8 +58,93 @@ const authorize = require('../middlewares/roleMiddleware');
  *         description: Error interno del servidor
  */
 // GET /api/users/me/referral-profile  →  Cualquier usuario autenticado
-// IMPORTANTE: debe ir ANTES de cualquier ruta /:id para que Express no interprete "me" como un ID
+// IMPORTANTE: rutas /me/* deben ir ANTES de /:id para que Express no interprete "me" como un ID
 router.get('/me/referral-profile', verifyToken, getMyReferralProfile);
+
+/**
+ * @swagger
+ * /users/me/referral-qr:
+ *   get:
+ *     summary: Obtener el código QR del link de referido del usuario autenticado
+ *     description: |
+ *       Genera un código QR que codifica el link de referido personal del usuario.
+ *       El link apunta a `{FRONTEND_URL}{REFERRAL_FORM_PATH}?ref={referral_code}`.
+ *
+ *       **Formatos disponibles** (parámetro `format`):
+ *       - `json` (default): devuelve JSON con el SVG y un data URL — para renderizar
+ *         el QR directamente en la UI sin descarga.
+ *       - `svg`: devuelve el SVG como imagen — para mostrar inline en HTML.
+ *       - `png`: descarga el PNG a 512×512 px — para imprimir o compartir por WhatsApp.
+ *
+ *       **Parámetro `formId`** (opcional): si se pasa, el QR codifica
+ *       `{FRONTEND_URL}{REFERRAL_FORM_PATH}/{formId}?ref={referral_code}`
+ *       en lugar del path genérico. Útil para campañas de un formulario específico.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: format
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [json, svg, png]
+ *           default: json
+ *         description: Formato de salida del QR
+ *       - in: query
+ *         name: formId
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: |
+ *           ID de un formulario específico. Si se indica, el QR apunta a ese formulario.
+ *           Si se omite, el QR apunta al formulario genérico configurado en REFERRAL_FORM_PATH.
+ *     responses:
+ *       200:
+ *         description: |
+ *           QR generado. El Content-Type varía según el `format` solicitado:
+ *           `application/json` | `image/svg+xml` | `image/png`
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     referral_code:
+ *                       type: string
+ *                       example: "EAL34TM"
+ *                     referral_url:
+ *                       type: string
+ *                       example: "https://aquavisor.co/formulario?ref=EAL34TM"
+ *                     qr_svg:
+ *                       type: string
+ *                       description: SVG completo como string, listo para renderizar inline
+ *                     qr_data_url:
+ *                       type: string
+ *                       description: "PNG en base64 — usar como src de <img>"
+ *                       example: "data:image/png;base64,iVBORw0KGgo..."
+ *           image/svg+xml:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *           image/png:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       401:
+ *         description: Token JWT no proporcionado o inválido
+ *       503:
+ *         description: FRONTEND_URL no configurada en el servidor
+ *       500:
+ *         description: Error generando el código QR
+ */
+router.get('/me/referral-qr', verifyToken, getReferralQR);
 
 /**
  * @swagger

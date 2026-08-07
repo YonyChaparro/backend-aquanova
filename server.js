@@ -14,6 +14,8 @@ const neighborhoodRoutes = require('./src/routes/neighborhoodRoutes');
 const mapRoutes = require('./src/routes/mapRoutes');
 const giveawayRoutes = require('./src/routes/giveawayRoutes');
 const uploadRoutes = require('./src/routes/uploadRoutes');
+const chatRoutes = require('./src/routes/chatRoutes');
+const mapBuilderRoutes = require('./src/routes/mapBuilderRoutes');
 const swaggerSpecs = require('./src/config/swagger');
 const { seedDatabase } = require('./seed');
 
@@ -108,6 +110,8 @@ app.use('/api/neighborhoods', neighborhoodRoutes); // <--- NUEVO (Prefijo /api/n
 app.use('/api/map', mapRoutes);
 app.use('/api/giveaways', giveawayRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/map-builder', mapBuilderRoutes);
 
 // Ruta base
 app.get('/', (req, res) => {
