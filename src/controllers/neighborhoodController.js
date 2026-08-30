@@ -7,14 +7,19 @@ const { uploadImage, deleteImage, extractPublicId } = require('../helpers/cloudi
  * Parsea el campo metadata del body.
  * En multipart/form-data, metadata llega como string JSON.
  * En application/json, llega como objeto.
+ *
+ * Devuelve `undefined` cuando el campo no viene (o no es JSON válido) para
+ * distinguirlo de un objeto vacío: en el update, tratar "no enviado" como
+ * "vaciar" borraba campos que el cliente nunca envía, como el `viewBox` del
+ * mapa del barrio o la referencia a la imagen en Cloudinary.
  */
 const parseMetadata = (metadata) => {
-    if (!metadata) return null;
+    if (metadata === undefined || metadata === null || metadata === '') return undefined;
     if (typeof metadata === 'string') {
         try {
             return JSON.parse(metadata);
         } catch (e) {
-            return null;
+            return undefined;
         }
     }
     return metadata;
@@ -218,6 +223,17 @@ const updateNeighborhood = async (req, res) => {
             try { existingMetadata = JSON.parse(existingMetadata); } catch (e) { existingMetadata = null; }
         }
 
+        // Merge, nunca reemplazo: el cliente envía solo los campos que edita
+        // (p. ej. `descripcion` desde GeoLevelCreation). Reemplazar el JSON entero
+        // borraba `viewBox` —el encuadre del mapa del barrio, que escribe el Map
+        // Builder— y dejaba el Gemelo Digital cayendo a un viewBox por defecto.
+        const baseMetadata = (existingMetadata && typeof existingMetadata === 'object')
+            ? existingMetadata
+            : {};
+        const mergedMetadata = metadata !== undefined
+            ? { ...baseMetadata, ...metadata }
+            : { ...baseMetadata };
+
         // Validar que al menos un campo venga para actualizar (incluyendo archivo)
         if (!name && !code && parent_id === undefined && metadata === undefined && !req.file) {
             return res.status(400).json({
@@ -284,9 +300,8 @@ const updateNeighborhood = async (req, res) => {
             );
 
             // Actualizar metadata con la nueva imagen
-            metadata = metadata || existingMetadata || {};
-            metadata.imagen = result.url;
-            metadata.imagen_public_id = result.public_id;
+            mergedMetadata.imagen = result.url;
+            mergedMetadata.imagen_public_id = result.public_id;
             console.log(`☁️  Nueva imagen subida a Cloudinary: ${result.url}`);
         }
 
@@ -295,7 +310,7 @@ const updateNeighborhood = async (req, res) => {
             name: name || existingNeighborhood.name,
             code: code || existingNeighborhood.code,
             parent_id: parent_id !== undefined ? (parent_id || null) : existingNeighborhood.parent_id,
-            metadata: metadata !== undefined ? metadata : existingMetadata
+            metadata: Object.keys(mergedMetadata).length > 0 ? mergedMetadata : null
         };
 
         await NeighborhoodModel.update(id, updateData);
