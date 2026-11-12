@@ -1,11 +1,39 @@
 // src/controllers/chatController.js
 // Chatbot Aquabot — Claude con herramientas: consulta SQL, gráficos y reportes descargables (PDF/XLSX).
 
-const Anthropic = require('@anthropic-ai/sdk');
 const db = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// ─── Cliente OpenRouter (API compatible con OpenAI) ────────────────────────
+
+const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const DEFAULT_MODEL = 'anthropic/claude-haiku-4.5';
+
+async function callOpenRouter(body) {
+    const resp = await fetch(OPENROUTER_URL, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            'Content-Type': 'application/json',
+            ...(process.env.OPENROUTER_SITE_URL && { 'HTTP-Referer': process.env.OPENROUTER_SITE_URL }),
+            'X-Title': process.env.OPENROUTER_APP_NAME || 'Aquanova'
+        },
+        body: JSON.stringify(body)
+    });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok || data.error) {
+        const err = new Error(data.error?.message || `OpenRouter respondió ${resp.status}`);
+        err.status = data.error?.code || resp.status;
+        throw err;
+    }
+    return data;
+}
+
+// Convierte las definiciones de herramientas al formato OpenAI function-calling
+const toOpenAITool = (t) => ({
+    type: 'function',
+    function: { name: t.name, description: t.description, parameters: t.input_schema }
+});
 
 const MAX_ROWS = 200;
 const MAX_REPORT_ROWS = 500;
@@ -531,8 +559,8 @@ const chat = async (req, res) => {
         if (!message || typeof message !== 'string' || !message.trim()) {
             return res.status(400).json({ ok: false, message: 'El campo "message" es requerido.' });
         }
-        if (!process.env.ANTHROPIC_API_KEY) {
-            return res.status(503).json({ ok: false, message: 'El chatbot no está configurado (ANTHROPIC_API_KEY faltante).' });
+        if (!process.env.OPENROUTER_API_KEY) {
+            return res.status(503).json({ ok: false, message: 'El chatbot no está configurado (OPENROUTER_API_KEY faltante).' });
         }
 
         const safeHistory = Array.isArray(history)
@@ -542,36 +570,50 @@ const chat = async (req, res) => {
             : [];
 
         const messages = [
+            { role: 'system', content: SYSTEM_PROMPT },
             ...safeHistory,
             { role: 'user', content: message.trim() }
         ];
 
+        const tools = [DB_TOOL, CHART_TOOL, REPORT_TOOL].map(toOpenAITool);
         const chartsGenerated = [];
         let reportGenerated = null;
 
-        let response;
+        let assistantMsg = null;
+        const usage = { input_tokens: 0, output_tokens: 0 };
         let iterations = 0;
         const MAX_ITERATIONS = 8;
 
         while (iterations < MAX_ITERATIONS) {
             iterations++;
 
-            response = await client.messages.create({
-                model: process.env.CLAUDE_MODEL || 'claude-haiku-4-5-20251001',
+            const response = await callOpenRouter({
+                model: process.env.OPENROUTER_MODEL || DEFAULT_MODEL,
                 max_tokens: 4096,
-                system: SYSTEM_PROMPT,
-                tools: [DB_TOOL, CHART_TOOL, REPORT_TOOL],
+                tools,
                 messages
             });
 
-            if (response.stop_reason !== 'tool_use') break;
+            usage.input_tokens += response.usage?.prompt_tokens || 0;
+            usage.output_tokens += response.usage?.completion_tokens || 0;
 
-            const toolUseBlocks = response.content.filter(b => b.type === 'tool_use');
-            const toolResults = [];
+            assistantMsg = response.choices?.[0]?.message || { role: 'assistant', content: '' };
+            const toolCalls = assistantMsg.tool_calls || [];
+            if (toolCalls.length === 0) break;
 
-            for (const toolUse of toolUseBlocks) {
+            messages.push({ role: 'assistant', content: assistantMsg.content || '', tool_calls: toolCalls });
+
+            for (const call of toolCalls) {
+                let input;
+                try {
+                    input = JSON.parse(call.function?.arguments || '{}');
+                } catch {
+                    messages.push({ role: 'tool', tool_call_id: call.id, content: JSON.stringify({ error: 'Argumentos JSON inválidos.' }) });
+                    continue;
+                }
+                const toolUse = { name: call.function?.name, input };
                 let result;
-                let claudeResult; // Lo que Claude ve como resultado (puede ser más compacto)
+                let claudeResult; // Lo que el modelo ve como resultado (puede ser más compacto)
 
                 if (toolUse.name === 'query_database') {
                     result = await runSafeQuery(toolUse.input.sql);
@@ -596,19 +638,15 @@ const chat = async (req, res) => {
                     claudeResult = result;
                 }
 
-                toolResults.push({
-                    type: 'tool_result',
-                    tool_use_id: toolUse.id,
+                messages.push({
+                    role: 'tool',
+                    tool_call_id: call.id,
                     content: JSON.stringify(claudeResult)
                 });
             }
-
-            messages.push({ role: 'assistant', content: response.content });
-            messages.push({ role: 'user', content: toolResults });
         }
 
-        const textBlocks = (response.content || []).filter(b => b.type === 'text');
-        const answerText = textBlocks.map(b => b.text).join('\n').trim();
+        const answerText = (typeof assistantMsg?.content === 'string' ? assistantMsg.content : '').trim();
 
         const updatedHistory = [
             ...safeHistory,
@@ -620,10 +658,7 @@ const chat = async (req, res) => {
             ok: true,
             answer: answerText,
             history: updatedHistory,
-            usage: {
-                input_tokens: response.usage?.input_tokens,
-                output_tokens: response.usage?.output_tokens
-            }
+            usage
         };
 
         if (chartsGenerated.length > 0) payload.charts = chartsGenerated;
@@ -633,8 +668,9 @@ const chat = async (req, res) => {
 
     } catch (err) {
         console.error('Error en Aquabot:', err);
-        if (err.status === 401) return res.status(503).json({ ok: false, message: 'API key de Claude inválida.' });
-        if (err.status === 429) return res.status(429).json({ ok: false, message: 'Límite de uso de Claude alcanzado. Intenta en un momento.' });
+        if (err.status === 401) return res.status(503).json({ ok: false, message: 'API key de OpenRouter inválida.' });
+        if (err.status === 402) return res.status(503).json({ ok: false, message: 'Créditos de OpenRouter insuficientes.' });
+        if (err.status === 429) return res.status(429).json({ ok: false, message: 'Límite de uso de OpenRouter alcanzado. Intenta en un momento.' });
         res.status(500).json({ ok: false, message: 'Error interno del chatbot.' });
     }
 };

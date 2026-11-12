@@ -34,12 +34,17 @@ app.use(helmet({
         }
     }
 }));
-// CORS restrictivo: solo permite el dominio de producción (y localhost en dev)
+// CORS restrictivo: solo permite el dominio de producción (y localhost en dev).
+// EXTRA_ALLOWED_ORIGINS (separado por comas) permite añadir orígenes por entorno
+// sin tocar el código: así el despliegue paralelo de kodex.agency reutiliza esta
+// misma base sin bifurcarla.
 const allowedOrigins = [
     'https://aquavisor.co',
     'https://www.aquavisor.co',
-    // Dominio temporal de Hostinger (mientras no se configura el dominio definitivo)
-    'https://whitesmoke-mule-772754.hostingersite.com',
+    ...(process.env.EXTRA_ALLOWED_ORIGINS || '')
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean),
     ...(process.env.NODE_ENV !== 'production'
         ? ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:4200']
         : [])
@@ -96,7 +101,8 @@ app.get('/api-docs', (req, res) => {
   </body>
 </html>`);
 });
-const docsBase = process.env.NODE_ENV === 'production' ? 'https://api.aquavisor.co' : `http://localhost:${PORT}`;
+const docsBase = process.env.PUBLIC_URL
+    || (process.env.NODE_ENV === 'production' ? 'https://api.aquavisor.co' : `http://localhost:${PORT}`);
 console.log(`📄 Documentación disponible en ${docsBase}/api-docs`);
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
@@ -120,9 +126,10 @@ app.get('/', (req, res) => {
 
 const startServer = () => {
     app.listen(PORT, () => {
-        const baseUrl = process.env.NODE_ENV === 'production'
-            ? 'https://api.aquavisor.co'
-            : `http://localhost:${PORT}`;
+        const baseUrl = process.env.PUBLIC_URL
+            || (process.env.NODE_ENV === 'production'
+                ? 'https://api.aquavisor.co'
+                : `http://localhost:${PORT}`);
         console.log(`🚀 Servidor corriendo en ${baseUrl}`);
     });
 };
