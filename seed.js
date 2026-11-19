@@ -1241,6 +1241,88 @@ const seedDatabase = async () => {
             }
         }
 
+        // ---------------------------------------------------------
+        // 8c. SEED GEMELO DIGITAL (Mapa Barrio Las Mercedes - Idempotente)
+        // ---------------------------------------------------------
+        if (lasMercedesId) {
+            console.log('\n🗺️  Procesando Gemelo Digital (Mapa Las Mercedes)...');
+            const fs = require('fs');
+            const path = require('path');
+            const { parseInteractiveLotsFromSvgFile } = require('./src/helpers/svgMapParser');
+            const lasMercedesSvgPath = path.resolve(__dirname, './src/legacy/Mapa Barrio Las Mercedes.svg');
+            const mapDataPath = path.resolve(__dirname, './map-data-seed.json');
+
+            let mapData = null;
+            if (fs.existsSync(lasMercedesSvgPath)) {
+                try {
+                    mapData = parseInteractiveLotsFromSvgFile(lasMercedesSvgPath);
+                } catch (svgError) {
+                    console.log(`⚠️  Error procesando SVG de Las Mercedes: ${svgError.message}`);
+                }
+            }
+            if (!mapData && fs.existsSync(mapDataPath)) {
+                mapData = JSON.parse(fs.readFileSync(mapDataPath, 'utf-8'));
+            }
+
+            if (mapData && Array.isArray(mapData.lots) && mapData.lots.length > 0) {
+                const { viewBox, lots } = mapData;
+                const mapMetadata = JSON.stringify({ viewBox });
+
+                await connection.query(
+                    'UPDATE neighborhoods SET metadata = ? WHERE id = ? AND (metadata IS NULL OR JSON_EXTRACT(metadata, "$.viewBox") IS NULL)',
+                    [mapMetadata, lasMercedesId]
+                );
+
+                const [existingBlocks] = await connection.query(
+                    'SELECT id FROM blocks WHERE neighborhood_id = ? AND code = ?',
+                    [lasMercedesId, 'M-01']
+                );
+                let blockId;
+                if (existingBlocks.length > 0) {
+                    blockId = existingBlocks[0].id;
+                } else {
+                    blockId = uuidv4();
+                    await connection.query(
+                        'INSERT INTO blocks (id, code, neighborhood_id, geom_path) VALUES (?, ?, ?, ?)',
+                        [blockId, 'M-01', lasMercedesId, 'M0,0 Z']
+                    );
+                    console.log('✅ Block creado: M-01');
+                }
+
+                const [existingLotsCount] = await connection.query(
+                    'SELECT COUNT(*) AS total FROM lots WHERE block_id = ?',
+                    [blockId]
+                );
+
+                if (existingLotsCount[0].total === 0) {
+                    const BATCH_SIZE = 50;
+                    let lotsInserted = 0;
+                    for (let i = 0; i < lots.length; i += BATCH_SIZE) {
+                        const batch = lots.slice(i, i + BATCH_SIZE);
+                        const values = batch.map(lot => [
+                            uuidv4(),
+                            blockId,
+                            lot.number,
+                            lot.status || 'sin_informacion',
+                            null,
+                            Number.isFinite(Number(lot.area_m2)) ? Number(lot.area_m2) : 0,
+                            lot.svg_path,
+                            JSON.stringify(lot.centroid || null)
+                        ]);
+                        const placeholders = values.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
+                        await connection.query(
+                            `INSERT INTO lots (id, block_id, number, status, water_meter_code, area_m2, svg_path, centroid) VALUES ${placeholders}`,
+                            values.flat()
+                        );
+                        lotsInserted += batch.length;
+                    }
+                    console.log(`✅ Gemelo Digital: ${lotsInserted} predios insertados en el mapa.`);
+                } else {
+                    console.log(`⚠️  Gemelo Digital ya tiene ${existingLotsCount[0].total} predios en M-01. Conservando datos existentes.`);
+                }
+            }
+        }
+
         console.log('\n=============================================');
         console.log('🎉  DATOS PARA PRUEBAS (COPIA ESTOS IDs)');
         console.log('=============================================');
