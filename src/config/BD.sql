@@ -310,7 +310,8 @@ CREATE TABLE `lots` (
   `number` VARCHAR(20) NOT NULL,
   
   -- LÓGICA DE NEGOCIO (ACUEDUCTO)
-  `status` ENUM('sin_informacion', 'censado', 'registrado') DEFAULT 'sin_informacion',
+  `status` ENUM('sin_informacion', 'censado', 'registrado', 'inactive') DEFAULT 'sin_informacion',
+  `property_state` VARCHAR(50) NULL COMMENT 'Estado físico del predio',
   `water_meter_code` VARCHAR(50) NULL COMMENT 'Código del medidor de agua',
   `cadastral_id` VARCHAR(50) NULL COMMENT 'Ficha Catastral o Matrícula',
   `external_id` VARCHAR(36) NULL COMMENT 'UUID del sistema anterior (para migración de datos históricos)',
@@ -322,6 +323,8 @@ CREATE TABLE `lots` (
   `svg_path` TEXT NOT NULL,
   `centroid` JSON NULL,
   `metadata` JSON NULL,
+  `parent_ids` JSON NULL COMMENT 'IDs de predios padre en operaciones topológicas (SPLIT/MERGE)',
+  `version` INT NOT NULL DEFAULT 1 COMMENT 'Control de concurrencia optimista',
   
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

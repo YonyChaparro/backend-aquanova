@@ -293,4 +293,48 @@ router.get('/neighborhoods', mapController.getNeighborhoods);
  */
 router.get('/census/:neighborhoodId', mapController.getCensusData);
 
+/**
+ * @swagger
+ * /map/available-lots/{neighborhoodId}:
+ *   get:
+ *     summary: Obtener lotes disponibles para selector en formularios
+ *     tags: [Map]
+ *     description: Retorna todos los lotes de un barrio indicando cuáles están disponibles (sin_informacion). Endpoint público para uso en formularios.
+ *     parameters:
+ *       - name: neighborhoodId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID único del barrio
+ *     responses:
+ *       200:
+ *         description: Lotes obtenidos exitosamente
+ *       400:
+ *         description: Falta el ID del barrio
+ *       500:
+ *         description: Error al obtener lotes
+ */
+router.get('/available-lots/:neighborhoodId', mapController.getAvailableLots);
+
+/**
+ * @swagger
+ * /map/topology-update:
+ *   post:
+ *     summary: Actualizar topología del mapa (Merge, Split o Restore)
+ *     tags: [Map]
+ *     description: Ejecuta una transacción para desactivar predios antiguos e insertar los nuevos tras una partición, fusión o restauración.
+ *     responses:
+ *       200:
+ *         description: Topología actualizada exitosamente
+ *       409:
+ *         description: Conflicto de concurrencia optimista
+ *       500:
+ *         description: Error interno al actualizar topología catastral
+ */
+router.post('/topology-update', mapController.updateTopology);
+
+// PATCH /map/blocks/:blockId — Editar código de manzana
+router.patch('/blocks/:blockId', mapController.updateBlock);
+
 module.exports = router;

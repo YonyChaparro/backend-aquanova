@@ -288,14 +288,18 @@ CREATE TABLE IF NOT EXISTS \`lots\` (
   \`id\` CHAR(36) NOT NULL,
   \`block_id\` CHAR(36) NOT NULL,
   \`number\` VARCHAR(20) NOT NULL,
-  \`status\` ENUM('sin_informacion', 'censado', 'registrado') DEFAULT 'sin_informacion',
+  \`status\` ENUM('sin_informacion', 'censado', 'registrado', 'inactive') DEFAULT 'sin_informacion',
+  \`property_state\` VARCHAR(50) NULL COMMENT 'Estado físico del predio',
   \`water_meter_code\` VARCHAR(50) NULL COMMENT 'Código del medidor de agua',
   \`cadastral_id\` VARCHAR(50) NULL COMMENT 'Ficha Catastral o Matrícula',
+  \`external_id\` VARCHAR(36) NULL COMMENT 'UUID del sistema anterior',
   \`area_m2\` DECIMAL(10, 2) NULL,
   \`owner_name\` VARCHAR(255) NULL,
   \`svg_path\` TEXT NOT NULL,
   \`centroid\` JSON NULL,
   \`metadata\` JSON NULL,
+  \`parent_ids\` JSON NULL COMMENT 'IDs de predios padre en operaciones topológicas',
+  \`version\` INT NOT NULL DEFAULT 1 COMMENT 'Control de concurrencia optimista',
   \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
   \`updated_at\` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (\`id\`),
@@ -456,6 +460,33 @@ const seedDatabase = async () => {
                 console.log('⚠️  Columna token_version ya existe en users. Continuando...');
             } else {
                 throw e;
+            }
+        }
+
+        // 3g. Migración segura: sincronizar ENUM status (con 'inactive'), property_state, parent_ids y version en lots
+        try {
+            await connection.query(
+                "ALTER TABLE `lots` MODIFY COLUMN `status` ENUM('sin_informacion', 'censado', 'registrado', 'inactive') DEFAULT 'sin_informacion'"
+            );
+        } catch (e) {
+            console.warn('⚠️  No se pudo actualizar ENUM status en lots:', e.message);
+        }
+
+        const lotMigrations = [
+            { col: 'property_state', sql: 'ALTER TABLE `lots` ADD COLUMN `property_state` VARCHAR(50) NULL AFTER `status`' },
+            { col: 'parent_ids', sql: 'ALTER TABLE `lots` ADD COLUMN `parent_ids` JSON NULL AFTER `metadata`' },
+            { col: 'version', sql: 'ALTER TABLE `lots` ADD COLUMN `version` INT NOT NULL DEFAULT 1 AFTER `parent_ids`' },
+        ];
+        for (const mig of lotMigrations) {
+            try {
+                await connection.query(mig.sql);
+                console.log(`✅ Columna ${mig.col} agregada a lots.`);
+            } catch (e) {
+                if (e.errno === 1060) {
+                    console.log(`⚠️  Columna ${mig.col} ya existe en lots. Continuando...`);
+                } else {
+                    throw e;
+                }
             }
         }
 
