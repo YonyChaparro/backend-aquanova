@@ -30,6 +30,14 @@ const createUser = async (req, res) => {
             });
         }
 
+        // 1.5 Validar fortaleza de contraseña
+        if (password.length < 8) {
+            return res.status(400).json({
+                ok: false,
+                message: 'La contraseña debe tener al menos 8 caracteres'
+            });
+        }
+
         // 2. Verificar si ya existe el documento
         const existingUser = await UserModel.findByDocumentWithRole(document_number);
         if (existingUser) {

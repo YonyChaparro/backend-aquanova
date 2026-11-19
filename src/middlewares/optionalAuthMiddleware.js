@@ -1,6 +1,16 @@
 // src/middlewares/optionalAuthMiddleware.js
 const jwt = require('jsonwebtoken');
 
+const parseCookies = (cookieHeader) => {
+    const cookies = {};
+    if (!cookieHeader) return cookies;
+    cookieHeader.split(';').forEach(cookie => {
+        const [name, ...rest] = cookie.split('=');
+        cookies[name.trim()] = rest.join('=').trim();
+    });
+    return cookies;
+};
+
 /**
  * Middleware de autenticación opcional.
  * NO bloquea la request: deja que el controlador decida.
@@ -22,12 +32,29 @@ const optionalAuth = (req, res, next) => {
     req.user = null;
     req.authError = null;
 
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) return next();
+    let token = null;
 
-    const token = authHeader.split(' ')[1];
+    // 1. Intentar desde cookie
+    const cookies = parseCookies(req.headers.cookie);
+    if (cookies.auth_token) {
+        token = cookies.auth_token;
+    }
+
+    // 2. Si no hay cookie, buscar en header Authorization
     if (!token) {
-        req.authError = 'invalid';
+        const authHeader = req.headers['authorization'];
+        if (authHeader) {
+            const parts = authHeader.split(' ');
+            if (parts.length === 2 && parts[0] === 'Bearer' && parts[1]) {
+                token = parts[1];
+            } else {
+                req.authError = 'invalid';
+                return next();
+            }
+        }
+    }
+
+    if (!token) {
         return next();
     }
 

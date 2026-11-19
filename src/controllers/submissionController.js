@@ -2,6 +2,7 @@
 const SubmissionModel = require('../models/submissionModel');
 const FormModel = require('../models/formModel');
 const GiveawayModel = require('../models/giveawayModel');
+const UserModel = require('../models/userModel');
 const pool = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
@@ -74,8 +75,8 @@ async function resolveFormVersion(formId, requestedVersionId) {
 }
 
 /** Firma el JWT de sesión con la misma forma que authController. */
-const signToken = (uid, role, roleName) =>
-    jwt.sign({ uid, role, role_name: roleName }, process.env.JWT_SECRET, {
+const signToken = (uid, role, roleName, tokenVersion = 1) =>
+    jwt.sign({ uid, role, role_name: roleName, token_version: tokenVersion }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN || '8h',
     });
 
@@ -328,7 +329,8 @@ const createOnboarding = async (req, res) => {
                 } catch (e) {
                     console.warn('⚠️  No se pudo recuperar el perfil de referido:', e.message);
                 }
-                token = signToken(existing.user_id, 3, 'usuario');
+                const tokenVersion = await UserModel.getTokenVersion(existing.user_id);
+                token = signToken(existing.user_id, 3, 'usuario', tokenVersion);
             }
             const baseFrontend = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
             return res.status(200).json({
@@ -513,12 +515,12 @@ const createOnboarding = async (req, res) => {
                 const baseFrontend = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
                 shareLink = `${baseFrontend}/formulario/${form.key}?ref=${referralCode}`;
             }
-            token = signToken(userId, 3, 'usuario');
+            const tokenVersion = await UserModel.getTokenVersion(userId);
+            token = signToken(userId, 3, 'usuario', tokenVersion);
         } catch (e) {
             console.warn('⚠️  Post-commit del onboarding falló (la submission SÍ se guardó):', e.message);
             warnings.push('perfil_referido_no_generado');
         }
-
         res.status(201).json({
             ok: true,
             idempotent: false,
